@@ -1,0 +1,143 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
+import QtQuick.Layouts
+import QtQuick3D
+import QtQuick3D.Helpers
+import QtQuick3D.AssetUtils
+
+Item {
+    id: page3D
+    property string cadFile: "No model selected."
+    property string scanFile: "No model selected."
+
+    Connections {
+        target: backend
+        // Load converted 3D model and set its calculated centroids, dimensions
+        function onConvertedMesh(file, scanFlag, x, y, z, l, w, h) {
+            if (scanFlag) {
+                //root.scanSource = file 
+                scanScene.target.source = file
+                scanScene.target.pivot = Qt.vector3d(x, y, z) // Set centroid
+                scanScene.target.dimensions = Qt.vector3d(l, w, h) // Store dimensions
+            } else {
+                cadScene.target.source = file
+                cadScene.target.pivot = Qt.vector3d(x, y, z)
+                cadScene.target.dimensions = Qt.vector3d(l, w, h)
+            }
+        }
+    }
+
+    Connections {
+        target: compare2D
+        // Rotating mesh to each side view and capturing image of the scene
+        function onCaptureRotations(cad, scan) {
+            if (cad) {
+                cadScene.capture2D("cad")   
+            }
+            if (scan) {
+                scanScene.capture2D("scan")
+            }
+            backend.crop2D(cad, scan)
+        }
+    }
+
+    //------------------------------------------------------//
+    // 3D SCENE #1 (left)
+    //------------------------------------------------------//
+    SplitView {
+        id: cadLayout
+        orientation: Qt.Vertical
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: middleBorder.left
+        anchors.bottom: parent.bottom
+        handle: Rectangle {
+            id: handleDelegate
+            implicitHeight: 2
+            color: SplitHandle.pressed ? "#81e889"
+                : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
+            containmentMask: Item {
+                width: cadLayout.width
+                height: 10
+            }
+        }
+
+        Scene3D {
+            id: cadScene
+            SplitView.preferredHeight: parent.height * (3/4)
+            SplitView.minimumHeight: parent.height / 2
+            nodeColor: cadControls.targetColor
+            activateGrid: cadControls.gridChecked
+            meshRotation: cadControls.sliderRot
+        }
+
+        InfoControls3D {
+            id: cadControls
+            SplitView.fillHeight: false
+            SplitView.preferredHeight: 200
+            title: getFilename(root.cadFile)
+            target: cadScene.target //mesh
+            scan: false
+        }
+    }
+    //------------------------------------------------------//
+    // Border between the two scenes
+    //------------------------------------------------------//
+    Rectangle {
+        id: middleBorder
+        color: root.menuColor
+        implicitWidth: 10
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+    }
+    //------------------------------------------------------//
+    // 3D SCENE #2 (right)
+    //------------------------------------------------------//
+    SplitView {
+        id: scanLayout
+        orientation: Qt.Vertical
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.left: middleBorder.right
+        anchors.bottom: parent.bottom
+        handle: Rectangle {
+            id: handleDelegate
+            implicitHeight: 2
+            color: SplitHandle.pressed ? "#81e889"
+                : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
+            containmentMask: Item {
+                width: scanLayout.width
+                height: 10
+            }
+        }
+
+        Scene3D {
+            id: scanScene
+            SplitView.preferredHeight: parent.height * (3/4)
+            SplitView.minimumHeight: parent.height / 2
+            nodeColor: scanControls.targetColor
+            activateGrid: scanControls.gridChecked
+            meshRotation: scanControls.sliderRot
+        }
+
+        InfoControls3D {
+            id: scanControls
+            SplitView.fillHeight: false
+            SplitView.preferredHeight: 200
+            title: getFilename(root.scanFile)
+            target: scanScene.target //scan
+            scan: true
+        }
+    }
+    //----------------------------------------------------------//
+    // Loading progess wheel for when model takes > 1s to load
+    //----------------------------------------------------------//
+    BusyText {
+        id: loadIndicator
+        anchors.centerIn: parent
+        busyText: "Loading 3D File..."
+        on: cadControls.loading || scanControls.loading
+    }
+}
