@@ -3,9 +3,11 @@ import QtQuick3D
 import QtQuick3D.Helpers
 
 MouseArea {
+    id: mouseArea
     property Node target
     property Camera camera
     property View3D scene
+    property bool held: false
     
     hoverEnabled: true
     preventStealing: true
@@ -36,13 +38,20 @@ MouseArea {
         }
     }
 
+    onPressed: function(mouse) {
+        held = true
+        while (held) {
+            console.log("pressed")
+        }
+    }
+
     // CONTROL 2: rotation of model using mouse dragging
     // (can also support WASDRF movement if keysEnabled set to "true")
     /////////////////////////////////////////////////////////////////
     WasdController {
         controlledObject: target
-        keysEnabled: false
-        speed: 150
+        //keysEnabled: false
+        //speed: 150
         xInvert: true
         yInvert: false
     }

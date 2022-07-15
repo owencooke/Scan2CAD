@@ -2,17 +2,15 @@ import os
 from pathlib import Path
 import sys
 # Pyside6 Imports for Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D
+from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool
 # Imports for Backend functions
-from edgedetection import cropFaces
 import trimesh
 import time
 import numpy as np
 import cv2
-#from pymeshlab import MeshSet
 
 # Get base directory and set app ID
 basedir = os.path.dirname(__file__)
@@ -22,7 +20,6 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
-#os.environ["QSG_RHI_BACKEND"] = "opengl"
 
 ''' 
 Purpose: for functions in the Backend class that can have a long
@@ -50,13 +47,13 @@ class Backend(QObject):
         super().__init__()
         self.threadpool = QThreadPool()
         self.threadpool.setExpiryTimeout(1)
+        
     # ------------------------------------------------------------------#
     # Signals: (from Python to QML)
     # Corresponding signal handler in QML is "onSignalname". First letter 
     # after "on" is capitalized where "signalname" is the same as variable defined below
     # ------------------------------------------------------------------#
     #FIXME: returning Python lists to QML was complicated, couldn't implement
-    setFilename = Signal(bool)
     convertedMesh = Signal(str, bool, float, float, float, float, float, float)
 
     captureRotations = Signal(bool, bool)
@@ -65,28 +62,24 @@ class Backend(QObject):
 
     displayAligned = Signal(str, str, float, float)
     hausdorffOutput = Signal(float, float)
+
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
     # The backend functions ran after clicking buttons, etc.
     # *If function runtime is long, run in seperate thread 
     # ------------------------------------------------------------------#
-    
     # Load model into the 3D viewer page of GUI
-    @Slot(str, bool)
-    def loadMesh(self, selectedFile, scanFlag):
+    @Slot(str, str, bool)
+    def loadMesh(self, QMLpage, selectedFile, scanFlag):
         # Run mesh conversion in seperate thread to prevent freezing GUI
-        thread = Thread(self.loadMeshThread, selectedFile, scanFlag)
+        thread = Thread(self.loadMeshThread, QMLpage, selectedFile, scanFlag)
         self.threadpool.start(thread)
 
-    def loadMeshThread(self, selectedFile, scanFlag):
+    def loadMeshThread(self, QMLpage, selectedFile, scanFlag):
         # RuntimeLoader only compatible with .glb or .gltf 
         # Also used to obtain centroid and dimensions of models
-        if scanFlag:
-            out = os.path.join(basedir, "backend_resources/converted_mesh/scan_trimesh.glb")
-        else:
-            out = os.path.join(basedir, "backend_resources/converted_mesh/cad_trimesh.glb")
-   
         loaded = trimesh.load(selectedFile.split('file:///')[1], force='mesh')
+
         # ELIMINATE SMALL NON-CONNECTED COMPONENTS (errors from scan)
         try: 
             cc = trimesh.graph.connected_components(loaded.face_adjacency, min_len=5000)
@@ -95,8 +88,21 @@ class Backend(QObject):
             loaded.update_faces(mask)
         except ValueError: # No unconnected components found (healthy scan or model)
             pass
+
         # Export model for loading in QML (only .glb or .gltf)
+        if scanFlag:
+            if QMLpage == "Align":
+                convFile = "scan_align"
+            else:
+                convFile = "scan_model3D"
+        else:
+            if QMLpage == "Align":
+                convFile = "cad_align"
+            else:
+                convFile = "cad_model3D"
+        out = os.path.join(basedir, "backend_resources/converted_mesh/" + convFile + ".glb")
         trimesh.exchange.export.export_mesh(loaded, out, file_type="glb")
+
         # Obtain dimensional parameters/centroid, output results
         l = abs(loaded.bounds[0][0] - loaded.bounds[1][0])
         w = abs(loaded.bounds[0][1] - loaded.bounds[1][1])
@@ -104,19 +110,24 @@ class Backend(QObject):
 
         # Output data to QML
         time.sleep(0.01)
-        self.setFilename.emit(scanFlag)
-        self.convertedMesh.emit(out, scanFlag, loaded.centroid[0], loaded.centroid[1], 
+        self.convertedMesh.emit(QMLpage, scanFlag, loaded.centroid[0], loaded.centroid[1], 
                                 loaded.centroid[2], l, w, h)
 
-    @Slot(str, str, bool)
-    def alignMeshes(self, cad, scan, scale):
-        thread = Thread(self.alignMeshesThread, cad, scan, scale)
+    @Slot(str, str, QMatrix4x4, QMatrix4x4, bool)
+    def alignMeshes(self, cad, scan, cadMatrix, scanMatrix, scale):
+        thread = Thread(self.alignMeshesThread, cad, scan, cadMatrix, scanMatrix, scale)
         self.threadpool.start(thread)
 
-    def alignMeshesThread(self, cad, scan, scale):
+    def alignMeshesThread(self, cad, scan, cadMatrix, scanMatrix, scale):
         # Load each file into trimesh
         model = trimesh.load(cad.split('file:///')[1], force='mesh')
         scanned = trimesh.load(scan.split('file:///')[1], force='mesh')
+
+        # Apply intial transformation matrices from GUI
+        cadMatrix = np.array(cadMatrix.copyDataTo()).reshape(4,4)
+        scanMatrix = np.array(scanMatrix.copyDataTo()).reshape(4,4)
+        model.apply_transform(cadMatrix)
+        scanned.apply_transform(scanMatrix)
 
         # ELIMINATE SMALL NON-CONNECTED COMPONENTS (errors from scan)
         try: 
@@ -130,10 +141,11 @@ class Backend(QObject):
         # Align scan mesh relative to the model mesh, save result to disk
         t_matrix, cost = trimesh.registration.mesh_other(scanned, model, scale=scale) # samples=2000,icp_first=10, icp_final=500)
         scanned.apply_transform(t_matrix)
-
+        # scanned.visual.vertex_colors = trimesh.visual.random_color()
+        # trimesh.Scene([model, scanned]).show()
         # Convert and export files to be loaded
         cad = os.path.join(basedir, "backend_resources/converted_mesh/cad_aligned.glb")
-        scan = os.path.join(basedir,"backend_resources/converted_mesh/aligned.glb")
+        scan = os.path.join(basedir,"backend_resources/converted_mesh/scan_aligned.glb")
         trimesh.exchange.export.export_mesh(model, cad, file_type="glb")
         trimesh.exchange.export.export_mesh(scanned, scan, file_type="glb")
 
@@ -307,7 +319,6 @@ class Backend(QObject):
         print("Smaller distance means higher similarity: {:.5f}".format(dist))
         print("Percentage Given by 1/(1+dist): {:.3f}%".format(100/(1+dist)))
         self.contourResult.emit(dist, 100/(1+dist))
-
 
 
 if __name__ == "__main__":

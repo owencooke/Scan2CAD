@@ -19,7 +19,6 @@ Item {
             color: root.secondaryText
             font.family: titleFont.font.family
             font.pointSize: 12
-            //font.weight: Font.DemiBold
         }
 
         // Filename from upload
@@ -49,9 +48,12 @@ Item {
                 onAccepted: {
                     if (scanFlag) {
                         align.scanFile = selectedFile
+                        scan.source = ""
                     } else {
                         align.cadFile = selectedFile
+                        cad.source = ""
                     }
+                    backend.loadMesh("Align", selectedFile, scanFlag)
                     fileLabel.color = root.secondaryText
                 }
             }
@@ -94,7 +96,6 @@ Item {
 
             onClicked: {
                 colorSlider.visible = !colorSlider.visible
-                //sliderContainer.visible = !sliderContainer.visible
             }
         }
     }

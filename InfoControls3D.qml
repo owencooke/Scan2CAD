@@ -123,15 +123,13 @@ Rectangle {
                     onAccepted: {
                         if (scan) {
                             root.scanFile = selectedFile
-                            //root.scanSource = " "
                             scanScene.target.source = " "
                         } else {
                             root.cadFile = selectedFile
-                            //root.cadSource = " "
                             cadScene.target.source = " "
                         }
                         loadTimer.start()
-                        backend.loadMesh(selectedFile, scan)
+                        backend.loadMesh("Model3D", selectedFile, scan)
                     }
                 }
 
