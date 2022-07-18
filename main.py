@@ -54,13 +54,13 @@ class Backend(QObject):
     # after "on" is capitalized where "signalname" is the same as variable defined below
     # ------------------------------------------------------------------#
     #FIXME: returning Python lists to QML was complicated, couldn't implement
-    convertedMesh = Signal(str, bool, float, float, float, float, float, float)
+    convertedMesh = Signal(str, bool, QVector3D, QVector3D)
 
     captureRotations = Signal(bool, bool)
     displayCrop = Signal()
     contourResult = Signal(float, float)
 
-    displayAligned = Signal(str, str, float, float)
+    displayAligned = Signal(QVector3D, float, float)
     hausdorffOutput = Signal(float, float)
 
     # ------------------------------------------------------------------#
@@ -107,11 +107,13 @@ class Backend(QObject):
         l = abs(loaded.bounds[0][0] - loaded.bounds[1][0])
         w = abs(loaded.bounds[0][1] - loaded.bounds[1][1])
         h = abs(loaded.bounds[0][2] - loaded.bounds[1][2])
+        dim = QVector3D(l, w, h)
+
+        centroid = QVector3D(loaded.centroid[0], loaded.centroid[1], loaded.centroid[2])
 
         # Output data to QML
         time.sleep(0.01)
-        self.convertedMesh.emit(QMLpage, scanFlag, loaded.centroid[0], loaded.centroid[1], 
-                                loaded.centroid[2], l, w, h)
+        self.convertedMesh.emit(QMLpage, scanFlag, centroid, dim)
 
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool)
     def alignMeshes(self, cad, scan, cadMatrix, scanMatrix, scale):
@@ -144,16 +146,24 @@ class Backend(QObject):
         # scanned.visual.vertex_colors = trimesh.visual.random_color()
         # trimesh.Scene([model, scanned]).show()
         # Convert and export files to be loaded
-        cad = os.path.join(basedir, "backend_resources/converted_mesh/cad_aligned.glb")
-        scan = os.path.join(basedir,"backend_resources/converted_mesh/scan_aligned.glb")
+        cad = os.path.join(basedir, "backend_resources/converted_mesh/cad_align.glb")
+        scan = os.path.join(basedir,"backend_resources/converted_mesh/scan_align.glb")
         trimesh.exchange.export.export_mesh(model, cad, file_type="glb")
         trimesh.exchange.export.export_mesh(scanned, scan, file_type="glb")
 
-        # Emit signal containing data to QML 
+        # Calculate joint centroid
+        x = (model.centroid[0] + scanned.centroid[0]) / 2
+        y = (model.centroid[1] + scanned.centroid[1]) / 2
+        z = (model.centroid[2] + scanned.centroid[2]) / 2
+        centroid = QVector3D(x,y,z)
+
+        # FIXME: calculate Hausdorff distance here / define similarity
         coeff = 50
         percent = 100/(1 + coeff*cost) #(0.1-cost)*1000 # Approximating percentage function
         if percent < 0: percent = 0
-        self.displayAligned.emit(cad, scan, cost, percent)
+
+        # Emit signal containing data to QML 
+        self.displayAligned.emit(centroid, cost, percent)
     
     @Slot(bool, bool)
     def crop2D(self, cad, scan):

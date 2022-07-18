@@ -14,17 +14,17 @@ Item {
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
-        function onConvertedMesh(pageName, scanFlag, x, y, z, l, w, h) {
+        function onConvertedMesh(pageName, scanFlag, centroid, dim) {
             if (pageName == "Model3D") {
                 if (scanFlag) {
                     //root.scanSource = file 
                     scanScene.target.source = "backend_resources/converted_mesh/scan_model3D.glb"
-                    scanScene.target.pivot = Qt.vector3d(x, y, z) // Set centroid
-                    scanScene.target.dimensions = Qt.vector3d(l, w, h) // Store dimensions
+                    scanScene.target.pivot = centroid
+                    scanScene.target.dimensions = dim
                 } else {
                     cadScene.target.source = "backend_resources/converted_mesh/cad_model3D.glb"
-                    cadScene.target.pivot = Qt.vector3d(x, y, z)
-                    cadScene.target.dimensions = Qt.vector3d(l, w, h)
+                    cadScene.target.pivot = centroid
+                    cadScene.target.dimensions = dim
                 }
             }
         }
