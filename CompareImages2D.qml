@@ -6,13 +6,22 @@ import QtQuick.Layouts
 Item {
     id: compare2D
     signal captureRotations(bool cad, bool scan)
-    function resetSources() {
-        cadFront.source = ""
-        cadTop.source = ""
-        cadLeft.source = ""
-        scanFront.source = ""
-        scanTop.source = ""
-        scanLeft.source = ""
+    property var d: "backend_resources/cropped/"
+    property var cad_imgs: [d+"cad_front.png", d+"cad_top.png", d+"cad_left.png", "", "", ""]
+                            //d+"cad_rear.png", d+"cad_bottom.png", d+"cad_right.png"]
+                            
+    property var scan_imgs: [d+"scan_front.png", d+"scan_top.png", d+"scan_left.png", "", "", ""]
+                            //d+"scan_rear.png", d+"scan_bottom.png", d+"scan_right.png"]
+
+    function setView(i) {
+        switch(i) {
+            case 0:
+                return "front"
+            case 1:
+                return "top"
+            case 2:
+                return "left"
+        }
     }
 
     Connections {
@@ -20,13 +29,11 @@ Item {
         // Display results of perspective images to user
         function onDisplayCrop() {
             root.index = 2
-            compare2D.resetSources()
-            cadFront.source = "backend_resources/cropped/cad_front.png"
-            cadTop.source = "backend_resources/cropped/cad_top.png"
-            cadLeft.source = "backend_resources/cropped/cad_left.png"
-            scanFront.source = "backend_resources/cropped/scan_front.png"
-            scanTop.source = "backend_resources/cropped/scan_top.png"
-            scanLeft.source = "backend_resources/cropped/scan_left.png"
+            cadFrame.urls = cad_imgs
+            scanFrame.urls = scan_imgs
+            // Reset image cache
+            cadFrame.reload()
+            scanFrame.reload()
         }
 
         function onContourResult(dist, percent) {
@@ -36,30 +43,26 @@ Item {
     }
 
     Rectangle {
-        id: background
+        id: bg
         anchors.fill: parent
         color: root.bgColor
 
-        GridLayout {
-            id: grid
-            property int max: 300
+        RowLayout {
+            id: frameRow
             anchors.centerIn: parent
-            columns: 3
-            rowSpacing: 25
-            columnSpacing: 75
-            
-            Image { id: cadFront; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
-            Image { id: cadTop; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
-            Image { id: cadLeft; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
-            Image { id: scanFront; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
-            Image { id: scanTop; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
-            Image { id: scanLeft; source: "backend_resources/icons/limda_icon.png"; fillMode: Image.PreserveAspectFit;
-                    cache: false; Layout.maximumWidth: grid.max; Layout.maximumHeight: grid.max; Layout.alignment: Qt.AlignCenter }
+            spacing: bg.width / 9
+
+            Frame2D {
+                id: cadFrame
+                Layout.preferredHeight: bg.height/2
+                Layout.preferredWidth: bg.width/3
+            }
+
+            Frame2D {
+                id: scanFrame
+                Layout.preferredHeight: bg.height/2
+                Layout.preferredWidth: bg.width/3
+            }
         }
     }
 
