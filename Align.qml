@@ -23,6 +23,7 @@ Item {
                     cad.pivot = centroid
                     cad.dimensions = dim
                 }
+            loadingScreen.on = false
             }
         }
         function onDisplayAligned(centroid, dist, percent) {
@@ -35,10 +36,10 @@ Item {
             results.percent = (Math.round(percent * 10) / 10).toFixed(1) + "%"
             // Reset all Node properties to default
             cad.scale = scan.scale = Qt.vector3d(5, 5, 5)
-            cad.pivot = scan.pivot = centroid //Qt.vector3d(0, 0, 0)
             cad.eulerRotation = scan.eulerRotation = Qt.vector3d(0, 0, 0)
             cad.position = scan.position = Qt.vector3d(0, 0, 0)
-            camera.pivot = centroid
+            // Set centroids and controls to camera
+            cad.pivot = scan.pivot = camera.pivot = centroid
             setMouseControl("CAMERA")
         }
     }
@@ -126,20 +127,17 @@ Item {
         }
 
         AxisHelper {
-            //enableXZGrid: false // Model kept in XY plane
-            //enableXYGrid: true
             enableAxisLines: true
             gridColor: root.secondaryText
         }
     }
 
-    // Algorithm running indicator
+    // Running Indicator
     BusyText {
         id: loadingScreen
         anchors.centerIn: view3D
         width: 200
         height: 150
-        busyText: "Calculating alignment..."
         on: false
     }
     //-------------------------------------------------//
@@ -252,6 +250,7 @@ Item {
                     // Reset loader sources and run alignment from backend
                     } if (!error) {
                         cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
+                        loadingScreen.busyText = "Calculating alignment..."
                         loadingScreen.on = true
                         backend.alignMeshes(cad.source, scan.source, cad.sceneTransform,
                                                     scan.sceneTransform, toggleScale.toggle)

@@ -51,8 +51,12 @@ Item {
                     } else {
                         cad.source = ""
                     }
+                    // Set filename as new label
                     fileLabel.text = getFilename(selectedFile.toString())
                     fileLabel.color = root.secondaryText
+                    // Start busy indicator for loading
+                    loadingScreen.busyText = "Loading 3D File..."
+                    loadingScreen.on = true
                     backend.loadMesh("Align", selectedFile, scanFlag)
                 }
             }

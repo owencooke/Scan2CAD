@@ -17,14 +17,15 @@ Item {
         function onConvertedMesh(pageName, scanFlag, centroid, dim) {
             if (pageName == "Model3D") {
                 if (scanFlag) {
-                    //root.scanSource = file 
                     scanScene.target.source = "backend_resources/converted_mesh/scan_model3D.glb"
                     scanScene.target.pivot = centroid
                     scanScene.target.dimensions = dim
+                    scanControls.loading = false
                 } else {
                     cadScene.target.source = "backend_resources/converted_mesh/cad_model3D.glb"
                     cadScene.target.pivot = centroid
                     cadScene.target.dimensions = dim
+                    cadControls.loading = false
                 }
             }
         }

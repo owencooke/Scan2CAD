@@ -16,14 +16,6 @@ Rectangle {
 
     color: root.bgColor
 
-    Connections {
-        target: backend
-        function onConvertedMesh(file, scanFlag, x, y, z, l, w, h) {
-            controls.loading = false
-            loadTimer.stop()
-        }
-    }
-
     Button {
         id: gridToggle
         property bool toggle: false
@@ -128,16 +120,8 @@ Rectangle {
                             root.cadFile = selectedFile
                             cadScene.target.source = " "
                         }
-                        loadTimer.start()
-                        backend.loadMesh("Model3D", selectedFile, scan)
-                    }
-                }
-
-                Timer {
-                    id: loadTimer
-                    interval: 1000
-                    onTriggered: {
                         controls.loading = true
+                        backend.loadMesh("Model3D", selectedFile, scan)
                     }
                 }
             }
