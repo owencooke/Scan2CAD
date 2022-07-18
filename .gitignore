@@ -1,8 +1,8 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
-backend_resources/converted_mesh/
-backend_resources/captured_imgs/
-backend_resources/cropped/
+# backend_resources/converted_mesh/
+# backend_resources/captured_imgs/
+# backend_resources/cropped/
 
 *~
 *.autosave

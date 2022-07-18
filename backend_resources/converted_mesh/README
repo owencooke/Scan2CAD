@@ -1,0 +1,5 @@
+*DO NOT DELETE THIS DIRECTORY*
+
+Temporary data storage for 3D meshes automatically generated for loading in the GUI. 
+Models will be automatically generated and used during application process.
+Directory emptied following program closure.
