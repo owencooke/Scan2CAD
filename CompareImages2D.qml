@@ -30,8 +30,8 @@ Item {
         }
 
         function onContourResult(dist, percent) {
-            distLabel.text = dist.toFixed(3)
-            percentLabel.text = (Math.round(percent * 10) / 10).toFixed(1) + "%"
+            results.dist = dist.toFixed(3)
+            results.percent = (Math.round(percent * 10) / 10).toFixed(1) + "%"
         }
     }
 
@@ -104,68 +104,11 @@ Item {
         }
     }
 
-    Rectangle {
+    ResultWidget {
         id: results
-        color: root.menuColor
-        opacity: 0.8
-        anchors.top: parent.top; anchors.topMargin: 16
-        anchors.right: parent.right; anchors.rightMargin: 16
-        implicitHeight: 200
-        implicitWidth: 200
-        radius: height/6
-
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: 0
-            Label {
-                id: distLabel
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                text: "-"
-                color: root.textColor
-                font.family: titleFont.font.family
-                font.pointSize: 30
-                font.weight: Font.DemiBold
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                text: "Absolute Difference"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                text: "Between Contours"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-            Rectangle {
-                Layout.alignment: Qt.AlignCenter
-                color: root.menuColor
-                opacity: 0
-                implicitHeight: 10
-                implicitWidth: 10
-            }
-            Label {
-                id: percentLabel
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                text: "-"
-                color: root.textColor
-                font.family: titleFont.font.family
-                font.pointSize: 30
-                font.weight: Font.DemiBold
-            }
-            Label {
-                text: "Similarity Percentage"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-        }
+        anchors { top: parent.top; topMargin: 16;
+                    right: parent.right; rightMargin: 16 }
+        distText: "Absolute Difference \n Between Contours"
+        percentText: "Similarity Percentage"
     }
 }

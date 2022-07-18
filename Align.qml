@@ -8,38 +8,37 @@ import QtQuick3D.AssetUtils
 
 Item {
     id: align
-    property string cadFile: root.cadFile 
-    property string scanFile: root.scanFile
 
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
-        function onConvertedMesh(pageName, scanFlag, x, y, z, l, w, h) {
+        function onConvertedMesh(pageName, scanFlag, centroid, dim) {
             if (pageName == "Align") {
                 if (scanFlag) {
                     scan.source = "backend_resources/converted_mesh/scan_align.glb"
-                    scan.pivot = Qt.vector3d(x, y, z) // Set centroid
-                    scan.dimensions = Qt.vector3d(l, w, h) // Store dimensions
+                    scan.pivot = centroid
+                    scan.dimensions = dim
                 } else {
                     cad.source = "backend_resources/converted_mesh/cad_align.glb"
-                    cad.pivot = Qt.vector3d(x, y, z)
-                    cad.dimensions = Qt.vector3d(l, w, h)
+                    cad.pivot = centroid
+                    cad.dimensions = dim
                 }
             }
         }
-        function onDisplayAligned(cadSource, scanSource, dist, percent) {
+        function onDisplayAligned(centroid, dist, percent) {
             loadingScreen.on = false
             // Set source URLs of aligned output
-            cad.source = cadSource
-            scan.source = scanSource
+            cad.source = "backend_resources/converted_mesh/cad_align.glb"
+            scan.source = "backend_resources/converted_mesh/scan_align.glb"
             // Display results
-            distLabel.text = dist.toFixed(3)
-            percentLabel.text = (Math.round(percent * 10) / 10).toFixed(1) + "%"
+            results.dist = dist.toFixed(3)
+            results.percent = (Math.round(percent * 10) / 10).toFixed(1) + "%"
             // Reset all Node properties to default
             cad.scale = scan.scale = Qt.vector3d(5, 5, 5)
-            cad.pivot = scan.pivot = Qt.vector3d(0, 0, 0)
+            cad.pivot = scan.pivot = centroid //Qt.vector3d(0, 0, 0)
             cad.eulerRotation = scan.eulerRotation = Qt.vector3d(0, 0, 0)
             cad.position = scan.position = Qt.vector3d(0, 0, 0)
+            camera.pivot = centroid
             setMouseControl("CAMERA")
         }
     }
@@ -123,7 +122,7 @@ Item {
             anchors.fill: parent
             scene: view3D
             camera: camera
-            target: cad
+            target: camera
         }
 
         AxisHelper {
@@ -244,87 +243,30 @@ Item {
                 onClicked: {
                     var error = false
                     // Turn labels red to indicate error if no file selected
-                    if (align.scanFile == "No model selected.") {
+                    if (cad.status != RuntimeLoader.Success) {
                         scanControl.fileColor = "red"
                         error = true
-                    } if (align.cadFile == "No model selected.") {
+                    } if (scan.status != RuntimeLoader.Success) {
                         cadControl.fileColor = "red"
                         error = true
                     // Reset loader sources and run alignment from backend
                     } if (!error) {
-                        cad.source = scan.source = " "
                         cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
                         loadingScreen.on = true
-                        backend.alignMeshes(align.cadFile, align.scanFile, cad.sceneTransform,
+                        backend.alignMeshes(cad.source, scan.source, cad.sceneTransform,
                                                     scan.sceneTransform, toggleScale.toggle)
+                        cad.source = scan.source = " "
                     }
                 }
             }
         }
     }
 
-    Rectangle {
+    ResultWidget {
         id: results
-        color: root.menuColor
-        opacity: 0.8
-        anchors.top: parent.top; anchors.topMargin: 16
-        anchors.right: parent.right; anchors.rightMargin: 16
-        implicitHeight: 200
-        implicitWidth: 200
-        radius: height/6
-
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: 0
-            Label {
-                id: distLabel
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                text: "-"
-                color: root.textColor
-                font.family: titleFont.font.family
-                font.pointSize: 30
-                font.weight: Font.DemiBold
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                text: "Average Squared Distance"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                text: "Between Meshes"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-            Rectangle {
-                Layout.alignment: Qt.AlignCenter
-                color: root.menuColor
-                opacity: 0
-                implicitHeight: 10
-                implicitWidth: 10
-            }
-            Label {
-                id: percentLabel
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                text: "-"
-                color: root.textColor
-                font.family: titleFont.font.family
-                font.pointSize: 30
-                font.weight: Font.DemiBold
-            }
-            Label {
-                text: "Similarity Percentage"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 10
-                font.weight: Font.DemiBold
-            }
-        }
+        anchors { top: parent.top; topMargin: 16;
+                    right: parent.right; rightMargin: 16 }
+        distText: "Average Squared Distance \n Between Meshes"
+        percentText: "Similarity Percentage"
     }
 }

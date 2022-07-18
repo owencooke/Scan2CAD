@@ -24,7 +24,7 @@ Item {
         // Filename from upload
         Label {
             id: fileLabel
-            text: (scanFlag) ? getFilename(align.scanFile) : getFilename(align.cadFile)
+            text: "No model selected."
             color: fileColor
             font.family: regFont.font.family
             font.pointSize: 12
@@ -47,14 +47,13 @@ Item {
                 nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
                 onAccepted: {
                     if (scanFlag) {
-                        align.scanFile = selectedFile
                         scan.source = ""
                     } else {
-                        align.cadFile = selectedFile
                         cad.source = ""
                     }
-                    backend.loadMesh("Align", selectedFile, scanFlag)
+                    fileLabel.text = getFilename(selectedFile.toString())
                     fileLabel.color = root.secondaryText
+                    backend.loadMesh("Align", selectedFile, scanFlag)
                 }
             }
         }
