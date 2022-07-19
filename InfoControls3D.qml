@@ -167,7 +167,7 @@ Rectangle {
             color: root.secondaryText
             font.family: titleFont.font.family
             font.pointSize: 14
-            visible: false
+            //visible: false
         }
 
         RotationTool {
@@ -176,7 +176,7 @@ Rectangle {
             handleColour: "red"
             bgContainer: controls
             Layout.leftMargin: 15
-            visible: false
+            //visible: false
         }
 
         RotationTool {
@@ -185,7 +185,7 @@ Rectangle {
             handleColour: "green"
             bgContainer: controls
             Layout.leftMargin: 15
-            visible: false
+            //visible: false
         }
 
         RotationTool {
@@ -194,7 +194,7 @@ Rectangle {
             handleColour: "blue"
             bgContainer: controls
             Layout.leftMargin: 15
-            visible: false
+            //visible: false
         }
     }
 }

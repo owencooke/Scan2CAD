@@ -23,21 +23,34 @@ View3D {
         view3D.grabToImage(function(result) {
             result.saveToFile("backend_resources/captured_imgs/" + fname + "_front.png")
             // Top
-            //mesh.eulerRotation = Qt.vector3d(90,0,0)
             mesh.eulerRotation.x += 90
             view3D.grabToImage(function(result) {
                 result.saveToFile("backend_resources/captured_imgs/" + fname + "_top.png")
-                // Side
-                //mesh.eulerRotation = Qt.vector3d(0,90,0)
-                mesh.eulerRotation.x -= 90
-                mesh.eulerRotation.y += 90
-                view3D.grabToImage(function(result){
-                    result.saveToFile("backend_resources/captured_imgs/" + fname + "_left.png")
-                    // Give gridline/color control back to user
-                    axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
-                    axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
-                    light.targetColor = Qt.binding(function() { return nodeColor })
-                    mesh.eulerRotation.y -= 90
+                // Bottom 
+                mesh.eulerRotation.x += 180
+                view3D.grabToImage(function(result) {
+                    result.saveToFile("backend_resources/captured_imgs/" + fname + "_bottom.png")
+                    // Left
+                    mesh.eulerRotation.x -= 270
+                    mesh.eulerRotation.y += 90
+                    view3D.grabToImage(function(result) {
+                        result.saveToFile("backend_resources/captured_imgs/" + fname + "_left.png")
+                        // Rear
+                        mesh.eulerRotation.y += 90
+                        view3D.grabToImage(function(result) {
+                            result.saveToFile("backend_resources/captured_imgs/" + fname + "_rear.png")
+                            // Right
+                            mesh.eulerRotation.y += 90
+                            view3D.grabToImage(function(result) {
+                                result.saveToFile("backend_resources/captured_imgs/" + fname + "_right.png")
+                                // Give gridline/color control back to user
+                                axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
+                                axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
+                                light.targetColor = Qt.binding(function() { return nodeColor })
+                                mesh.eulerRotation.y -= 270
+                            })
+                        })
+                    })
                 })
             })
         })
@@ -91,8 +104,15 @@ View3D {
     }
 
     // Timer {
-    //     interval: 100; running: true; repeat: true
-    //     onTriggered: mesh.eulerRotation = Qt.binding(function() { return meshRotation })
+    //     interval: 1000; running: true; repeat: true
+    //     onTriggered: {
+    //         //mesh.eulerRotation = Qt.binding(function() { return meshRotation })
+    //         console.log("Node pos:", mesh.position)
+    //         console.log("Cam pos:", camera.position)
+    //         console.log("Cam zoom:", camera.zoomX, camera.zoomY)
+    //         console.log()
+    //         console.log()
+    //     }
     // }
 
     AxisHelper {

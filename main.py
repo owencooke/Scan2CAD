@@ -170,9 +170,11 @@ class Backend(QObject):
         file_list = []
         dir = os.path.join(basedir, 'backend_resources/captured_imgs/')
         if cad:
-            file_list += [dir+"cad_front.png", dir+"cad_top.png", dir+"cad_left.png"]
+            file_list += [dir+"cad_front.png", dir+"cad_top.png", dir+"cad_left.png",
+                        dir+"cad_rear.png", dir+"cad_bottom.png", dir+"cad_right.png"]
         if scan: 
-            file_list += [dir+"scan_front.png", dir+"scan_top.png", dir+"scan_left.png"]
+            file_list += [dir+"scan_front.png", dir+"scan_top.png", dir+"scan_left.png",
+                        dir+"scan_rear.png", dir+"scan_bottom.png", dir+"scan_right.png"]
         thread = Thread(self.cropFaces, basedir, file_list)
         self.threadpool.start(thread)
 

@@ -43,10 +43,11 @@ Item {
 
         Image {
             id: image
-            anchors.centerIn: parent
-            // x: parent.x
-            // y: parent.y
-            height: parent.height * 0.9
+            anchors.fill: parent
+            anchors.margins: 16
+            // anchors.centerIn: parent
+            // x: 0; y: 0
+            height: parent.height * 0.8
             fillMode: Image.PreserveAspectFit
             source: urls[index]
             cache: false
@@ -56,26 +57,33 @@ Item {
         //     id: mouseArea
         //     anchors.fill: parent
         //     hoverEnabled: true
-        //     onExited: console.log("leave")
         //     // Zoom in/out using mouse scroll wheel
-        //     onWheel: function(event) {
+        //     onWheel: function(mouse) {
         //         var zoomFactor = 1.15
-        //         // Get current screen to scene coordinates
-        //         var old_coords = [event.x, event.y]
+        //         // Save prior coordinates
+        //         var old_coords = mapToItem(image, mouse.x, mouse.y)
         //         // Scale camera according to scroll dir
-        //         if (event.angleDelta.y > 0) {
+        //         if (mouse.angleDelta.y > 0) {
         //             scale = zoomFactor
         //         } else {
         //             scale = 1/zoomFactor
         //         }
         //         // Set minimum zoom (x/y symmetric)
-        //         var zoomThreshold = 20
+        //         var zoomThreshold = 50
         //         if (image.height*scale > zoomThreshold) {
         //             image.height *= scale
         //             image.width *= scale
-        //             // Re-adjust translation
-        //             image.x -= old_coords[0]
-        //             image.y -= old_coords[1]
+        //             // Find new coordinates
+        //             var new_coords = mapToItem(image, mouse.x, mouse.y)
+        //             var dx = new_coords.x - old_coords.x
+        //             var dy = new_coords.y - old_coords.y
+        //             // Apply translation to point
+        //             image.x += dx
+        //             image.y += dy
+        //             console.log("old:", old_coords)
+        //             console.log("new:", new_coords)
+        //             console.log("deltax", dx, "deltay", dy)
+        //             console.log()
         //         }
         //     }
         // }
