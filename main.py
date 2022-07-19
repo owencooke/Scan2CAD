@@ -56,8 +56,8 @@ class Backend(QObject):
     #FIXME: returning Python lists to QML was complicated, couldn't implement
     convertedMesh = Signal(str, bool, QVector3D, QVector3D)
 
-    captureRotations = Signal(bool, bool)
     displayCrop = Signal()
+    iterateContour = Signal(int, float)
     contourResult = Signal(float, float)
 
     displayAligned = Signal(QVector3D, float, float)
@@ -209,8 +209,8 @@ class Backend(QObject):
         self.threadpool.start(thread)
     
     def compareContoursThread(self):
-        otherdir = "C:/Users/owenc/Documents/LIMDAqtGUI/backend_resources/cropped/"
-        images = [otherdir+'cad_front.png', otherdir+'scan_front.png']
+        d = os.path.join(basedir,'backend_resources/cropped/')
+        images = [d+'cad_front.png', d+'scan_front.png']
         img0 = cv2.imread(images[0])
         img1 = cv2.imread(images[1])
         # Match image dimensions/aspect ratios
@@ -218,7 +218,6 @@ class Backend(QObject):
         dim0 = img0.shape
         dim1 = img1.shape
         if dim0[0] < dim1[0] and dim0[1] < dim1[1]:
-            # apply dimensions from img0 to img1 
             img1 = cv2.resize(img1, dim0[:2][::-1], interpolation = cv2.INTER_AREA)
         else:
             img0 = cv2.resize(img0, dim1[:2][::-1], interpolation = cv2.INTER_AREA)
@@ -234,18 +233,17 @@ class Backend(QObject):
         mod = cv2.Canny(mod, 10, 250)
         part_contour, hier = cv2.findContours(mod, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
-        # Attempt to match part's contours to the model's contours
-        # Lowest distance from matchShapes() indicates highest similarity
-        matches = {}
+        # Set parameter values for algorithm
         low_size = 0.5
         high_size = 4
         dist_thresh = 0.1
         dist_range = dist_thresh*min(img0.shape[0], img0.shape[1])
+        # Attempt to match part's contours to the model's contours
+        # Lowest distance from matchShapes() indicates highest similarity
+        matches = {}
         m_index = 0
-        p_matched = []
-        model_area = 0
-        i = 0
-        mask = np.zeros(img0.shape, dtype='uint8')
+        match_count = 0
+        d = os.path.join(basedir,'backend_resources/contours/')
         for m in model_contour:
             opdist = 100
             match_idx = 1e10
@@ -263,50 +261,17 @@ class Backend(QObject):
             # Store match indices and their optimized distance
             if match_idx != 1e10: # opdist < 3:
                 matches[m_index] = [match_idx, opdist]
-                if match_idx not in p_matched:
-                    p_matched.append(match_idx)
-
-            # Find biggest contour (largest outline of model)
-            a = cv2.contourArea(m)
-            if a > model_area:
-                model_area = a
             m_index += 1
-            #FIXME: DEBUGGING, for displaying the contours matched at each step
+
+            # Output contours with transparent bg
             try:
-                # mask = np.zeros(img0.shape, dtype='uint8')
-                cv2.drawContours(mask, m, -1, (255,255,255), 2)
-                cv2.drawContours(mask, part_contour[match_idx], -1, (0,0,255), 2)
-                cv2.imshow('0', img0)
-                cv2.imshow('1', img1)
-                cv2.imshow('mask', mask)
-                cv2.waitKey()
-                cv2.destroyAllWindows()  
-                cv2.imwrite('testing/mask' + str(i) + '.png', mask)
-                i += 1
+                mask = np.zeros((img0.shape[0], img0.shape[1], 4), img0.dtype)  
+                cv2.drawContours(mask, m, -1, (255,255,255,255), 2)
+                cv2.drawContours(mask, part_contour[match_idx], -1, (0,0,255,255), 2)
+                cv2.imwrite(d + 'mask' + str(match_count) + '.png', mask)
+                match_count += 1
             except TypeError:
                 pass
-
-        # Sweep initially unmatched part contours to determine if they should be matched
-        # or considered to be defects/errors in the final metric
-        for p_index in range(0, len(part_contour)):
-            if p_index not in p_matched: 
-                opdist = 1e10
-                m_index = 1e10
-                m_count = 0
-                for m in model_contour:
-                    # THRESHOLD: ONLY COMPARE THOSE SIMILAR IN POSITION/SIZE
-                    dx = abs(m[0][0][0] - part_contour[p_index][0][0][0])
-                    dy = abs(m[0][0][1] - part_contour[p_index][0][0][1])
-                    if (dx < dist_range) and (dy < dist_range) and (high_size*m.size > part_contour[p_index].size > low_size*m.size):
-                        dist = cv2.matchShapes(m, part_contour[p_index], cv2.CONTOURS_MATCH_I2, 0)
-                        if dist < opdist:
-                            opdist = dist
-                            m_index = m_count
-                    m_count += 1
-                # Store as match only if it's optimal distance is low enough (high similarity)
-                if m_index != 1e10 and opdist < 0.5:
-                    matches[m_index] += [p_index, opdist]
-                    p_matched.append(p_index)
 
         # Calculate average distance of all the quality matches
         dist = 0
@@ -319,17 +284,9 @@ class Backend(QObject):
         try: dist /= num_dists
         except ZeroDivisionError: dist = 1e10 # Arb. large, no matches
 
-        # Add error resulting from unmatched part contours
-        e_dist = 99 # (~1% using the distance formula)
-        err = 0
-        for p_index in range(len(part_contour)):
-            if p_index not in p_matched:
-                # Error: size of contour relative to size of whole image
-                err += (cv2.contourArea(part_contour[p_index]) / model_area) * e_dist
-        # Add error (higher dist = less similarity)
-        #dist += err
-        print("Smaller distance means higher similarity: {:.5f}".format(dist))
-        print("Percentage Given by 1/(1+dist): {:.3f}%".format(100/(1+dist)))
+        for c in range(match_count):
+            self.iterateContour.emit(c, 100/(1+matches[c][1]))
+            time.sleep(0.5)
         self.contourResult.emit(dist, 100/(1+dist))
 
 

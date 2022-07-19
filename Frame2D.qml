@@ -9,7 +9,7 @@ Item {
     property var views: ["FRONT", "TOP", "LEFT",
                         "REAR", "BOTTOM", "RIGHT"]
     property var urls: ["", "", "", "", "", ""]
-
+    
     function increment() {
         if (index < 5) {
             index += 1
@@ -29,12 +29,21 @@ Item {
         decrement()
     }
 
+    Connections {
+        target: backend
+        function onIterateContour(idx, percent) {
+            var img = "backend_resources/contours/mask" + idx + ".png"
+            contour.source = img
+            console.log(percent+"%")
+        }
+    }
+
     implicitHeight: 300
     implicitWidth: 300
     
     Rectangle {
         id: frame
-        anchors { top: parent.top; left: parent.left; right: parent.right; 
+        anchors { top: viewLabel.bottom; left: parent.left; right: parent.right; 
                     bottom: fileLayout.top; bottomMargin: 16}
         color: root.bgColor
         border.color: root.textColor
@@ -50,6 +59,16 @@ Item {
             height: parent.height * 0.8
             fillMode: Image.PreserveAspectFit
             source: urls[index]
+            cache: false
+        }
+        Image {
+            id: contour
+            anchors.fill: parent
+            anchors.margins: 16
+            // anchors.centerIn: parent
+            // x: 0; y: 0
+            height: parent.height * 0.8
+            fillMode: Image.PreserveAspectFit
             cache: false
         }
 
@@ -92,7 +111,7 @@ Item {
     Label {
         id: viewLabel
         anchors { horizontalCenter: parent.horizontalCenter;
-                    bottom: frame.top; bottomMargin: 8 }
+                    top: parent.top; bottomMargin: 8 }
         text: views[index]
         color: root.textColor
         font.family: titleFont.font.family
