@@ -3,7 +3,7 @@
 backend_resources/converted_mesh/
 backend_resources/captured_imgs/
 backend_resources/cropped/
-backend_resources/contours/
+#backend_resources/contours/
 
 *~
 *.autosave

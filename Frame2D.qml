@@ -36,6 +36,9 @@ Item {
             contour.source = img
             console.log(percent+"%")
         }
+        function onContourResult(dist, percent) {
+            contour.source = ''
+        }
     }
 
     implicitHeight: 300

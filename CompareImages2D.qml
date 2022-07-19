@@ -31,25 +31,9 @@ Item {
         }
     }
 
-    SplitView {
-        id: split
-        orientation: Qt.Vertical
-        anchors.fill: parent
-        handle: Rectangle {
-            id: handleDelegate
-            implicitHeight: 2
-            color: SplitHandle.pressed ? "#81e889"
-                : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
-            containmentMask: Item {
-                width: split.width
-                height: 10
-            }
-        }
-
         Rectangle {
             id: bg
-            SplitView.preferredHeight: parent.height * (3/4)
-            SplitView.minimumHeight: parent.height / 2
+            anchors.fill: parent
             color: root.bgColor
 
             RowLayout {
@@ -75,10 +59,11 @@ Item {
 
         Rectangle {
             id: menu
-            SplitView.fillHeight: false
-            SplitView.preferredHeight: 200
-            //SplitView.minimumHeight: parent.height / 5
+            anchors.bottom: parent.bottom
+            width: parent.width
+            implicitHeight: 100
             color: root.bgColor
+            clip:true
 
             ColumnLayout {
                 id: buttons
@@ -118,79 +103,5 @@ Item {
                 distText: "Absolute Difference \n Between Contours"
                 percentText: "Similarity Percentage"
             }
-
-            Flickable {
-                // Enables scrolling for menu
-                id: flickable
-                anchors { left: buttons.right; top: parent.top; bottom: parent.bottom;
-                        right: results.left; margins: 16}
-                clip: true
-                contentHeight: parent.height
-                contentWidth: imageRow.width
-                flickableDirection: Flickable.HorizontalFlick 
-                RowLayout {
-                    id: imageRow
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.bottom: parent.bottom
-                    spacing: 0
-
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask0.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask1.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask2.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask3.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask4.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask5.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask6.png"
-                    }Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask7.png"
-                    }
-                    Image {
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "mask12.png"
-                    }
-
-                }
-            }
         }
     }
-}
