@@ -132,12 +132,11 @@ Rectangle {
             color: root.secondaryText
             font.family: titleFont.font.family
             font.pointSize: 14
-            //visible: false
         }
 
         RotationTool {
             id: xRot
-            title: "X"
+            title: "X:"
             handleColour: "red"
             bgContainer: controls
             Layout.leftMargin: 15
@@ -148,7 +147,7 @@ Rectangle {
 
         RotationTool {
             id: yRot
-            title: "Y"
+            title: "Y:"
             handleColour: "green"
             bgContainer: controls
             Layout.leftMargin: 15
@@ -159,7 +158,7 @@ Rectangle {
 
         RotationTool {
             id: zRot
-            title: "Z"
+            title: "Z:"
             handleColour: "blue"
             bgContainer: controls
             Layout.leftMargin: 15
@@ -167,6 +166,22 @@ Rectangle {
                 target.eulerRotation.z = value
             }
         }
+
+        // Label {
+        //     text: "SCALE MODEL:"
+        //     color: root.secondaryText
+        //     font.family: titleFont.font.family
+        //     font.pointSize: 14
+        // }
+
+        // RotationTool {
+        //     handleColour: root.secondaryText
+        //     bgContainer: controls
+        //     Layout.leftMargin: 15
+        //     onSetEuler: function(value) {
+        //         target.scale = Qt.vector3d(5, value, 5)
+        //     }
+        // }
     }
 }
         

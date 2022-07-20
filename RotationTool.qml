@@ -17,7 +17,7 @@ RowLayout {
     spacing: 15
 
     Label {
-        text: title + ":"
+        text: title
         color: root.secondaryText
         font.family: titleFont.font.family
         font.pointSize: 14
