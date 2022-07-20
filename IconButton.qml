@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 
 Button {
-    id: control
     property string iconURL: ""
     property string tipText: ""
     

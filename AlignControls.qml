@@ -10,9 +10,9 @@ Item {
     property string fileColor: root.secondaryText
 
     RowLayout {
-        id: textRow
         spacing: 8
         anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+
         // Header
         Label {
             text: (scanFlag) ? "3D SCAN:" : "CAD MODEL:"
@@ -31,14 +31,8 @@ Item {
         }
 
         // Upload button
-        Button {
-            id: uploadButton
-            icon.source: "backend_resources/icons/upload-solid.svg"
-            icon.color: root.textColor
-            icon.width: 28
-            icon.height: 28
-            background: Rectangle {opacity: 0}
-
+        IconButton {
+            iconURL: "backend_resources/icons/upload-solid.svg"
             onClicked: dialog.open()
 
             FileDialog {
@@ -70,15 +64,10 @@ Item {
         anchors { right: parent.right; verticalCenter: parent.verticalCenter}
 
         // Toggle mesh visibility 
-        Button {
+        IconButton {
             property bool toggle: true
-
-            icon.source: (toggle) ? "backend_resources/icons/eye-solid.svg" :
+            iconURL: (toggle) ? "backend_resources/icons/eye-solid.svg" :
                             "backend_resources/icons/eye-slash-solid.svg"
-            icon.color: root.textColor
-            icon.height: 28; icon.width: 32
-            background: Rectangle { opacity: 0 }
-
             onClicked: {
                 toggle = !toggle 
                 if (scanFlag) {
@@ -90,16 +79,9 @@ Item {
         }
 
         // Button for opening color slider
-        Button {
-            id: colorToggle
-            icon.source: "backend_resources/icons/palette-solid.svg"
-            icon.color: root.textColor
-            icon.width: 28; icon.height: 28
-            background: Rectangle { opacity: 0 }
-
-            onClicked: {
-                colorSlider.visible = !colorSlider.visible
-            }
+        IconButton {
+            iconURL: "backend_resources/icons/palette-solid.svg"
+            onClicked: colorSlider.visible = !colorSlider.visible
         }
     }
 

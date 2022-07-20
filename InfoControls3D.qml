@@ -14,98 +14,67 @@ Rectangle {
     property bool scan
     property bool loading: false
 
-    color: root.bgColor
-
-    Button {
-        id: gridToggle
-        property bool toggle: false
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: 16
-        //checkable: true
-        highlighted: true
-        //flat: true
-        icon.source: toggle ? "backend_resources/icons/border-all-solid.svg" 
-                        : "backend_resources/icons/border-none-solid.svg"
-        icon.color: root.textColor
-        icon.width: 28; icon.height: 28
-        background: Rectangle { opacity: 0 }
-        onClicked: {
-            if (toggle) {
-                toggle = false
-            } else {
-                toggle = true
-            }
-        }
-    }
-
-    Button { 
-        id: colorToggle
-        anchors.top: gridToggle.top
-        anchors.right: gridToggle.left
-        anchors.rightMargin: 5
-        icon.source: "backend_resources/icons/palette-solid.svg"
-        icon.color: root.textColor
-        icon.width: 28; icon.height: 28
-        background: Rectangle { opacity: 0 }
-
-        onClicked: colorSlider.visible = !colorSlider.visible
-    }
-
-    ColorSlider {
-        id: colorSlider
-        anchors.verticalCenter: colorToggle.verticalCenter
-        anchors.right: colorToggle.left
-        anchors.rightMargin: 5
-        implicitHeight: 28
-        width: colorToggle.x - colorToggle.width - uploadButton.x - uploadButton.width
-        visible: false
-        value: (scan) ? 0.84 : 0.4
-    }
-
     // Rounding function for outputting dimensional values
     //FIXME: add support for different units (cm, m, etc.)
     function round1dec(num) {
         return (Math.round(num * 10) / 10).toFixed(1)
     }
 
+    color: root.bgColor
+
+    IconButton {
+        id: gridToggle
+        property bool toggle: false
+        anchors { top: parent.top; right: parent.right; margins: 16 }
+        iconURL: toggle ? "backend_resources/icons/border-all-solid.svg" 
+                        : "backend_resources/icons/border-none-solid.svg"
+        onClicked: toggle = !toggle
+    }
+
+    IconButton { 
+        id: colorToggle
+        anchors { top: gridToggle.top; right: gridToggle.left; rightMargin: 5 }
+        iconURL: "backend_resources/icons/palette-solid.svg"
+        onClicked: colorSlider.visible = !colorSlider.visible
+    }
+
+    ColorSlider {
+        id: colorSlider
+        anchors { verticalCenter: colorToggle.verticalCenter; 
+                right: colorToggle.left; rightMargin: 5 }
+        implicitHeight: 28
+        width: colorToggle.x - colorToggle.width - uploadButton.x - uploadButton.width
+        visible: false
+        value: (scan) ? 0.84 : 0.4
+    }
+
     ColumnLayout {
-        id: column
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.topMargin: 16
-        anchors.leftMargin: 24
-        anchors.right: parent.right
-        anchors.rightMargin: 48
+        anchors { top: parent.top; left: parent.left; topMargin: 16;
+                leftMargin: 24; right: parent.right; rightMargin: 48 }
         spacing: 16
 
         RowLayout {
             spacing: 16
+
             Label {
                 text: "FILENAME:"
                 color: root.secondaryText
                 font.family: titleFont.font.family
                 font.pointSize: 14
             }
+
             // Model filename
             Label {
                 text: title
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
-                //font.weight: Font.DemiBold
             }
 
             // Upload Button
-            Button {
+            IconButton {
                 id: uploadButton
-                icon.source: "backend_resources/icons/upload-solid.svg"
-                icon.color: root.textColor
-                icon.width: 28
-                icon.height: 28
-                background: Rectangle {
-                    opacity: 0
-                }
+                iconURL: "backend_resources/icons/upload-solid.svg"
                 onClicked: dialog.open()
 
                 FileDialog {
@@ -136,29 +105,26 @@ Rectangle {
                 font.family: titleFont.font.family
                 font.pointSize: 14
             }
+
             Label {
-                Layout.columnSpan: 2
                 text: "Length: " + round1dec(target.dimensions.x) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
-                //font.weight: Font.DemiBold
             }
+
             Label {
-                Layout.columnSpan: 2
                 text: "Width: " + round1dec(target.dimensions.y) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
-                //font.weight: Font.DemiBold
             }
+            
             Label {
-                Layout.columnSpan: 2
                 text: "Height: " + round1dec(target.dimensions.z) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
-                //font.weight: Font.DemiBold
             }
         }
 
