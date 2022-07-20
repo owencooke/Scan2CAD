@@ -150,6 +150,8 @@ class Backend(QObject):
         scan = os.path.join(basedir,"backend_resources/converted_mesh/scan_align.glb")
         trimesh.exchange.export.export_mesh(model, cad, file_type="glb")
         trimesh.exchange.export.export_mesh(scanned, scan, file_type="glb")
+        # scan = os.path.join(basedir,"backend_resources/converted_mesh/scan_align.stl")
+        # trimesh.exchange.export.export_mesh(scanned, scan, file_type="stl")
 
         # Calculate joint centroid
         x = (model.centroid[0] + scanned.centroid[0]) / 2

@@ -36,72 +36,40 @@ Item {
             anchors.fill: parent
             color: root.bgColor
 
-            RowLayout {
-                id: frameRow
-                anchors.centerIn: parent
-                spacing: bg.width / 9
+            Frame2D {
+                id: cadFrame
+                anchors { top: parent.top; left: parent.left; bottom: parent.bottom
+                        right: columnMenu.left; margins: 48 }
+            }
 
-                Frame2D {
-                    id: cadFrame
-                    Layout.alignment: Qt.AlignBottom
-                    Layout.preferredHeight: bg.height * (3/4)
-                    Layout.preferredWidth: bg.width/3
+            ColumnLayout {
+                id: columnMenu
+                anchors { top: cadFrame.top; topMargin: 40; 
+                        horizontalCenter: parent.horizontalCenter }
+                spacing: 16
+
+                ResultWidget {
+                    id: results
+                    Layout.alignment: Qt.AlignCenter
+                    distText: "Absolute Difference \n Between Contours"
+                    percentText: "Similarity Percentage"
                 }
 
-                Frame2D {
-                    id: scanFrame
+                Button {
                     Layout.alignment: Qt.AlignCenter
-                    Layout.preferredHeight: bg.height * (3/4)
-                    Layout.preferredWidth: bg.width/3
+                    text: "COMPARE CONTOURS"
+                    palette.buttonText: root.menuColor
+                    font.family: titleFont.font.family
+                    font.pointSize: 10.5
+                    background: Rectangle { color: root.textColor; radius: height/6 }
+                    onClicked: backend.compareContours()
                 }
             }
+
+            Frame2D {
+                id: scanFrame
+                anchors { top: parent.top; left: columnMenu.right; bottom: parent.bottom
+                        right: parent.right; margins: 48 }
+            }
         }
-
-        // Rectangle {
-        //     id: menu
-        //     anchors.bottom: parent.bottom
-        //     width: parent.width
-        //     implicitHeight: 100
-        //     color: root.bgColor
-        //     clip:true
-
-        //     ColumnLayout {
-        //         id: buttons
-        //         anchors.left: parent.left; anchors.leftMargin: 16
-        //         anchors.top: parent.top; anchors.topMargin: 16
-        //         spacing: 16
-        //         Button {
-        //             //anchors.centerIn: parent
-        //             text: "GET IMAGES FROM 3D VIEWER"
-        //             palette.buttonText: root.menuColor
-        //             font.family: titleFont.font.family
-        //             font.pointSize: 10.5
-        //             background: Rectangle { color: root.textColor; radius: height/6 }
-        //             onClicked: {
-        //                 root.index = 1
-        //                 compare2D.captureRotations(true, true)
-        //             }
-        //         }
-
-        //         Button {
-        //             //anchors.centerIn: parent
-        //             text: "COMPARE CONTOURS"
-        //             palette.buttonText: root.menuColor
-        //             font.family: titleFont.font.family
-        //             font.pointSize: 10.5
-        //             background: Rectangle { color: root.textColor; radius: height/6 }
-        //             onClicked: {
-        //                 backend.compareContours()
-        //             }
-        //         }
-        //     }
-
-        //     ResultWidget {
-        //         id: results
-        //         anchors { top: parent.top; topMargin: 16;
-        //                     right: parent.right; rightMargin: 16 }
-        //         distText: "Absolute Difference \n Between Contours"
-        //         percentText: "Similarity Percentage"
-        //     }
-        // }
     }
