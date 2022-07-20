@@ -17,8 +17,6 @@ View3D {
         axes.enableAxisLines = false
         light.targetColor = root.textColor
         //mesh.eulerRotation = Qt.vector3d(0,0,0)
-        // Image grabs happen asynchronously; must be structured like this
-        // in order for image rotations to update
         // Front
         view3D.grabToImage(function(result) {
             result.saveToFile("backend_resources/captured_imgs/" + fname + "_front.png")
@@ -55,9 +53,7 @@ View3D {
             })
         })
     }
-    //---------------------------------------------------//
-    // VISUALS: for creating the 3D scene                //
-    //---------------------------------------------------//
+
     camera: OrthographicCamera {
         id: camera
         property double zoomX: 1
@@ -75,9 +71,9 @@ View3D {
         camera: camera
     }
 
+    // Node storing model loaded by user
     RuntimeLoader {
         id: mesh
-        //source: (scan) ? root.scanSource : root.cadSource
         property vector3d dimensions
         eulerRotation: meshRotation
         scale:  Qt.vector3d(5,5,5)
@@ -91,29 +87,14 @@ View3D {
         clearColor: root.bgColor 
     }
 
-    //------------------------------------------------------//
-    // CONTROLS: giving the user control over the model     //
-    //------------------------------------------------------//
     MeshController {
+        id: mouse
         scene: view3D
         camera: camera
         target: mesh
         anchors.fill: parent
-        
-        onReleased: {mesh.eulerRotation = Qt.binding(function() { return meshRotation }); console.log('released')}
+        keysEnabled: false
     }
-
-    // Timer {
-    //     interval: 1000; running: true; repeat: true
-    //     onTriggered: {
-    //         //mesh.eulerRotation = Qt.binding(function() { return meshRotation })
-    //         console.log("Node pos:", mesh.position)
-    //         console.log("Cam pos:", camera.position)
-    //         console.log("Cam zoom:", camera.zoomX, camera.zoomY)
-    //         console.log()
-    //         console.log()
-    //     }
-    // }
 
     AxisHelper {
         id: axes

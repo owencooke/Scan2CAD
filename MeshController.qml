@@ -7,13 +7,12 @@ MouseArea {
     property Node target
     property Camera camera
     property View3D scene
-    property bool held: false
+    property alias keysEnabled: wasd.keysEnabled
     
     hoverEnabled: true
     preventStealing: true
 
     // CONTROL 1: Zoom in/out using mouse scroll wheel
-    /////////////////////////////////////////////////////////////////////////////
     onWheel: function(event) {
         var zoomFactor = 1.15
         // Get current screen to scene coordinates
@@ -38,20 +37,11 @@ MouseArea {
         }
     }
 
-    onPressed: function(mouse) {
-        held = true
-        while (held) {
-            console.log("pressed")
-        }
-    }
-
     // CONTROL 2: rotation of model using mouse dragging
     // (can also support WASDRF movement if keysEnabled set to "true")
-    /////////////////////////////////////////////////////////////////
     WasdController {
+        id: wasd
         controlledObject: target
-        //keysEnabled: false
-        //speed: 150
         xInvert: true
         yInvert: false
     }

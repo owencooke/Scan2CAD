@@ -1,13 +1,7 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
-import QtQuick3D
-import QtQuick3D.Helpers
-import QtQuick3D.AssetUtils
 
 Item {
-    id: page3D
     property string cadFile: "No model selected."
     property string scanFile: "No model selected."
 
@@ -72,7 +66,6 @@ Item {
             SplitView.minimumHeight: parent.height / 2
             nodeColor: cadControls.targetColor
             activateGrid: cadControls.gridChecked
-            meshRotation: cadControls.sliderRot
         }
 
         InfoControls3D {
@@ -80,7 +73,7 @@ Item {
             SplitView.fillHeight: false
             SplitView.preferredHeight: 200
             title: getFilename(root.cadFile)
-            target: cadScene.target //mesh
+            target: cadScene.target
             scan: false
         }
     }
@@ -122,7 +115,6 @@ Item {
             SplitView.minimumHeight: parent.height / 2
             nodeColor: scanControls.targetColor
             activateGrid: scanControls.gridChecked
-            meshRotation: scanControls.sliderRot
         }
 
         InfoControls3D {
@@ -130,12 +122,12 @@ Item {
             SplitView.fillHeight: false
             SplitView.preferredHeight: 200
             title: getFilename(root.scanFile)
-            target: scanScene.target //scan
+            target: scanScene.target
             scan: true
         }
     }
     //----------------------------------------------------------//
-    // Loading progess wheel for when model takes > 1s to load
+    // Loading progess wheel for model
     //----------------------------------------------------------//
     BusyText {
         id: loadIndicator

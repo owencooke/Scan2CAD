@@ -6,7 +6,6 @@ import QtQuick3D
 
 Rectangle {
     id: controls
-    property vector3d sliderRot: Qt.vector3d(xRot.getValue, yRot.getValue, zRot.getValue)
     property string title
     property Node target
     property string targetColor: Qt.hsla(colorSlider.value, 1, 0.5, 1)
@@ -142,8 +141,10 @@ Rectangle {
             handleColour: "red"
             bgContainer: controls
             Layout.leftMargin: 15
-            //visible: false
-        }
+            onSetEuler: function(value) {
+                target.eulerRotation.x = value
+            }
+         }
 
         RotationTool {
             id: yRot
@@ -151,7 +152,9 @@ Rectangle {
             handleColour: "green"
             bgContainer: controls
             Layout.leftMargin: 15
-            //visible: false
+            onSetEuler: function(value) {
+                target.eulerRotation.y = value
+            }
         }
 
         RotationTool {
@@ -160,7 +163,9 @@ Rectangle {
             handleColour: "blue"
             bgContainer: controls
             Layout.leftMargin: 15
-            //visible: false
+            onSetEuler: function(value) {
+                target.eulerRotation.z = value
+            }
         }
     }
 }

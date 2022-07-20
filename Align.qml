@@ -48,12 +48,15 @@ Item {
         switch(mode) {
             case "CAD":
                 userControl.target = cad;
+                userControl.keysEnabled = true;
                 break;
             case "SCAN":
                 userControl.target = scan;
+                userControl.keysEnabled = true;
                 break;
             case "CAMERA":
                 userControl.target = camera;
+                userControl.keysEnabled = false;
                 break;
         }
     }
@@ -124,6 +127,7 @@ Item {
             scene: view3D
             camera: camera
             target: camera
+            keysEnabled: false
         }
 
         AxisHelper {

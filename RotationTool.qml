@@ -8,16 +8,16 @@ RowLayout {
     property string title
     property string handleColour
     property Item bgContainer
-    // rows: 2; //rowSpacing: 15
-    // columns: 2; columnSpacing: 20
-    spacing: 15
+    signal setEuler(double value)
+    
     function zeroTo360(val) {
         return ((val % 360) + 360) % 360
     }
 
+    spacing: 15
+
     Label {
-        //Layout.columnSpan: 2
-        text: title + ":" //"ROTATE " + title + ":"
+        text: title + ":"
         color: root.secondaryText
         font.family: titleFont.font.family
         font.pointSize: 14
@@ -25,12 +25,10 @@ RowLayout {
 
     Slider {
         id: slider
-        //Layout.fillWidth: true
         Layout.preferredWidth: bgContainer.width * (2/3)
         Layout.minimumWidth: 40
         Layout.maximumWidth: 350
         Layout.alignment: Qt.AlignCenter
-        //Layout.leftMargin: 15
         from: 0
         value: parseFloat(field.text)
         to: 360
@@ -43,7 +41,7 @@ RowLayout {
             width: slider.availableWidth
             height: implicitHeight
             radius: 2
-            color: root.secondaryText
+            color: root.textColor
         }
 
         handle: Rectangle {
@@ -56,6 +54,7 @@ RowLayout {
 
         onMoved: {
             field.text = Math.round(slider.value) + "°"
+            setEuler(slider.value)
         }
     }
 
