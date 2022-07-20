@@ -47,7 +47,7 @@ Item {
     Rectangle {
         id: frame
         anchors { top: viewLabel.bottom; left: parent.left; right: parent.right; 
-                    bottom: fileLayout.top; bottomMargin: 16}
+                    bottom: buttonLayout.top; bottomMargin: 8}
         color: root.bgColor
         border.color: root.textColor
         border.width: 2
@@ -121,53 +121,45 @@ Item {
         font.pointSize: 24
     }
 
-    Button {
+    IconButton {
         anchors { left: frame.left; verticalCenter: viewLabel.verticalCenter }
         icon.source: "backend_resources/icons/square-caret-left-solid.svg"
-        icon.color: root.textColor
-        icon.width: 28
-        icon.height: 28
-        background: Rectangle { opacity: 0 }
         onClicked: decrement()
     }
 
-    Button {
+    IconButton {
         anchors { right: frame.right; verticalCenter: viewLabel.verticalCenter }
-        icon.source: "backend_resources/icons/square-caret-right-solid.svg"
-        icon.color: root.textColor
-        icon.width: 28
-        icon.height: 28
-        background: Rectangle { opacity: 0 }
+        iconURL: "backend_resources/icons/square-caret-right-solid.svg"
         onClicked: increment()
     }
 
     RowLayout {
-        id: fileLayout
+        id: buttonLayout
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        spacing: 16
-        Label {
-            text: "FILENAME:"
-            color: root.secondaryText
-            font.family: titleFont.font.family
-            font.pointSize: 14
-        }
-        // Model filename
-        Label {
-            text: "No image selected."
-            color: root.secondaryText
-            font.family: regFont.font.family
-            font.pointSize: 12
+        anchors.bottom: parent.bottom 
+        spacing: 24
+
+        // Capture from 3D viewer 
+        IconButton {
+            text: "GET FROM 3D VIEWER"
+            tipText: "Get from 3D viewer"
+            iconURL: "backend_resources/icons/cube-solid.svg"
+            display: (frame.width > 350) ? AbstractButton.TextBesideIcon : AbstractButton.IconOnly
+
+            onClicked: {
+                root.index = 1
+                compare2D.captureRotations(true, true)
+            }
         }
 
-        // Upload Button
-        Button {
+        // Upload images manually
+        IconButton {
             id: uploadButton
-            icon.source: "backend_resources/icons/upload-solid.svg"
-            icon.color: root.textColor
-            icon.width: 28
-            icon.height: 28
-            background: Rectangle { opacity: 0 }
+            text: "UPLOAD MANUALLY"
+            tipText: "Upload manually"
+            iconURL: "backend_resources/icons/upload-solid.svg"
+            display: (frame.width > 350) ? AbstractButton.TextBesideIcon : AbstractButton.IconOnly
+
             onClicked: dialog.open()
 
             FileDialog {
