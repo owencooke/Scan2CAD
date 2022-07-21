@@ -205,18 +205,16 @@ class Backend(QObject):
             cv2.imwrite(os.path.join(basedir,'backend_resources/cropped/'+ filename + '.png'), crop)
         self.displayCrop.emit()
     
-    @Slot()
-    def compareContours(self):
-        thread = Thread(self.compareContoursThread)
+    @Slot(str, str)
+    def compareContours(self, cad_img, scan_img):
+        thread = Thread(self.compareContoursThread, cad_img, scan_img)
         self.threadpool.start(thread)
     
-    def compareContoursThread(self):
-        d = os.path.join(basedir,'backend_resources/cropped/')
-        images = [d+'cad_front.png', d+'scan_front.png']
-        img0 = cv2.imread(images[0])
-        img1 = cv2.imread(images[1])
-        # Match image dimensions/aspect ratios
-        # FIXME: standardize a height or width for every use
+    def compareContoursThread(self, cad_img, scan_img):
+        # Load images
+        img0 = cv2.imread(cad_img)
+        img1 = cv2.imread(scan_img)
+
         dim0 = img0.shape
         dim1 = img1.shape
         if dim0[0] < dim1[0] and dim0[1] < dim1[1]:
@@ -244,7 +242,6 @@ class Backend(QObject):
         # Lowest distance from matchShapes() indicates highest similarity
         matches = {}
         m_index = 0
-        match_count = 0
         d = os.path.join(basedir,'backend_resources/contours/')
         for m in model_contour:
             opdist = 100
@@ -263,17 +260,16 @@ class Backend(QObject):
             # Store match indices and their optimized distance
             if match_idx != 1e10: # opdist < 3:
                 matches[m_index] = [match_idx, opdist]
-            m_index += 1
 
             # Output contours with transparent bg
             try:
                 mask = np.zeros((img0.shape[0], img0.shape[1], 4), img0.dtype)  
                 cv2.drawContours(mask, m, -1, (255,255,255,255), 2)
                 cv2.drawContours(mask, part_contour[match_idx], -1, (0,0,255,255), 2)
-                cv2.imwrite(d + 'mask' + str(match_count) + '.png', mask)
-                match_count += 1
+                cv2.imwrite(d + 'mask' + str(m_index) + '.png', mask)
             except TypeError:
                 pass
+            m_index += 1
 
         # Calculate average distance of all the quality matches
         dist = 0
@@ -286,7 +282,7 @@ class Backend(QObject):
         try: dist /= num_dists
         except ZeroDivisionError: dist = 1e10 # Arb. large, no matches
 
-        for c in range(match_count):
+        for c in matches.keys():
             self.iterateContour.emit(c, 100/(1+matches[c][1]))
             time.sleep(0.5)
         self.contourResult.emit(dist, 100/(1+dist))
