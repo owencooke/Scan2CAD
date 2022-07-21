@@ -43,11 +43,18 @@ Contains the following types of attributes/methods:
     Threads: backend functions with long runtime must be called as threads
 '''
 class Backend(QObject):
-    def __init__(self):
+    def __init__(self, engine):
         super().__init__()
+        self.engine = engine
         self.threadpool = QThreadPool()
         self.threadpool.setExpiryTimeout(1)
-        
+
+    # Class methods
+    # Get rid of QML's "file:///" prefix for urls
+    def checkURL(self, file):
+        s_list = file.split('file:///')
+        return s_list[len(s_list) - 1]
+    
     # ------------------------------------------------------------------#
     # Signals: (from Python to QML)
     # Corresponding signal handler in QML is "onSignalname". First letter 
@@ -68,6 +75,9 @@ class Backend(QObject):
     # The backend functions ran after clicking buttons, etc.
     # *If function runtime is long, run in seperate thread 
     # ------------------------------------------------------------------#
+    @Slot()
+    def clearCache(self):
+        self.engine.clearComponentCache()
     # Load model into the 3D viewer page of GUI
     @Slot(str, str, bool)
     def loadMesh(self, QMLpage, selectedFile, scanFlag):
@@ -78,7 +88,7 @@ class Backend(QObject):
     def loadMeshThread(self, QMLpage, selectedFile, scanFlag):
         # RuntimeLoader only compatible with .glb or .gltf 
         # Also used to obtain centroid and dimensions of models
-        loaded = trimesh.load(selectedFile.split('file:///')[1], force='mesh')
+        loaded = trimesh.load(self.checkURL(selectedFile), force='mesh')
 
         # ELIMINATE SMALL NON-CONNECTED COMPONENTS (errors from scan)
         try: 
@@ -122,8 +132,8 @@ class Backend(QObject):
 
     def alignMeshesThread(self, cad, scan, cadMatrix, scanMatrix, scale):
         # Load each file into trimesh
-        model = trimesh.load(cad.split('file:///')[1], force='mesh')
-        scanned = trimesh.load(scan.split('file:///')[1], force='mesh')
+        model = trimesh.load(self.checkURL(cad), force='mesh')
+        scanned = trimesh.load(self.checkURL(scan), force='mesh')
 
         # Apply intial transformation matrices from GUI
         cadMatrix = np.array(cadMatrix.copyDataTo()).reshape(4,4)
@@ -212,8 +222,8 @@ class Backend(QObject):
     
     def compareContoursThread(self, cad_img, scan_img):
         # Load images
-        img0 = cv2.imread(cad_img)
-        img1 = cv2.imread(scan_img)
+        img0 = cv2.imread(self.checkURL(cad_img))
+        img1 = cv2.imread(self.checkURL(scan_img))
 
         dim0 = img0.shape
         dim1 = img1.shape
@@ -293,7 +303,7 @@ if __name__ == "__main__":
     app.setWindowIcon(QIcon(os.path.join(basedir, 'backend_resources/icons/limda_icon.png')))
     engine = QQmlApplicationEngine()
     # Connect Python Backend class to QML files
-    backend = Backend()
+    backend = Backend(engine)
     engine.rootContext().setContextProperty("backend", backend)
     # Load main QML file and begin event loop
     engine.load(os.fspath(Path(__file__).resolve().parent / "main.qml"))

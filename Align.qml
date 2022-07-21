@@ -49,14 +49,25 @@ Item {
             case "CAD":
                 userControl.target = cad;
                 userControl.keysEnabled = true;
+                cadButton.background.color = Qt.binding(function() { return root.selectedColor })
+                cameraButton.background.color =  Qt.binding(function() { return root.textColor })
+                scanButton.background.color = Qt.binding(function() { return root.textColor })
                 break;
+
             case "SCAN":
                 userControl.target = scan;
                 userControl.keysEnabled = true;
+                cadButton.background.color = Qt.binding(function() { return root.textColor })
+                cameraButton.background.color = Qt.binding(function() { return root.textColor })
+                scanButton.background.color = Qt.binding(function() { return root.selectedColor })
                 break;
+
             case "CAMERA":
                 userControl.target = camera;
                 userControl.keysEnabled = false;
+                cadButton.background.color = Qt.binding(function() { return root.textColor })
+                cameraButton.background.color = Qt.binding(function() { return root.selectedColor })
+                scanButton.background.color = Qt.binding(function() { return root.textColor })
                 break;
         }
     }
@@ -153,15 +164,16 @@ Item {
         color: root.menuColor
         anchors.top: parent.top; anchors.topMargin: 16
         anchors.left: parent.left; anchors.leftMargin: 16
-        implicitHeight: 300
-        implicitWidth: 500
+        height: meshColumn.height * 1.5
+        width: meshColumn.width * 1.25
         radius: height/6
 
         ColumnLayout {
+            id: meshColumn
             spacing: 16
-            //anchors.centerIn: parent
-            anchors { left: parent.left; right: parent.right; 
-                    verticalCenter: parent.verticalCenter; margins: 24 }
+            anchors.centerIn: parent
+            // anchors { left: parent.left; right: parent.right; 
+            //         verticalCenter: parent.verticalCenter; margins: 24 }
 
             AlignControls {
                 id: cadControl
@@ -180,12 +192,13 @@ Item {
             RowLayout {
                 spacing: 16
                 Label {
-                    text: "MOUSE CONTROLS:"
+                    text: "CONTROLLING:"
                     color: root.secondaryText
                     font.family: titleFont.font.family
                     font.pointSize: 12
                 }
                 Button {
+                    id: cadButton
                     text: "CAD"
                     palette.buttonText: root.menuColor
                     font.family: titleFont.font.family
@@ -194,6 +207,7 @@ Item {
                     onClicked: setMouseControl(text)
                 }
                 Button {
+                    id: scanButton
                     text: "SCAN"
                     palette.buttonText: root.menuColor
                     font.family: titleFont.font.family
@@ -202,15 +216,33 @@ Item {
                     onClicked: setMouseControl(text)
                 }
                 Button {
+                    id: cameraButton
                     text: "CAMERA"
                     palette.buttonText: root.menuColor
                     font.family: titleFont.font.family
                     font.pointSize: 10.5
-                    background: Rectangle { color: root.textColor; radius: height/6 }
+                    background: Rectangle { color: root.selectedColor; radius: height/6 }
                     onClicked: setMouseControl(text)
                 }
             }
+        }
+    }
 
+    Rectangle {
+        anchors { top: parent.top; left: topMenu.right; margins: 16 }
+        opacity: 0.9
+        color: root.menuColor
+        height: algoColumn.height * 1.5
+        width: algoColumn.width * 1.25
+        radius: height/6
+
+        ColumnLayout {
+            id: algoColumn
+            spacing: 8
+            // anchors { //left: parent.left; right: parent.right; 
+            //         verticalCenter: parent.verticalCenter; margins: 24 }
+            anchors.centerIn: parent
+            
             RowLayout {
                 spacing: 16
                 //Layout.alignment: Qt.AlignCenter
@@ -218,7 +250,7 @@ Item {
                     text: "CORRECTIVE SCALING:"
                     color: root.secondaryText
                     font.family: titleFont.font.family
-                    font.pointSize: 12
+                    font.pointSize: 11
                 }
                 Button {
                     id: toggleScale
@@ -226,9 +258,10 @@ Item {
                     text: (toggle) ? "ENABLED" : "DISABLED"
                     palette.buttonText: root.menuColor
                     font.family: titleFont.font.family
-                    font.pointSize: 10.5
+                    font.pointSize: 10
                     //font.weight: Font.DemiBold
-                    background: Rectangle { color: root.textColor; radius: height/6 }
+                    background: Rectangle { radius: height/6;
+                                color: (parent.toggle) ? root.selectedColor : root.textColor;}
                     onClicked: toggle = !toggle
                 }
             }
@@ -239,7 +272,7 @@ Item {
                 text: "ALIGN AND COMPARE MESHES" //"Align Scan to CAD"
                 font.family: titleFont.font.family
                 font.weight: Font.DemiBold
-                font.pointSize: 13
+                font.pointSize: 11
                 palette.buttonText: root.menuColor
                 background: Rectangle { color: root.textColor; radius: height/6 }
                 onClicked: {

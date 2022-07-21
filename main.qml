@@ -17,6 +17,7 @@ ApplicationWindow {
     property string secondaryText: "#9e9d9d"
     property string menuColor: "#303030"
     property string bgColor: "#252525"
+    property string selectedColor: "#7BCCDF"
     // Fonts, loaded from local file
     FontLoader { id: regFont; source: "backend_resources/fonts/Inter-Regular.otf" }
     FontLoader { id: titleFont; source: "backend_resources/fonts/Inter-Black.otf" }
@@ -43,6 +44,7 @@ ApplicationWindow {
         HomePage {} // index = 0
         Model3D {} // ...
         CompareImages2D { id: compare2D } 
+        //Edit {}
         Align {}
         Settings {}
     }

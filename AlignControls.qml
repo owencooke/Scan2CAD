@@ -8,7 +8,7 @@ Item {
     property string sliderColor: (scanFlag) ? Qt.hsla(colorSlider.value, 1, 0.5, 1)
                                     : Qt.hsla(0, 0, colorSlider.value, 1)
     property string fileColor: root.secondaryText
-
+    
     RowLayout {
         spacing: 8
         anchors { left: parent.left; verticalCenter: parent.verticalCenter }
@@ -68,6 +68,7 @@ Item {
             property bool toggle: true
             iconURL: (toggle) ? "backend_resources/icons/eye-solid.svg" :
                             "backend_resources/icons/eye-slash-solid.svg"
+            icon.width: 32
             onClicked: {
                 toggle = !toggle 
                 if (scanFlag) {

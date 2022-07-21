@@ -41,6 +41,7 @@ Rectangle {
                 root.secondaryText = "#4f4f4f"
                 root.menuColor = "#bfbfbf"
                 root.bgColor = "#e8e8e8"
+                root.selectedColor = "#2D209E"
             }
         }
 
@@ -57,6 +58,7 @@ Rectangle {
                 root.secondaryText = "#9e9d9d"
                 root.menuColor = "#303030"
                 root.bgColor = "#252525"
+                root.selectedColor = "#7BCCDF"
             }
         }
     }
