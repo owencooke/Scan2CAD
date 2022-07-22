@@ -8,6 +8,7 @@ Rectangle {
     property string sliderColor: (scanFlag) ? Qt.hsla(colorSlider.value, 1, 0.5, 1)
                                     : Qt.hsla(0, 0, colorSlider.value, 1)
     property string fileColor: root.textColor //root.secondaryText
+    property string buttonColor: root.textColor
 
     function closeTools(prev_state) {
         // Close all tool containers
@@ -21,7 +22,7 @@ Rectangle {
     opacity: 0.9
     color: root.menuColor
     implicitHeight: 64
-    width: textRow.width + title.width + dropButton.width + 75
+    width: textRow.width + targetButton.width + dropButton.width + 64
 
     RowLayout {
         id: textRow
@@ -64,13 +65,15 @@ Rectangle {
         }
     }
 
-    Label {
-        id: title
-        anchors { left: dropButton.right; verticalCenter: parent.verticalCenter; margins: 8}
+    Button {
+        id: targetButton
+        anchors { left: dropButton.right; verticalCenter: parent.verticalCenter; margins: 8 }
         text: (scanFlag) ? "SCAN" : "CAD"
-        color: root.textColor
+        palette.buttonText: buttonColor
         font.family: titleFont.font.family
-        font.pointSize: 24
+        font.pointSize: 18
+        background: Rectangle { color: root.menuColor; radius: height/6 }
+        onClicked: align.setMouseControl(text)
     }
 
     IconButton {

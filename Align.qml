@@ -49,25 +49,25 @@ Item {
             case "CAD":
                 userControl.target = cad;
                 userControl.keysEnabled = true;
-                cadButton.background.color = Qt.binding(function() { return root.selectedColor })
-                cameraButton.background.color =  Qt.binding(function() { return root.textColor })
-                scanButton.background.color = Qt.binding(function() { return root.textColor })
+                cadControl.buttonColor = Qt.binding(function() { return root.selectedColor })
+                cameraButton.palette.buttonText =  Qt.binding(function() { return root.textColor })
+                scanControl.buttonColor = Qt.binding(function() { return root.textColor })
                 break;
 
             case "SCAN":
                 userControl.target = scan;
                 userControl.keysEnabled = true;
-                cadButton.background.color = Qt.binding(function() { return root.textColor })
-                cameraButton.background.color = Qt.binding(function() { return root.textColor })
-                scanButton.background.color = Qt.binding(function() { return root.selectedColor })
+                cadControl.buttonColor = Qt.binding(function() { return root.textColor })
+                cameraButton.palette.buttonText = Qt.binding(function() { return root.textColor })
+                scanControl.buttonColor = Qt.binding(function() { return root.selectedColor })
                 break;
 
             case "CAMERA":
                 userControl.target = camera;
                 userControl.keysEnabled = false;
-                cadButton.background.color = Qt.binding(function() { return root.textColor })
-                cameraButton.background.color = Qt.binding(function() { return root.selectedColor })
-                scanButton.background.color = Qt.binding(function() { return root.textColor })
+                cadControl.buttonColor = Qt.binding(function() { return root.textColor })
+                cameraButton.palette.buttonText= Qt.binding(function() { return root.selectedColor })
+                scanControl.buttonColor = Qt.binding(function() { return root.textColor })
                 break;
         }
     }
@@ -158,90 +158,53 @@ Item {
     //-------------------------------------------------//
     // Menu for uploading files and button controls
     //-------------------------------------------------//
+
     AlignControls {
         id: cadControl
-        anchors.top: parent.top; anchors.topMargin: 16
-        anchors.left: parent.left; anchors.leftMargin: 16
+        anchors { top: parent.top; topMargin: 16;
+                left: parent.left; leftMargin: 16 }
         scanFlag: false
     }
+
     AlignControls {
         id: scanControl
-        anchors.top: parent.top; anchors.topMargin: 16
-        anchors.left: cadControl.right; anchors.leftMargin: 16
+        anchors { top: parent.top; topMargin: 16;
+                left: cameraButton.right; leftMargin: 16 }
         scanFlag: true
     }
-    // Rectangle {
-    //     id: topMenu
-    //     opacity: 0.9
-    //     color: root.menuColor
-    //     anchors.top: parent.top; anchors.topMargin: 16
-    //     anchors.left: parent.left; anchors.leftMargin: 16
-    //     height: meshColumn.height * 1.5
-    //     width: meshColumn.width * 1.25
-    //     radius: height/6
 
-    //     ColumnLayout {
-    //         id: meshColumn
-    //         spacing: 16
-    //         anchors.centerIn: parent
-    //         // anchors { left: parent.left; right: parent.right; 
-    //         //         verticalCenter: parent.verticalCenter; margins: 24 }
+        
+    Button {
+        id: cameraButton
+        anchors { verticalCenter: scanControl.verticalCenter
+            left: cadControl.right; leftMargin: 16 }
+        text: "CAMERA"
+        palette.buttonText: root.selectedColor
+        font.family: titleFont.font.family
+        font.pointSize: 18
+        background: Rectangle { opacity: 0.9; color: root.menuColor; radius: height/6 } 
+        onClicked: setMouseControl(text)
 
-    //         // AlignControls {
-    //         //     id: cadControl
-    //         //     scanFlag: false
-    //         //     Layout.fillWidth: true
-    //         //     Layout.preferredHeight: 28
-    //         // }
+        Label {
+            anchors { top: parent.bottom; horizontalCenter: parent.horizontalCenter }
+            text: ""
+            color: root.secondaryText
+            font.family: regFont.font.family
+            font.pointSize: 10
+        }
 
-    //         // AlignControls {
-    //         //     id: scanControl
-    //         //     scanFlag: true
-    //         //     Layout.fillWidth: true
-    //         //     Layout.preferredHeight: 28
-    //         // }
-
-    //         RowLayout {
-    //             spacing: 16
-    //             Label {
-    //                 text: "CONTROLLING:"
-    //                 color: root.secondaryText
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 12
-    //             }
-    //             Button {
-    //                 id: cadButton
-    //                 text: "CAD"
-    //                 palette.buttonText: root.menuColor
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 10.5
-    //                 background: Rectangle { color: root.textColor; radius: height/6 }
-    //                 onClicked: setMouseControl(text)
-    //             }
-    //             Button {
-    //                 id: scanButton
-    //                 text: "SCAN"
-    //                 palette.buttonText: root.menuColor
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 10.5
-    //                 background: Rectangle { color: root.textColor; radius: height/6 }
-    //                 onClicked: setMouseControl(text)
-    //             }
-    //             Button {
-    //                 id: cameraButton
-    //                 text: "CAMERA"
-    //                 palette.buttonText: root.menuColor
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 10.5
-    //                 background: Rectangle { color: root.selectedColor; radius: height/6 }
-    //                 onClicked: setMouseControl(text)
-    //             }
-    //         }
-    //     }
-    // }
+        Label {
+            anchors { bottom: parent.top; horizontalCenter: parent.horizontalCenter }
+            text: "Mouse controls:"
+            color: root.secondaryText
+            font.family: regFont.font.family
+            font.pointSize: 10
+        }
+    }
 
     Rectangle {
-        anchors { top: parent.top; right: results.left; margins: 16 }
+        //anchors { top: parent.top; right: results.left; margins: 16 }
+        anchors { bottom: parent.bottom; left: parent.left; margins: 16 }
         opacity: 0.9
         color: root.menuColor
         height: algoColumn.height * 1.5
@@ -255,6 +218,43 @@ Item {
             //         verticalCenter: parent.verticalCenter; margins: 24 }
             anchors.centerIn: parent
             
+            RowLayout {
+                spacing: 16
+                Label {
+                    text: "CONTROLLING:"
+                    color: root.secondaryText
+                    font.family: titleFont.font.family
+                    font.pointSize: 12
+                }
+                Button {
+                    id: cadButton
+                    text: "CAD"
+                    palette.buttonText: root.menuColor
+                    font.family: titleFont.font.family
+                    font.pointSize: 10.5
+                    background: Rectangle { color: root.textColor; radius: height/6 }
+                    onClicked: setMouseControl(text)
+                }
+                Button {
+                    id: scanButton
+                    text: "SCAN"
+                    palette.buttonText: root.menuColor
+                    font.family: titleFont.font.family
+                    font.pointSize: 10.5
+                    background: Rectangle { color: root.textColor; radius: height/6 }
+                    onClicked: setMouseControl(text)
+                }
+                Button {
+                    //id: cameraButton
+                    text: "CAMERA"
+                    palette.buttonText: root.menuColor
+                    font.family: titleFont.font.family
+                    font.pointSize: 10.5
+                    background: Rectangle { color: root.selectedColor; radius: height/6 }
+                    onClicked: setMouseControl(text)
+                }
+            }
+
             RowLayout {
                 spacing: 16
                 //Layout.alignment: Qt.AlignCenter
