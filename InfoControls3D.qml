@@ -138,7 +138,6 @@ Rectangle {
             id: xRot
             title: "X:"
             handleColour: "red"
-            bgContainer: controls
             Layout.leftMargin: 15
             onSetEuler: function(value) {
                 target.eulerRotation.x = value
@@ -149,7 +148,6 @@ Rectangle {
             id: yRot
             title: "Y:"
             handleColour: "green"
-            bgContainer: controls
             Layout.leftMargin: 15
             onSetEuler: function(value) {
                 target.eulerRotation.y = value
@@ -160,7 +158,6 @@ Rectangle {
             id: zRot
             title: "Z:"
             handleColour: "blue"
-            bgContainer: controls
             Layout.leftMargin: 15
             onSetEuler: function(value) {
                 target.eulerRotation.z = value

@@ -158,78 +158,90 @@ Item {
     //-------------------------------------------------//
     // Menu for uploading files and button controls
     //-------------------------------------------------//
-    Rectangle {
-        id: topMenu
-        opacity: 0.9
-        color: root.menuColor
+    AlignControls {
+        id: cadControl
         anchors.top: parent.top; anchors.topMargin: 16
         anchors.left: parent.left; anchors.leftMargin: 16
-        height: meshColumn.height * 1.5
-        width: meshColumn.width * 1.25
-        radius: height/6
-
-        ColumnLayout {
-            id: meshColumn
-            spacing: 16
-            anchors.centerIn: parent
-            // anchors { left: parent.left; right: parent.right; 
-            //         verticalCenter: parent.verticalCenter; margins: 24 }
-
-            AlignControls {
-                id: cadControl
-                scanFlag: false
-                Layout.fillWidth: true
-                Layout.preferredHeight: 28
-            }
-
-            AlignControls {
-                id: scanControl
-                scanFlag: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: 28
-            }
-
-            RowLayout {
-                spacing: 16
-                Label {
-                    text: "CONTROLLING:"
-                    color: root.secondaryText
-                    font.family: titleFont.font.family
-                    font.pointSize: 12
-                }
-                Button {
-                    id: cadButton
-                    text: "CAD"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.textColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-                Button {
-                    id: scanButton
-                    text: "SCAN"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.textColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-                Button {
-                    id: cameraButton
-                    text: "CAMERA"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.selectedColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-            }
-        }
+        scanFlag: false
     }
+    AlignControls {
+        id: scanControl
+        anchors.top: parent.top; anchors.topMargin: 16
+        anchors.left: cadControl.right; anchors.leftMargin: 16
+        scanFlag: true
+    }
+    // Rectangle {
+    //     id: topMenu
+    //     opacity: 0.9
+    //     color: root.menuColor
+    //     anchors.top: parent.top; anchors.topMargin: 16
+    //     anchors.left: parent.left; anchors.leftMargin: 16
+    //     height: meshColumn.height * 1.5
+    //     width: meshColumn.width * 1.25
+    //     radius: height/6
+
+    //     ColumnLayout {
+    //         id: meshColumn
+    //         spacing: 16
+    //         anchors.centerIn: parent
+    //         // anchors { left: parent.left; right: parent.right; 
+    //         //         verticalCenter: parent.verticalCenter; margins: 24 }
+
+    //         // AlignControls {
+    //         //     id: cadControl
+    //         //     scanFlag: false
+    //         //     Layout.fillWidth: true
+    //         //     Layout.preferredHeight: 28
+    //         // }
+
+    //         // AlignControls {
+    //         //     id: scanControl
+    //         //     scanFlag: true
+    //         //     Layout.fillWidth: true
+    //         //     Layout.preferredHeight: 28
+    //         // }
+
+    //         RowLayout {
+    //             spacing: 16
+    //             Label {
+    //                 text: "CONTROLLING:"
+    //                 color: root.secondaryText
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 12
+    //             }
+    //             Button {
+    //                 id: cadButton
+    //                 text: "CAD"
+    //                 palette.buttonText: root.menuColor
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 10.5
+    //                 background: Rectangle { color: root.textColor; radius: height/6 }
+    //                 onClicked: setMouseControl(text)
+    //             }
+    //             Button {
+    //                 id: scanButton
+    //                 text: "SCAN"
+    //                 palette.buttonText: root.menuColor
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 10.5
+    //                 background: Rectangle { color: root.textColor; radius: height/6 }
+    //                 onClicked: setMouseControl(text)
+    //             }
+    //             Button {
+    //                 id: cameraButton
+    //                 text: "CAMERA"
+    //                 palette.buttonText: root.menuColor
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 10.5
+    //                 background: Rectangle { color: root.selectedColor; radius: height/6 }
+    //                 onClicked: setMouseControl(text)
+    //             }
+    //         }
+    //     }
+    // }
 
     Rectangle {
-        anchors { top: parent.top; left: topMenu.right; margins: 16 }
+        anchors { top: parent.top; right: results.left; margins: 16 }
         opacity: 0.9
         color: root.menuColor
         height: algoColumn.height * 1.5

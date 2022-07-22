@@ -7,7 +7,6 @@ RowLayout {
     property alias setValue: field.text
     property string title
     property string handleColour
-    property Item bgContainer
     signal setEuler(double value)
     
     function zeroTo360(val) {
@@ -20,14 +19,12 @@ RowLayout {
         text: title
         color: root.secondaryText
         font.family: titleFont.font.family
-        font.pointSize: 14
+        font.pointSize: 12
     }
 
     Slider {
         id: slider
-        Layout.preferredWidth: bgContainer.width * (2/3)
-        Layout.minimumWidth: 40
-        Layout.maximumWidth: 350
+        Layout.fillWidth: true
         Layout.alignment: Qt.AlignCenter
         from: 0
         value: parseFloat(field.text)
@@ -66,7 +63,7 @@ RowLayout {
         text: "0°"
         horizontalAlignment: TextInput.AlignHCenter
         font.family: regFont.font.family
-        font.pointSize: 14
+        font.pointSize: 12
         background: Rectangle {
             y: field.height - height - field.bottomPadding
             color: root.textColor

@@ -44,8 +44,8 @@ ApplicationWindow {
         HomePage {} // index = 0
         Model3D {} // ...
         CompareImages2D { id: compare2D } 
-        //Edit {}
-        Align {}
+        LiveEdit {}
+        //Align {}
         Settings {}
     }
 
