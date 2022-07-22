@@ -7,7 +7,7 @@ Rectangle {
     property bool scanFlag
     property string sliderColor: (scanFlag) ? Qt.hsla(colorSlider.value, 1, 0.5, 1)
                                     : Qt.hsla(0, 0, colorSlider.value, 1)
-    property string fileColor: root.textColor //root.secondaryText
+    property string fileColor: root.secondaryText
     property string buttonColor: root.textColor
 
     function closeTools(prev_state) {
@@ -22,7 +22,8 @@ Rectangle {
     opacity: 0.9
     color: root.menuColor
     implicitHeight: 64
-    width: textRow.width + targetButton.width + dropButton.width + 64
+    width: textRow.width + title.width + dropButton.width + 75
+    //textRow.width + targetButton.width + dropButton.width + 64
 
     RowLayout {
         id: textRow
@@ -55,7 +56,7 @@ Rectangle {
                     }
                     // Set filename as new label
                     fileLabel.text = getFilename(selectedFile.toString())
-                    fileLabel.color = root.secondaryText
+                    fileLabel.color = Qt.binding(function() { return root.secondaryText })
                     // Start busy indicator for loading
                     loadingScreen.busyText = "Loading 3D File..."
                     loadingScreen.on = true
@@ -65,15 +66,13 @@ Rectangle {
         }
     }
 
-    Button {
-        id: targetButton
-        anchors { left: dropButton.right; verticalCenter: parent.verticalCenter; margins: 8 }
+    Label {
+        id: title
+        anchors { left: dropButton.right; verticalCenter: parent.verticalCenter; margins: 8}
         text: (scanFlag) ? "SCAN" : "CAD"
-        palette.buttonText: buttonColor
+        color: root.textColor
         font.family: titleFont.font.family
         font.pointSize: 18
-        background: Rectangle { color: root.menuColor; radius: height/6 }
-        onClicked: align.setMouseControl(text)
     }
 
     IconButton {

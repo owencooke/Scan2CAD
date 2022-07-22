@@ -47,28 +47,22 @@ Item {
     function setMouseControl(mode) {
         switch(mode) {
             case "CAD":
-                userControl.target = cad;
-                userControl.keysEnabled = true;
-                cadControl.buttonColor = Qt.binding(function() { return root.selectedColor })
-                cameraButton.palette.buttonText =  Qt.binding(function() { return root.textColor })
-                scanControl.buttonColor = Qt.binding(function() { return root.textColor })
-                break;
+                userControl.target = cad
+                userControl.keysEnabled = true
+                mouseButton.palette.buttonText =  Qt.binding(function() { return root.textColor })
+                break
 
             case "SCAN":
-                userControl.target = scan;
-                userControl.keysEnabled = true;
-                cadControl.buttonColor = Qt.binding(function() { return root.textColor })
-                cameraButton.palette.buttonText = Qt.binding(function() { return root.textColor })
-                scanControl.buttonColor = Qt.binding(function() { return root.selectedColor })
-                break;
+                userControl.target = scan
+                userControl.keysEnabled = true
+                mouseButton.palette.buttonText = Qt.binding(function() { return root.textColor })
+                break
 
             case "CAMERA":
-                userControl.target = camera;
-                userControl.keysEnabled = false;
-                cadControl.buttonColor = Qt.binding(function() { return root.textColor })
-                cameraButton.palette.buttonText= Qt.binding(function() { return root.selectedColor })
-                scanControl.buttonColor = Qt.binding(function() { return root.textColor })
-                break;
+                userControl.target = camera
+                userControl.keysEnabled = false
+                mouseButton.palette.buttonText= Qt.binding(function() { return root.selectedColor })
+                break
         }
     }
 
@@ -155,51 +149,81 @@ Item {
         height: 150
         on: false
     }
+
     //-------------------------------------------------//
     // Menu for uploading files and button controls
     //-------------------------------------------------//
+    Rectangle {
+        id: mouseMenu
+        anchors { horizontalCenter: parent.horizontalCenter
+            top: parent.top; topMargin: 16 }
+        opacity: 0.9
+        color: root.menuColor
+        implicitHeight: 56
+        implicitWidth: 150
+        radius: height/5
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: -8
+        Label {
+            id: centerLabel
+            // anchors { bottom: mouseButton.top; bottomMargin: -8 
+            //             horizontalCenter: parent.horizontalCenter}
+            Layout.alignment: Qt.AlignCenter
+            text: "Mouse controls:"
+            color: root.secondaryText
+            font.family: regFont.font.family
+            font.pointSize: 8
+        }
+
+        Button {
+            id: mouseButton
+            // anchors.centerIn: parent
+            Layout.alignment: Qt.AlignCenter
+            text: "CAMERA"
+            palette.buttonText: root.selectedColor
+            font.family: titleFont.font.family
+            font.pointSize: 18
+            background: Rectangle { opacity: 0 }
+
+            onClicked: {
+                switch(mouseButton.text) {
+                    case "CAMERA":
+                        mouseButton.text = "CAD"
+                        userControl.target = cad
+                        userControl.keysEnabled = true
+                        break
+
+                    case "CAD":
+                        mouseButton.text = "SCAN"
+                        userControl.target = scan
+                        userControl.keysEnabled = true
+                        break
+
+                    case "SCAN":
+                        mouseButton.text = "CAMERA"
+                        userControl.target = camera
+                        userControl.keysEnabled = false
+                        break
+                }
+            }
+        }
+        }
+    }
 
     AlignControls {
         id: cadControl
-        anchors { top: parent.top; topMargin: 16;
-                left: parent.left; leftMargin: 16 }
+        anchors { right: mouseMenu.left; rightMargin: 32
+                verticalCenter: mouseMenu.verticalCenter }
         scanFlag: false
     }
 
     AlignControls {
         id: scanControl
-        anchors { top: parent.top; topMargin: 16;
-                left: cameraButton.right; leftMargin: 16 }
+        anchors { left: mouseMenu.right; leftMargin: 32
+                verticalCenter: mouseMenu.verticalCenter }
         scanFlag: true
-    }
-
-        
-    Button {
-        id: cameraButton
-        anchors { verticalCenter: scanControl.verticalCenter
-            left: cadControl.right; leftMargin: 16 }
-        text: "CAMERA"
-        palette.buttonText: root.selectedColor
-        font.family: titleFont.font.family
-        font.pointSize: 18
-        background: Rectangle { opacity: 0.9; color: root.menuColor; radius: height/6 } 
-        onClicked: setMouseControl(text)
-
-        Label {
-            anchors { top: parent.bottom; horizontalCenter: parent.horizontalCenter }
-            text: ""
-            color: root.secondaryText
-            font.family: regFont.font.family
-            font.pointSize: 10
-        }
-
-        Label {
-            anchors { bottom: parent.top; horizontalCenter: parent.horizontalCenter }
-            text: "Mouse controls:"
-            color: root.secondaryText
-            font.family: regFont.font.family
-            font.pointSize: 10
-        }
     }
 
     Rectangle {
@@ -217,43 +241,6 @@ Item {
             // anchors { //left: parent.left; right: parent.right; 
             //         verticalCenter: parent.verticalCenter; margins: 24 }
             anchors.centerIn: parent
-            
-            RowLayout {
-                spacing: 16
-                Label {
-                    text: "CONTROLLING:"
-                    color: root.secondaryText
-                    font.family: titleFont.font.family
-                    font.pointSize: 12
-                }
-                Button {
-                    id: cadButton
-                    text: "CAD"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.textColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-                Button {
-                    id: scanButton
-                    text: "SCAN"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.textColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-                Button {
-                    //id: cameraButton
-                    text: "CAMERA"
-                    palette.buttonText: root.menuColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10.5
-                    background: Rectangle { color: root.selectedColor; radius: height/6 }
-                    onClicked: setMouseControl(text)
-                }
-            }
 
             RowLayout {
                 spacing: 16
