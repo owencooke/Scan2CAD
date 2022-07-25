@@ -17,7 +17,7 @@ RowLayout {
 
     Label {
         text: title
-        color: root.secondaryText
+        color: root.textColor //root.secondaryText
         font.family: titleFont.font.family
         font.pointSize: 12
     }

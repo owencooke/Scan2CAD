@@ -2,8 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQuick3D
 
 Rectangle { 
+    property Node target
     property bool scanFlag
     property string sliderColor: (scanFlag) ? Qt.hsla(colorSlider.value, 1, 0.5, 1)
                                     : Qt.hsla(0, 0, colorSlider.value, 1)
@@ -184,27 +186,27 @@ Rectangle {
                     id: xRot
                     title: "X"
                     handleColour: "red"
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.x = value
-                    // }
+                    onSetEuler: function(value) {
+                        target.eulerRotation.x = value
+                    }
                 }
 
                 RotationTool {
                     id: yRot
                     title: "Y"
                     handleColour: "green"
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.y = value
-                    // }
+                    onSetEuler: function(value) {
+                        target.eulerRotation.y = value
+                    }
                 }
 
                 RotationTool {
                     id: zRot
                     title: "Z"
                     handleColour: "blue"
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.z = value
-                    // }
+                    onSetEuler: function(value) {
+                        target.eulerRotation.z = value
+                    }
                 }
             }
         }
@@ -223,28 +225,31 @@ Rectangle {
                             rightMargin: 16; verticalCenter: parent.verticalCenter }
                 spacing: 4
 
-                RotationTool {
+                ScalingTool {
                     //id: xRot
-                    title: "X"
+                    title: " L "
                     handleColour: "red"
+                    value: target.dimensions.x // (mm)
                     // onSetEuler: function(value) {
                     //     target.eulerRotation.x = value
                     // }
                 }
 
-                RotationTool {
+                ScalingTool {
                     //id: yRot
-                    title: "Y"
+                    title: "W"
                     handleColour: "green"
+                    value: target.dimensions.y // (mm)
                     // onSetEuler: function(value) {
                     //     target.eulerRotation.y = value
                     // }
                 }
 
-                RotationTool {
+                ScalingTool {
                     //id: zRot
-                    title: "Z"
+                    title: " H "
                     handleColour: "blue"
+                    value: target.dimensions.z // (mm)
                     // onSetEuler: function(value) {
                     //     target.eulerRotation.z = value
                     // }

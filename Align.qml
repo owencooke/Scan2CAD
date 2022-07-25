@@ -66,7 +66,7 @@ Item {
         // CAD model's node
         RuntimeLoader {
             id: cad
-            property vector3d dimensions
+            property vector3d dimensions: Qt.vector3d(0,0,0)
             scale:  Qt.vector3d(5,5,5)
         }
 
@@ -79,7 +79,7 @@ Item {
         // 3D Scan's node
         RuntimeLoader {
             id: scan
-            property vector3d dimensions
+            property vector3d dimensions: Qt.vector3d(0,0,0)
             scale:  Qt.vector3d(5,5,5)
         }
 
@@ -196,6 +196,7 @@ Item {
         id: cadControl
         anchors { right: mouseMenu.left; rightMargin: 32
                 verticalCenter: mouseMenu.verticalCenter }
+        target: cad
         scanFlag: false
     }
 
@@ -204,6 +205,7 @@ Item {
         id: scanControl
         anchors { left: mouseMenu.right; leftMargin: 32
                 verticalCenter: mouseMenu.verticalCenter }
+        target: scan
         scanFlag: true
     }
 
