@@ -177,8 +177,8 @@ class Backend(QObject):
         # Emit signal containing data to QML 
         self.displayAligned.emit(centroid, cost, percent)
     
-    @Slot(bool, bool)
-    def crop2D(self, cad, scan):
+    @Slot(str, bool, bool)
+    def crop2D(self, theme, cad, scan):
         file_list = []
         dir = os.path.join(basedir, 'backend_resources/captured_imgs/')
         if cad:
@@ -187,36 +187,33 @@ class Backend(QObject):
         if scan: 
             file_list += [dir+"scan_front.png", dir+"scan_top.png", dir+"scan_left.png",
                         dir+"scan_rear.png", dir+"scan_bottom.png", dir+"scan_right.png"]
-        thread = Thread(self.cropFaces, basedir, file_list)
+        thread = Thread(self.cropFaces, theme, basedir, file_list)
         self.threadpool.start(thread)
 
-    def cropFaces(self, basedir, images):
+    def cropFaces(self, theme, basedir, images):
         for file in images:
             splitPath = file.split('/')
             filename = splitPath[-1].split('.')[0]
             # Load and convert to Grayscale
             img = cv2.imread(file)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # invert gray image
-            #gray = 255 - gray
-            # threshold
-            thresh = cv2.threshold(gray,0,255,cv2.THRESH_BINARY)[1]
-            # apply close and open morphology to fill tiny black and white holes and save as mask
-            kernel = np.ones((3,3), np.uint8)
-            mask = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-            # # Remove noise and apply Canny edge detection
-            # gray = cv2.GaussianBlur(gray,(3,3),0)
-            # edge = cv2.Canny(gray, 10, 250)
-            # make background transparent by placing the mask into the alpha channel
-            nimg = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
-            nimg[:, :, 3] = mask
+            # Threshold image to apply transparent background
+            if theme == "dark":
+                _, alpha = cv2.threshold(gray, 37, 255, cv2.THRESH_BINARY)
+            else:
+                invert = 255-gray
+                _, alpha = cv2.threshold(invert, 232, 255, cv2.THRESH_BINARY)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+            img[:, :, 3] = alpha
+            # Remove noise and apply Canny edge detection
+            gray = cv2.GaussianBlur(gray,(3,3),0)
+            edge = cv2.Canny(gray, 10, 250)
             # Find largest contour (outline of shape)
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             largest = sorted(contours, key=cv2.contourArea)[-1]
             # Crop image and export
             x,y,w,h = cv2.boundingRect(largest)
-            crop = nimg[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
+            crop = img[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
             cv2.imwrite(os.path.join(basedir,'backend_resources/cropped/'+ filename + '.png'), crop)
 
         self.displayCrop.emit()

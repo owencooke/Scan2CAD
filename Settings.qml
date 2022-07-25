@@ -37,6 +37,7 @@ Rectangle {
             font.weight: Font.DemiBold
             background: Rectangle { color: "#bfbfbf" }
             onClicked: {
+                root.theme = "light"
                 root.textColor = "black"
                 root.secondaryText = "#4f4f4f"
                 root.menuColor = "#bfbfbf"
@@ -54,6 +55,7 @@ Rectangle {
             palette.buttonText: "white"
             background: Rectangle { color: "#303030" }
             onClicked: {
+                root.theme = "dark"
                 root.textColor = "white"
                 root.secondaryText = "#9e9d9d"
                 root.menuColor = "#303030"

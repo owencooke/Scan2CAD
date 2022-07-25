@@ -12,7 +12,8 @@ ApplicationWindow {
     visible: true
     title: qsTr("LIMDA")
     // Application formatting properties
-    // Colors (theme)
+    // Colors
+    property string theme: "dark"
     property string textColor: "white"
     property string secondaryText: "#9e9d9d"
     property string menuColor: "#303030"

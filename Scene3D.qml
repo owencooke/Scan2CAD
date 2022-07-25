@@ -47,9 +47,9 @@ View3D {
                                 light.targetColor = Qt.binding(function() { return nodeColor })
                                 mesh.eulerRotation.y -= 270
                                 if (fname == "cad") {
-                                    backend.crop2D(true, false)
+                                    backend.crop2D(root.theme, true, false)
                                 } else {
-                                    backend.crop2D(false, true)
+                                    backend.crop2D(root.theme, false, true)
                                 }
                             })
                         })

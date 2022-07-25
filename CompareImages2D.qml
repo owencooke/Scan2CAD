@@ -6,20 +6,17 @@ import QtQuick.Layouts
 Item {
     id: compare2D
     signal captureRotations(bool cad, bool scan)
-    property var d: "backend_resources/cropped/"
-    property var cad_imgs: [d+"cad_front.png", d+"cad_top.png", d+"cad_left.png", 
-                            d+"cad_rear.png", d+"cad_bottom.png", d+"cad_right.png"]
-                            
-    property var scan_imgs: [d+"scan_front.png", d+"scan_top.png", d+"scan_left.png", 
-                            d+"scan_rear.png", d+"scan_bottom.png", d+"scan_right.png"]
 
     Connections {
         target: backend
         // Display results of perspective images to user
         function onDisplayCrop() {
             root.index = 2
-            cadFrame.urls = cad_imgs
-            scanFrame.urls = scan_imgs
+            var d = "backend_resources/cropped/"
+            cadFrame.urls = [d+"cad_front.png", d+"cad_top.png", d+"cad_left.png", 
+                            d+"cad_rear.png", d+"cad_bottom.png", d+"cad_right.png"]
+            scanFrame.urls = [d+"scan_front.png", d+"scan_top.png", d+"scan_left.png", 
+                            d+"scan_rear.png", d+"scan_bottom.png", d+"scan_right.png"]
             // Reset image cache
             cadFrame.reload()
             scanFrame.reload()
