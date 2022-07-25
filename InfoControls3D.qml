@@ -6,14 +6,13 @@ import QtQuick3D
 
 Rectangle {
     id: controls
-    property string title
     property Node target
     property string targetColor: Qt.hsla(colorSlider.value, 1, 0.5, 1)
     property bool gridChecked: gridToggle.toggle
     property bool scan
     property bool loading: false
 
-    // Rounding function for outputting dimensional values
+    // Rounding function for outputting dimensional values (in mm)
     //FIXME: add support for different units (cm, m, etc.)
     function round1dec(num) {
         return (Math.round(num * 10) / 10).toFixed(1)
@@ -64,7 +63,8 @@ Rectangle {
 
             // Model filename
             Label {
-                text: title
+                id: fileLabel
+                text: "No model selected."
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
@@ -81,15 +81,11 @@ Rectangle {
                     title: "Select a 3D model file"
                     nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
                     onAccepted: {
-                        if (scan) {
-                            root.scanFile = selectedFile
-                            scanScene.target.source = " "
-                        } else {
-                            root.cadFile = selectedFile
-                            cadScene.target.source = " "
-                        }
-                        controls.loading = true
+                        fileLabel.text = getFilename(selectedFile.toString())
+                        // Reset source and load new model
+                        target.source = " "
                         backend.loadMesh("Model3D", selectedFile, scan)
+                        controls.loading = true
                     }
                 }
             }

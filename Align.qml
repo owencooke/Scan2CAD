@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick3D
 import QtQuick3D.Helpers
@@ -23,9 +22,11 @@ Item {
                     cad.pivot = centroid
                     cad.dimensions = dim
                 }
-            loadingScreen.on = false
+                loadingScreen.on = false
             }
         }
+
+        // Display results of the ICP algorithm to user
         function onDisplayAligned(centroid, dist, percent) {
             loadingScreen.on = false
             // Set source URLs of aligned output
@@ -38,38 +39,18 @@ Item {
             cad.scale = scan.scale = Qt.vector3d(5, 5, 5)
             cad.eulerRotation = scan.eulerRotation = Qt.vector3d(0, 0, 0)
             cad.position = scan.position = Qt.vector3d(0, 0, 0)
-            // Set centroids and controls to camera
             cad.pivot = scan.pivot = camera.pivot = centroid
-            setMouseControl("CAMERA")
+            // Set user controls back to camera
+            mouseButton.text = "CAMERA"
+            userControl.target = camera
+            userControl.keysEnabled = false
         }
     }
 
-    function setMouseControl(mode) {
-        switch(mode) {
-            case "CAD":
-                userControl.target = cad
-                userControl.keysEnabled = true
-                mouseButton.palette.buttonText =  Qt.binding(function() { return root.textColor })
-                break
-
-            case "SCAN":
-                userControl.target = scan
-                userControl.keysEnabled = true
-                mouseButton.palette.buttonText = Qt.binding(function() { return root.textColor })
-                break
-
-            case "CAMERA":
-                userControl.target = camera
-                userControl.keysEnabled = false
-                mouseButton.palette.buttonText= Qt.binding(function() { return root.selectedColor })
-                break
-        }
-    }
-
+    // 3D scene for rendering the models
     View3D {
         id: view3D
         anchors.fill: parent
-        environment: sceneEnvironment
 
         camera: OrthographicCamera {
             id: camera
@@ -82,14 +63,22 @@ Item {
             eulerRotation: Qt.vector3d(-20.4556, 52.6713, 0)
         }
 
+        // CAD model's node
+        RuntimeLoader {
+            id: cad
+            property vector3d dimensions
+            scale:  Qt.vector3d(5,5,5)
+        }
+
         MeshLighting {
             target: cad
             targetColor: cadControl.sliderColor
             camera: camera
         }
 
+        // 3D Scan's node
         RuntimeLoader {
-            id: cad
+            id: scan
             property vector3d dimensions
             scale:  Qt.vector3d(5,5,5)
         }
@@ -98,12 +87,6 @@ Item {
             target: scan
             targetColor: scanControl.sliderColor
             camera: camera
-        }
-
-        RuntimeLoader {
-            id: scan
-            property vector3d dimensions
-            scale:  Qt.vector3d(5,5,5)
         }
 
         // Timer { 
@@ -118,14 +101,7 @@ Item {
         //     }
         // }
 
-        SceneEnvironment {
-            id: sceneEnvironment
-            antialiasingMode: SceneEnvironment.MSAA
-            antialiasingQuality: SceneEnvironment.VeryHigh
-            backgroundMode: SceneEnvironment.Color
-            clearColor: root.bgColor 
-        }
-
+        // Mouse controls for zooming/rotation
         MeshController {
             id: userControl
             anchors.fill: parent
@@ -135,9 +111,17 @@ Item {
             keysEnabled: false
         }
 
+        // Gridlines
         AxisHelper {
             enableAxisLines: true
             gridColor: root.secondaryText
+        }
+
+        environment: SceneEnvironment {
+            antialiasingMode: SceneEnvironment.MSAA
+            antialiasingQuality: SceneEnvironment.VeryHigh
+            backgroundMode: SceneEnvironment.Color
+            clearColor: root.bgColor 
         }
     }
 
@@ -150,9 +134,7 @@ Item {
         on: false
     }
 
-    //-------------------------------------------------//
-    // Menu for uploading files and button controls
-    //-------------------------------------------------//
+    // Toggle menu for user's mouse control
     Rectangle {
         id: mouseMenu
         anchors { horizontalCenter: parent.horizontalCenter
@@ -166,52 +148,50 @@ Item {
         ColumnLayout {
             anchors.centerIn: parent
             spacing: -8
-        Label {
-            id: centerLabel
-            // anchors { bottom: mouseButton.top; bottomMargin: -8 
-            //             horizontalCenter: parent.horizontalCenter}
-            Layout.alignment: Qt.AlignCenter
-            text: "Mouse controls:"
-            color: root.secondaryText
-            font.family: regFont.font.family
-            font.pointSize: 8
-        }
 
-        Button {
-            id: mouseButton
-            // anchors.centerIn: parent
-            Layout.alignment: Qt.AlignCenter
-            text: "CAMERA"
-            palette.buttonText: root.selectedColor
-            font.family: titleFont.font.family
-            font.pointSize: 18
-            background: Rectangle { opacity: 0 }
+            Label {
+                Layout.alignment: Qt.AlignCenter
+                text: "Mouse controls:"
+                color: root.secondaryText
+                font.family: regFont.font.family
+                font.pointSize: 8
+            }
 
-            onClicked: {
-                switch(mouseButton.text) {
-                    case "CAMERA":
-                        mouseButton.text = "CAD"
-                        userControl.target = cad
-                        userControl.keysEnabled = true
-                        break
+            Button {
+                id: mouseButton
+                Layout.alignment: Qt.AlignCenter
+                text: "CAMERA"
+                palette.buttonText: root.selectedColor
+                font.family: titleFont.font.family
+                font.pointSize: 18
+                background: Rectangle { opacity: 0 }
 
-                    case "CAD":
-                        mouseButton.text = "SCAN"
-                        userControl.target = scan
-                        userControl.keysEnabled = true
-                        break
+                onClicked: {
+                    switch(mouseButton.text) {
+                        case "CAMERA":
+                            mouseButton.text = "CAD"
+                            userControl.target = cad
+                            userControl.keysEnabled = true
+                            break
 
-                    case "SCAN":
-                        mouseButton.text = "CAMERA"
-                        userControl.target = camera
-                        userControl.keysEnabled = false
-                        break
+                        case "CAD":
+                            mouseButton.text = "SCAN"
+                            userControl.target = scan
+                            userControl.keysEnabled = true
+                            break
+
+                        case "SCAN":
+                            mouseButton.text = "CAMERA"
+                            userControl.target = camera
+                            userControl.keysEnabled = false
+                            break
+                    }
                 }
             }
         }
-        }
     }
 
+    // Dropdown menu for CAD model controls
     AlignControls {
         id: cadControl
         anchors { right: mouseMenu.left; rightMargin: 32
@@ -219,6 +199,7 @@ Item {
         scanFlag: false
     }
 
+    // Dropdown menu for 3D scan controls
     AlignControls {
         id: scanControl
         anchors { left: mouseMenu.right; leftMargin: 32
@@ -226,7 +207,9 @@ Item {
         scanFlag: true
     }
 
+    // Menu for running alignment/comparison algorithm
     Rectangle {
+        id: algoMenu
         //anchors { top: parent.top; right: results.left; margins: 16 }
         anchors { bottom: parent.bottom; left: parent.left; margins: 16 }
         opacity: 0.9
@@ -255,7 +238,7 @@ Item {
                     id: toggleScale
                     property bool toggle: false
                     text: (toggle) ? "ENABLED" : "DISABLED"
-                    palette.buttonText: root.menuColor
+                    palette.buttonText: root.bgColor
                     font.family: titleFont.font.family
                     font.pointSize: 10
                     //font.weight: Font.DemiBold
@@ -268,11 +251,10 @@ Item {
             Button {
                 id: alignButton
                 Layout.alignment: Qt.AlignCenter
-                text: "ALIGN AND COMPARE MESHES" //"Align Scan to CAD"
+                text: "ALIGN AND COMPARE MESHES"
                 font.family: titleFont.font.family
-                font.weight: Font.DemiBold
                 font.pointSize: 11
-                palette.buttonText: root.menuColor
+                palette.buttonText: root.bgColor
                 background: Rectangle { color: root.textColor; radius: height/6 }
                 onClicked: {
                     var error = false
@@ -299,8 +281,7 @@ Item {
 
     ResultWidget {
         id: results
-        anchors { top: parent.top; topMargin: 16;
-                    right: parent.right; rightMargin: 16 }
+        anchors { bottom: algoMenu.top; bottomMargin: 16; left: algoMenu.left}
         distText: "Average Squared Distance \n Between Meshes"
         percentText: "Similarity Percentage"
     }

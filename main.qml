@@ -8,10 +8,10 @@ ApplicationWindow {
     property alias index: stack.currentIndex
     width: 1280
     height: 720
-    color: "#36454F"
+    color: root.bgColor
     visible: true
     title: qsTr("LIMDA")
-    // Throughout-application formatting properties
+    // Application formatting properties
     // Colors (theme)
     property string textColor: "white"
     property string secondaryText: "#9e9d9d"
@@ -21,11 +21,6 @@ ApplicationWindow {
     // Fonts, loaded from local file
     FontLoader { id: regFont; source: "backend_resources/fonts/Inter-Regular.otf" }
     FontLoader { id: titleFont; source: "backend_resources/fonts/Inter-Black.otf" }
-    // Name/URL of imported mesh
-    property string cadFile: "No model selected."
-    property string scanFile: "No model selected."
-    property string cadSource
-    property string scanSource
 
     function getFilename(filepath) {
         var dirs = filepath.split("/")
@@ -42,28 +37,25 @@ ApplicationWindow {
         anchors.leftMargin: 48
         // PAGES placed below (same name as respective QML file)
         HomePage {} // index = 0
-        Model3D {} // ...
+        Model3D {} // index = 1 ...
         CompareImages2D { id: compare2D } 
         //Edit {}
         Align {}
-        Settings {}
+        Settings {} // leave settings as last index
     }
 
     // Menu navigation button (always on top of pages)
     Button {
         id: menuButton
-        onClicked: menuNav.open()
-
-        icon.source: "backend_resources/icons/bars.svg"
-        icon.color: root.textColor
-        icon.height: 32
-        icon.width: 32
-
+        icon { source: "backend_resources/icons/bars.svg";
+                color: root.textColor; height: 32; width: 32 }
         background: Rectangle {
             implicitWidth: 48
             implicitHeight: 48
             color: root.menuColor
         }
+
+        onClicked: menuNav.open()
     }
 
     Rectangle {
@@ -91,7 +83,7 @@ ApplicationWindow {
         MenuButton { 
             anchors.bottom: parent.bottom
             tipText: "Settings"
-            pageIndex: 4
+            pageIndex: stack.count - 1
             iconURL: "backend_resources/icons/gear-solid.svg"
         }
             

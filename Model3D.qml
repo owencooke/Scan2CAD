@@ -2,9 +2,6 @@ import QtQuick
 import QtQuick.Controls
 
 Item {
-    property string cadFile: "No model selected."
-    property string scanFile: "No model selected."
-
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
@@ -35,25 +32,20 @@ Item {
             if (scan) {
                 scanScene.capture2D("scan")
             }
-            backend.crop2D(cad, scan)
         }
     }
 
-    //------------------------------------------------------//
     // 3D SCENE #1 (left)
-    //------------------------------------------------------//
     SplitView {
         id: cadLayout
         orientation: Qt.Vertical
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: middleBorder.left
-        anchors.bottom: parent.bottom
+        anchors { top: parent.top; left: parent.left;
+                    right: middleBorder.left; bottom: parent.bottom }
         handle: Rectangle {
             id: handleDelegate
             implicitHeight: 2
             color: SplitHandle.pressed ? "#81e889"
-                : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
+                    : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
             containmentMask: Item {
                 width: cadLayout.width
                 height: 10
@@ -72,37 +64,31 @@ Item {
             id: cadControls
             SplitView.fillHeight: false
             SplitView.preferredHeight: 200
-            title: getFilename(root.cadFile)
             target: cadScene.target
             scan: false
         }
     }
-    //------------------------------------------------------//
+
     // Border between the two scenes
-    //------------------------------------------------------//
     Rectangle {
         id: middleBorder
-        color: root.menuColor
+        anchors { top: parent.top; bottom: parent.bottom;
+                    horizontalCenter: parent.horizontalCenter }
         implicitWidth: 10
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
+        color: root.menuColor
     }
-    //------------------------------------------------------//
+
     // 3D SCENE #2 (right)
-    //------------------------------------------------------//
     SplitView {
         id: scanLayout
         orientation: Qt.Vertical
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.left: middleBorder.right
-        anchors.bottom: parent.bottom
+        anchors { top: parent.top; right: parent.right
+                    left: middleBorder.right; bottom: parent.bottom }
         handle: Rectangle {
             id: handleDelegate
             implicitHeight: 2
             color: SplitHandle.pressed ? "#81e889"
-                : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
+                    : (SplitHandle.hovered ? Qt.lighter("#c2f4c6", 1.1) : "#9e9d9d")
             containmentMask: Item {
                 width: scanLayout.width
                 height: 10
@@ -121,14 +107,12 @@ Item {
             id: scanControls
             SplitView.fillHeight: false
             SplitView.preferredHeight: 200
-            title: getFilename(root.scanFile)
             target: scanScene.target
             scan: true
         }
     }
-    //----------------------------------------------------------//
-    // Loading progess wheel for model
-    //----------------------------------------------------------//
+
+    // Loading progess indicator
     BusyText {
         id: loadIndicator
         anchors.centerIn: parent

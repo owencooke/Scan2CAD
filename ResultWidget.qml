@@ -11,11 +11,12 @@ Rectangle {
     // Default property values
     color: root.menuColor
     opacity: 0.8
-    implicitHeight: 200
-    implicitWidth: 200
+    height: column.height * 1.35
+    width: column.width * 1.35
     radius: height/6
 
     ColumnLayout {
+        id: column
         anchors.centerIn: parent
         spacing: 0
         Label {
@@ -24,7 +25,7 @@ Rectangle {
             text: "-"
             color: root.textColor
             font.family: titleFont.font.family
-            font.pointSize: 30
+            font.pointSize: 24
             font.weight: Font.DemiBold
         }
         Label {
@@ -34,7 +35,7 @@ Rectangle {
             text: "Distance label"
             color: root.secondaryText
             font.family: regFont.font.family
-            font.pointSize: 10
+            font.pointSize: 9
             font.weight: Font.DemiBold
         }
         Rectangle {
@@ -50,7 +51,7 @@ Rectangle {
             text: "-"
             color: root.textColor
             font.family: titleFont.font.family
-            font.pointSize: 30
+            font.pointSize: 24
             font.weight: Font.DemiBold
         }
         Label {
@@ -59,7 +60,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             color: root.secondaryText
             font.family: regFont.font.family
-            font.pointSize: 10
+            font.pointSize: 9
             font.weight: Font.DemiBold
         }
     }

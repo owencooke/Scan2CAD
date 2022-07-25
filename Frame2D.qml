@@ -48,17 +48,15 @@ Item {
         id: frame
         anchors { top: viewLabel.bottom; left: parent.left; right: parent.right; 
                     bottom: buttonLayout.top; bottomMargin: 8}
-        color: root.bgColor
-        border.color: root.textColor
-        border.width: 2
+        color: root.menuColor
+        // border.color: root.textColor
+        // border.width: 2
         clip: true
 
         Image {
             id: image
             anchors.fill: parent
             anchors.margins: 16
-            // anchors.centerIn: parent
-            // x: 0; y: 0
             height: parent.height * 0.8
             fillMode: Image.PreserveAspectFit
             source: urls[index]
@@ -68,47 +66,10 @@ Item {
             id: contour
             anchors.fill: parent
             anchors.margins: 16
-            // anchors.centerIn: parent
-            // x: 0; y: 0
             height: parent.height * 0.8
             fillMode: Image.PreserveAspectFit
             cache: false
         }
-
-        // MouseArea {
-        //     id: mouseArea
-        //     anchors.fill: parent
-        //     hoverEnabled: true
-        //     // Zoom in/out using mouse scroll wheel
-        //     onWheel: function(mouse) {
-        //         var zoomFactor = 1.15
-        //         // Save prior coordinates
-        //         var old_coords = mapToItem(image, mouse.x, mouse.y)
-        //         // Scale camera according to scroll dir
-        //         if (mouse.angleDelta.y > 0) {
-        //             scale = zoomFactor
-        //         } else {
-        //             scale = 1/zoomFactor
-        //         }
-        //         // Set minimum zoom (x/y symmetric)
-        //         var zoomThreshold = 50
-        //         if (image.height*scale > zoomThreshold) {
-        //             image.height *= scale
-        //             image.width *= scale
-        //             // Find new coordinates
-        //             var new_coords = mapToItem(image, mouse.x, mouse.y)
-        //             var dx = new_coords.x - old_coords.x
-        //             var dy = new_coords.y - old_coords.y
-        //             // Apply translation to point
-        //             image.x += dx
-        //             image.y += dy
-        //             console.log("old:", old_coords)
-        //             console.log("new:", new_coords)
-        //             console.log("deltax", dx, "deltay", dy)
-        //             console.log()
-        //         }
-        //     }
-        // }
     }
 
     Label {

@@ -191,28 +191,34 @@ class Backend(QObject):
         self.threadpool.start(thread)
 
     def cropFaces(self, basedir, images):
-        #FIXME: need to ensure that this function does not run before images exist
-        time.sleep(2)
         for file in images:
-            splitPath = file.split('/') # [1].split('.')[0]
-            filename = splitPath[len(splitPath)-1].split('.')[0]
+            splitPath = file.split('/')
+            filename = splitPath[-1].split('.')[0]
             # Load and convert to Grayscale
             img = cv2.imread(file)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # Remove noise and apply Canny edge detection
-            gray = cv2.GaussianBlur(gray,(3,3),0)
-            edge = cv2.Canny(gray, 10, 250)
-            # Get contours
-            contours, hier = cv2.findContours(edge.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            # Find biggest contour (to crop/focus on model)
-            area = 0
-            for c in contours:
-                c_area = cv2.contourArea(c)
-                if c_area > area:
-                    x,y,w,h = cv2.boundingRect(c)
-            # Crop largest contour and export
-            crop = img[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
+            # invert gray image
+            #gray = 255 - gray
+            # threshold
+            thresh = cv2.threshold(gray,0,255,cv2.THRESH_BINARY)[1]
+            # apply close and open morphology to fill tiny black and white holes and save as mask
+            kernel = np.ones((3,3), np.uint8)
+            mask = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+            # # Remove noise and apply Canny edge detection
+            # gray = cv2.GaussianBlur(gray,(3,3),0)
+            # edge = cv2.Canny(gray, 10, 250)
+            # make background transparent by placing the mask into the alpha channel
+            nimg = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+            nimg[:, :, 3] = mask
+            # Find largest contour (outline of shape)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            largest = sorted(contours, key=cv2.contourArea)[-1]
+            # Crop image and export
+            x,y,w,h = cv2.boundingRect(largest)
+            crop = nimg[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
             cv2.imwrite(os.path.join(basedir,'backend_resources/cropped/'+ filename + '.png'), crop)
+
         self.displayCrop.emit()
     
     @Slot(str, str)

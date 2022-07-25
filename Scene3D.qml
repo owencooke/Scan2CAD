@@ -46,6 +46,11 @@ View3D {
                                 axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
                                 light.targetColor = Qt.binding(function() { return nodeColor })
                                 mesh.eulerRotation.y -= 270
+                                if (fname == "cad") {
+                                    backend.crop2D(true, false)
+                                } else {
+                                    backend.crop2D(false, true)
+                                }
                             })
                         })
                     })
