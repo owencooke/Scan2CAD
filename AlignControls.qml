@@ -229,17 +229,18 @@ Rectangle {
                     //id: xRot
                     title: " L "
                     handleColour: "red"
-                    value: target.dimensions.x // (mm)
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.x = value
-                    // }
+                    value: roundDecimal(target.dimensions.x, 3) // (mm)
+                    onSetValue: function(new_dim) {
+                        target.scale.x = (new_dim * target.scale.x) / target.dimensions.x
+                        target.dimensions.x = new_dim
+                    }
                 }
 
                 ScalingTool {
                     //id: yRot
                     title: "W"
                     handleColour: "green"
-                    value: target.dimensions.y // (mm)
+                    value: roundDecimal(target.dimensions.y, 3) // (mm)
                     // onSetEuler: function(value) {
                     //     target.eulerRotation.y = value
                     // }
@@ -249,7 +250,7 @@ Rectangle {
                     //id: zRot
                     title: " H "
                     handleColour: "blue"
-                    value: target.dimensions.z // (mm)
+                    value: roundDecimal(target.dimensions.z, 3) // (mm)
                     // onSetEuler: function(value) {
                     //     target.eulerRotation.z = value
                     // }

@@ -31,6 +31,11 @@ ApplicationWindow {
         // return dirs[dirs.length-2]
     }
 
+    function roundDecimal(value, dec_digits) {
+        var multiplier = 10 ** dec_digits
+        return (Math.round(value * multiplier) / multiplier).toFixed(dec_digits)
+    }
+
     // Page layout for application
     StackLayout {
         id: stack

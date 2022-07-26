@@ -9,9 +9,9 @@ RowLayout {
     property real value: 0.0
     signal setValue(double value)
 
-    function round3dec(num) {
-        return (Math.round(num * 1000) / 1000).toFixed(3)
-    }
+    // function round3dec(num) {
+    //     return (Math.round(num * 1000) / 1000).toFixed(3)
+    // }
 
     spacing: 8
 
@@ -38,7 +38,11 @@ RowLayout {
             border.width: 0.001
         }
 
-        onEditingFinished: text = round3dec(parseFloat(text))
+        onEditingFinished: {
+            var val = parseFloat(text)
+            text = roundDecimal(val, 3)
+            setValue(val)
+        }
     }
 
     Label {
@@ -76,7 +80,6 @@ RowLayout {
         }
 
         onMoved: {
-            field.text = Math.round(slider.value) + "°"
             setValue(slider.value)
         }
     }

@@ -12,11 +12,11 @@ Rectangle {
     property bool scan
     property bool loading: false
 
-    // Rounding function for outputting dimensional values (in mm)
-    //FIXME: add support for different units (cm, m, etc.)
-    function round1dec(num) {
-        return (Math.round(num * 10) / 10).toFixed(1)
-    }
+    // // Rounding function for outputting dimensional values (in mm)
+    // //FIXME: add support for different units (cm, m, etc.)
+    // function round1dec(num) {
+    //     return (Math.round(num * 10) / 10).toFixed(1)
+    // }
 
     color: root.bgColor
 
@@ -102,21 +102,21 @@ Rectangle {
             }
 
             Label {
-                text: "Length: " + round1dec(target.dimensions.x) + "mm"
+                text: "Length: " + roundDecimal(target.dimensions.x, 1) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
             }
 
             Label {
-                text: "Width: " + round1dec(target.dimensions.y) + "mm"
+                text: "Width: " + roundDecimal(target.dimensions.y, 1) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
             }
             
             Label {
-                text: "Height: " + round1dec(target.dimensions.z) + "mm"
+                text: "Height: " + roundDecimal(target.dimensions.z, 1) + "mm"
                 color: root.secondaryText
                 font.family: regFont.font.family
                 font.pointSize: 12
