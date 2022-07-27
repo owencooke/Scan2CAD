@@ -17,10 +17,12 @@ Item {
                     scan.source = "backend_resources/converted_mesh/scan_align.glb"
                     scan.pivot = centroid
                     scan.dimensions = dim
+                    scan.scale = Qt.vector3d(5,5,5) // default
                 } else {
                     cad.source = "backend_resources/converted_mesh/cad_align.glb"
                     cad.pivot = centroid
                     cad.dimensions = dim
+                    cad.scale = Qt.vector3d(5,5,5) // default
                 }
                 loadingScreen.on = false
             }

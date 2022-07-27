@@ -33,7 +33,15 @@ ApplicationWindow {
 
     function roundDecimal(value, dec_digits) {
         var multiplier = 10 ** dec_digits
-        return (Math.round(value * multiplier) / multiplier).toFixed(dec_digits)
+        var result = (Math.round(value * multiplier) / multiplier).toFixed(dec_digits)
+        var result_string = result.toString()
+        while (result_string.slice(-1) == '0') {
+            result_string = result_string.slice(0, result_string.length - 1)
+        }
+        if (result_string.slice(-1) == '.') {
+            result_string = result_string.slice(0, result_string.length - 1)
+        }
+        return result_string
     }
 
     // Page layout for application
@@ -45,7 +53,7 @@ ApplicationWindow {
         HomePage {} // index = 0
         Model3D {} // index = 1 ...
         CompareImages2D { id: compare2D } 
-        //Edit {}
+        //LiveEdit {}
         Align {}
         Settings {} // leave settings as last index
     }

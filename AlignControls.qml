@@ -23,9 +23,8 @@ Rectangle {
     
     opacity: 0.9
     color: root.menuColor
-    implicitHeight: 64
+    implicitHeight: 48
     width: textRow.width + title.width + dropButton.width + 75
-    //textRow.width + targetButton.width + dropButton.width + 64
 
     RowLayout {
         id: textRow
@@ -90,20 +89,19 @@ Rectangle {
         }
     }
 
+    // Drop down menu for button controls
     Rectangle {
-        anchors { top: parent.bottom; left: parent.left; leftMargin: 8}
+        anchors { top: parent.bottom; left: parent.left }
         opacity: (dropButton.toggle) ? 0.9 : 0
         color: root.menuColor
-        implicitHeight: 40
-        implicitWidth: 300
+        implicitHeight: 32
         width: parent.width
-        //radius: height/8
 
         // Align buttons in a row
         RowLayout {
             id: buttonRow
             //spacing: 0
-            anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter}
+            anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter}
 
             // Toggle mesh visibility 
             IconButton {
@@ -155,7 +153,7 @@ Rectangle {
             opacity: 0.9
             color: root.menuColor
             implicitHeight: 40
-            implicitWidth: 300
+            width: parent.width
             visible: false
         
             ColorSlider {
@@ -174,7 +172,7 @@ Rectangle {
             opacity: 0.9
             color: root.menuColor
             implicitHeight: 100
-            implicitWidth: 300
+            width: parent.width
             visible: false
         
             ColumnLayout {
@@ -217,7 +215,7 @@ Rectangle {
             opacity: 0.9
             color: root.menuColor
             implicitHeight: 100
-            implicitWidth: 300
+            width: parent.width
             visible: false
         
             ColumnLayout {
@@ -231,8 +229,10 @@ Rectangle {
                     handleColour: "red"
                     value: roundDecimal(target.dimensions.x, 3) // (mm)
                     onSetValue: function(new_dim) {
-                        target.scale.x = (new_dim * target.scale.x) / target.dimensions.x
-                        target.dimensions.x = new_dim
+                        if (new_dim != 0) { 
+                            target.scale.x = (new_dim * target.scale.x) / target.dimensions.x
+                            target.dimensions.x = new_dim
+                        } 
                     }
                 }
 
@@ -241,9 +241,12 @@ Rectangle {
                     title: "W"
                     handleColour: "green"
                     value: roundDecimal(target.dimensions.y, 3) // (mm)
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.y = value
-                    // }
+                    onSetValue: function(new_dim) {
+                        if (new_dim != 0) { 
+                            target.scale.y = (new_dim * target.scale.y) / target.dimensions.y
+                            target.dimensions.y = new_dim
+                        } 
+                    }
                 }
 
                 ScalingTool {
@@ -251,9 +254,12 @@ Rectangle {
                     title: " H "
                     handleColour: "blue"
                     value: roundDecimal(target.dimensions.z, 3) // (mm)
-                    // onSetEuler: function(value) {
-                    //     target.eulerRotation.z = value
-                    // }
+                    onSetValue: function(new_dim) {
+                        if (new_dim != 0) { 
+                            target.scale.z = (new_dim * target.scale.z) / target.dimensions.z
+                            target.dimensions.z = new_dim
+                        } 
+                    }
                 }
             }
         }

@@ -40,8 +40,9 @@ RowLayout {
 
         onEditingFinished: {
             var val = parseFloat(text)
-            text = roundDecimal(val, 3)
+            // text = roundDecimal(val, 3)
             setValue(val)
+            text = Qt.binding(function() { return value })
         }
     }
 
