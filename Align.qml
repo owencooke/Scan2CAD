@@ -5,6 +5,8 @@ import QtQuick3D
 import QtQuick3D.Helpers
 import QtQuick3D.AssetUtils
 
+import PointCloud
+
 Item {
     id: align
 
@@ -72,11 +74,19 @@ Item {
             scale:  Qt.vector3d(5,5,5)
         }
 
-        MeshLighting {
-            target: cad
-            targetColor: cadControl.sliderColor
-            camera: camera
+        // for OPEN-GL graphics use
+        DirectionalLight{
+            scope: cad
+            color: cadControl.sliderColor
+            brightness: 4
+            eulerRotation: camera.eulerRotation
         }
+
+        // MeshLighting {
+        //     target: cad
+        //     targetColor: cadControl.sliderColor
+        //     camera: camera
+        // }
 
         // 3D Scan's node
         RuntimeLoader {
@@ -85,11 +95,19 @@ Item {
             scale:  Qt.vector3d(5,5,5)
         }
 
-        MeshLighting {
-            target: scan
-            targetColor: scanControl.sliderColor
-            camera: camera
+        // for OPEN-GL graphics use
+        DirectionalLight{
+            scope: scan
+            color: scanControl.sliderColor
+            brightness: 4
+            eulerRotation: camera.eulerRotation
         }
+
+        // MeshLighting {
+        //     target: scan
+        //     targetColor: scanControl.sliderColor
+        //     camera: camera
+        // }
 
         // Timer { 
         //     interval: 1000; repeat: true; running: true
@@ -102,6 +120,20 @@ Item {
         //         console.log(" ")
         //     }
         // }
+
+        Model {
+            id: cloud
+            scale: Qt.vector3d(5, 5, 5)
+            pivot: cad.pivot
+            geometry: PointCloud { id: cloudClass } 
+            materials: [
+                DefaultMaterial {
+                    lighting: DefaultMaterial.NoLighting
+                    vertexColorsEnabled: true
+                    pointSize: pointSlider.value
+                }
+            ]
+        }
 
         // Mouse controls for zooming/rotation
         MeshController {
@@ -279,6 +311,27 @@ Item {
                         cad.source = scan.source = " "
                     }
                 }
+            }
+
+            Button {
+                Layout.alignment: Qt.AlignCenter
+                text: "DISPLAY DEPTH MAP COMPARISON"
+                font.family: titleFont.font.family
+                font.pointSize: 11
+                palette.buttonText: root.bgColor
+                background: Rectangle { color: root.textColor; radius: height/6 }
+                
+                onClicked: {
+                    cloudClass.getPoints(cad.source, scan.source, 10000)
+                    cad.opacity = scan.opacity = 0
+                }
+            }
+
+            Slider {
+                id: pointSlider
+                from: 1
+                value: 1
+                to: 50
             }
         }
     }

@@ -11,6 +11,7 @@ import trimesh
 import time
 import numpy as np
 import cv2
+from cloud import PointCloud
 
 # Get base directory and set app ID
 basedir = os.path.dirname(__file__)
@@ -20,6 +21,7 @@ try:
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
+os.environ["QSG_RHI_BACKEND"] = "opengl"
 
 ''' 
 Purpose: for functions in the Backend class that can have a long
@@ -96,7 +98,7 @@ class Backend(QObject):
             mask = np.zeros(len(loaded.faces), dtype=bool)
             mask[np.concatenate(cc)] = True
             loaded.update_faces(mask)
-        except ValueError: # No unconnected components found (healthy scan or model)
+        except (ValueError, AttributeError): # No unconnected components found (healthy scan or model)
             pass
 
         # Export model for loading in QML (only .glb or .gltf)

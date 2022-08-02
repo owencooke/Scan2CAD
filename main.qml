@@ -55,6 +55,7 @@ ApplicationWindow {
         CompareImages2D { id: compare2D } 
         //LiveEdit {}
         Align {}
+        //Test {}
         Settings {} // leave settings as last index
     }
 
@@ -91,7 +92,7 @@ ApplicationWindow {
             MenuButton { tipText: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
             MenuButton { tipText: "2D Projection Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/camera-retro-solid.svg" }
             MenuButton { tipText: "3D Comparison"; pageIndex: 3; iconURL: "backend_resources/icons/cubes-solid.svg" }
-            // MenuButton { tipText: "Testing"; pageIndex: 4; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
+            //MenuButton { tipText: "Testing"; pageIndex: 4; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
         }
 
         MenuButton { 

@@ -34,6 +34,8 @@ Node {
     /*! Camera being used in the 3D scene. */
     required property Node camera
 
+    property real intensity: 5
+
     readonly property vector3d lightRotation: getOctant(zeroTo360(camera.eulerRotation.x), 
                                                     zeroTo360(camera.eulerRotation.y))
     function zeroTo360(val) {
@@ -122,21 +124,21 @@ Node {
         id: zLight
         scope: target
         color: targetColor
-        brightness: 5
+        brightness: intensity
         eulerRotation.x: lightRotation.z
     }
     DirectionalLight {
         id: yLight
         scope: target
         color: targetColor
-        brightness: 5
+        brightness: intensity
         eulerRotation.x: lightRotation.y
     }
     DirectionalLight {
         id: xLight
         scope: target
         color: targetColor
-        brightness: 5
+        brightness: intensity
         eulerRotation.y: lightRotation.x
     }
 }

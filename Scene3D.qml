@@ -69,11 +69,18 @@ View3D {
         verticalMagnification: zoomY
     }
 
-    MeshLighting {
-        id: light
-        target: mesh
-        targetColor: nodeColor
-        camera: camera
+    // for Direct3D 11 graphics use 
+    // MeshLighting {
+    //     id: light
+    //     target: mesh
+    //     targetColor: nodeColor
+    //     camera: camera
+    // }
+
+    // for OPEN-GL graphics use
+    DirectionalLight{
+        color: nodeColor
+        brightness: 4
     }
 
     // Node storing model loaded by user

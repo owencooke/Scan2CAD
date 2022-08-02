@@ -1,40 +1,62 @@
-import random
 import numpy as np
 import trimesh
-from PySide6.QtGui import QVector3D
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
+from PySide6.QtCore import Slot
 
 QML_IMPORT_NAME = "PointCloud"
 QML_IMPORT_MAJOR_VERSION = 1
 
 @QmlElement
 class PointCloud(QQuick3DGeometry):
-    def __init__(self, parent=None):
-        QQuick3DGeometry.__init__(self, parent)
-        self.model = trimesh.load('C:/Users/owenc/Documents/LIMDA/models/cube.stl', force='mesh')
-        self.scanned = trimesh.load('C:/Users/owenc/Documents/LIMDA/aligned.glb', force='mesh')
-        self.closest, self.colors = self.sort_sampled_vertices(self.model, self.scanned, 10000)
-        self.updateData()
+    def __init__(self):
+        QQuick3DGeometry.__init__(self)
+        self.setStride(1)
+        # self.model = trimesh.load('C:/Users/owenc/Documents/LIMDA/models/cube.stl', force='mesh')
+        # self.scanned = trimesh.load('C:/Users/owenc/Documents/LIMDA/aligned.glb', force='mesh')
+        # self.closest, self.colors = self.sort_sampled_vertices(self.model, self.scanned, 10000)
+        # self.updateData()
+    def checkURL(self, file):
+        s_list = file.split('file:///')
+        return s_list[len(s_list) - 1]
 
-    def updateData(self):
+    @Slot(str, str, int)
+    def getPoints(self, cad_file, scan_file, samples=10000):
+        # Clear old data
         self.clear()
+
+        # Load new data from user input
+        self.cad = trimesh.load(self.checkURL(cad_file), force='mesh')
+        self.scan = trimesh.load(self.checkURL(scan_file), force='mesh')
+
+        # Run vertex comparison algorithm
+        # Returns closest points on CAD and threshold colors
+        self.closest, self.colors = self.sort_sampled_vertices(self.cad, self.scan, samples)
+
+        # Init custom geometry format
         FLOAT_SIZE = 4
-        stride = 3
+        stride = 7
         self.setStride(stride * FLOAT_SIZE)
         self.setPrimitiveType(QQuick3DGeometry.PrimitiveType.Points)
 
-        # Set points
-        self.setVertexData(self.closest.astype('float32').tobytes())
+        # Combine all vertex information into a single array (1 index per vertex, w/ all info)
+        data = np.concatenate((self.closest, self.colors), axis=1, dtype='float32')
+
+        # Pass data to byte stream
+        self.setVertexData(data.tobytes())
+
+        # Add attribute descriptors for data
+        ## Position (x,y,z)
         self.addAttribute(
             QQuick3DGeometry.Attribute.PositionSemantic, 0, QQuick3DGeometry.Attribute.F32Type
         )
+        ## Color (r,g,b,a)
+        self.addAttribute(
+            QQuick3DGeometry.Attribute.ColorSemantic, 3*FLOAT_SIZE, QQuick3DGeometry.Attribute.F32Type
+        )
 
-        # # Set color for each point
-        # self.setIndexData(self.colors.astype('uint32').tobytes())
-        # self.addAttribute(
-        #     QQuick3DGeometry.Attribute.ColorSemantic, 0, QQuick3DGeometry.Attribute.U32Type
-        # )
+        self.update()
+        print('done')
 
     def key_points(self, m, count):
         """
@@ -50,40 +72,34 @@ class PointCloud(QQuick3DGeometry):
             return m.sample(count)
 
     def getDepthColor(self, index, ambience):
+        # RGB dictionary for dist thresholds
         case = {
-            1: (105, 179, 76, ambience),
-            2: (172, 179, 52, ambience),
-            3: (250, 183, 51, ambience),
-            4: (255, 142, 21, ambience),
-            5: (255, 78, 17, ambience),
-            6: (255, 13, 13, ambience),
+            # for each threshold, assign (r,g,b,a)
+            1: (19, 78, 19, ambience),
+            2: (105, 179, 76, ambience),
+            3: (172, 179, 52, ambience),
+            4: (250, 183, 51, ambience),
+            5: (255, 142, 21, ambience),
+            6: (255, 78, 17, ambience),
+            7: (255, 13, 13, ambience),
         }
-        return case[index]
+        return tuple(i/255 for i in case[index])
 
-    def sort_sampled_vertices(self, cad, scan, samples=500):
+    def sort_sampled_vertices(self, cad, scan, samples):
         # Uniform sample scan's vertices/surface
         scan_pts = self.key_points(scan, samples)
         closest, distance, faces = cad.nearest.on_surface(scan_pts)
-        # print(closest, distance, sep='\n')
-        #CLosest is the closest point on a CAD triangle for each scan's point
-        # Distance is the distance to the surface
         # Preallocate array for RGBA colors
-        colors = np.zeros((samples, 4), np.uint8)
-        # # Determine max and min dist's for thresholds
+        colors = np.zeros((samples, 4), dtype='float32')
+        # Determine thresholds for assigning colors to points
         max = np.max(distance)
-        num_colors = 6
+        num_colors = 7
         thresh_level = max / num_colors
 
         for count, dist in enumerate(distance):
             for i in range(1, num_colors+1):
                 if (dist < (thresh_level*i)):
-                    colors[count] = np.array(self.getDepthColor(i, 255))
+                    colors[count] = np.array(self.getDepthColor(i, 255), dtype='float32')
                     break
         
         return closest, colors
-        # cad_cloud = trimesh.points.PointCloud(closest, colors)
-        # trimesh.Scene([cad_cloud]).show()
-        # trimesh.exchange.export.export_mesh(cad_cloud, "cloud.glb", file_type="glb", resolver=None)
-
-if __name__ == "__main__":
-    c = PointCloud()
