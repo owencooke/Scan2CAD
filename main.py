@@ -179,6 +179,11 @@ class Backend(QObject):
         # Emit signal containing data to QML 
         self.displayAligned.emit(centroid, cost, percent)
     
+    @Slot(PointCloud, str, str, int)
+    def getDepthMap(self, cloud, cad_file, scan_file, samples=10000):
+        thread = Thread(cloud.getPoints, cad_file, scan_file, samples)
+        self.threadpool.start(thread)
+
     @Slot(str, bool, bool)
     def crop2D(self, theme, cad, scan):
         file_list = []

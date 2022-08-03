@@ -27,6 +27,8 @@ Item {
                     cad.scale = Qt.vector3d(5,5,5) // default
                 }
                 loadingScreen.on = false
+                cad.opacity = scan.opacity = 1
+                cloud.opacity = 0
             }
         }
 
@@ -322,8 +324,10 @@ Item {
                 background: Rectangle { color: root.textColor; radius: height/6 }
                 
                 onClicked: {
-                    cloudClass.getPoints(cad.source, scan.source, 10000)
+                    // cloudClass.getPoints(cad.source, scan.source, 10000)
+                    backend.getDepthMap(cloudClass, cad.source, scan.source, 10000)
                     cad.opacity = scan.opacity = 0
+                    cloud.opacity = 1
                 }
             }
 

@@ -2,7 +2,6 @@ import numpy as np
 import trimesh
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
-from PySide6.QtCore import Slot
 
 QML_IMPORT_NAME = "PointCloud"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -12,19 +11,15 @@ class PointCloud(QQuick3DGeometry):
     def __init__(self):
         QQuick3DGeometry.__init__(self)
         self.setStride(1)
-        # self.model = trimesh.load('C:/Users/owenc/Documents/LIMDA/models/cube.stl', force='mesh')
-        # self.scanned = trimesh.load('C:/Users/owenc/Documents/LIMDA/aligned.glb', force='mesh')
-        # self.closest, self.colors = self.sort_sampled_vertices(self.model, self.scanned, 10000)
-        # self.updateData()
+        
     def checkURL(self, file):
         s_list = file.split('file:///')
         return s_list[len(s_list) - 1]
 
-    @Slot(str, str, int)
     def getPoints(self, cad_file, scan_file, samples=10000):
         # Clear old data
         self.clear()
-
+        print('running')
         # Load new data from user input
         self.cad = trimesh.load(self.checkURL(cad_file), force='mesh')
         self.scan = trimesh.load(self.checkURL(scan_file), force='mesh')
@@ -88,7 +83,7 @@ class PointCloud(QQuick3DGeometry):
     def sort_sampled_vertices(self, cad, scan, samples):
         # Uniform sample scan's vertices/surface
         scan_pts = self.key_points(scan, samples)
-        closest, distance, faces = cad.nearest.on_surface(scan_pts)
+        closest, distance, _ = cad.nearest.on_surface(scan_pts)
         # Preallocate array for RGBA colors
         colors = np.zeros((samples, 4), dtype='float32')
         # Determine thresholds for assigning colors to points
