@@ -3,8 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 RowLayout {
-    property alias getValue: slider.value
-    property alias setValue: field.text
     property string title
     property string handleColour
     signal setEuler(double value)
@@ -17,7 +15,7 @@ RowLayout {
 
     Label {
         text: title
-        color: root.textColor //root.secondaryText
+        color: root.textColor
         font.family: titleFont.font.family
         font.pointSize: 12
     }
@@ -72,10 +70,11 @@ RowLayout {
         }
         onEditingFinished: {
             field.text = zeroTo360(parseFloat(field.text))
-
+            slider.value = parseFloat(field.text)
             if (field.text.indexOf("°") == -1) {
                 field.text += "°"
             }
+            setEuler(slider.value)
         }
     }
 }

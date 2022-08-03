@@ -9,10 +9,6 @@ RowLayout {
     property real value: 0.0
     signal setValue(double value)
 
-    // function round3dec(num) {
-    //     return (Math.round(num * 1000) / 1000).toFixed(3)
-    // }
-
     spacing: 8
 
     Label {
@@ -40,7 +36,6 @@ RowLayout {
 
         onEditingFinished: {
             var val = parseFloat(text)
-            // text = roundDecimal(val, 3)
             setValue(val)
             text = Qt.binding(function() { return value })
         }
@@ -59,7 +54,7 @@ RowLayout {
         Layout.alignment: Qt.AlignCenter
         from: 0
         value: parseFloat(field.text)
-        to: 300
+        to: 500
 
         background: Rectangle {
             x: slider.leftPadding
@@ -80,8 +75,6 @@ RowLayout {
             color: handleColour
         }
 
-        onMoved: {
-            setValue(slider.value)
-        }
+        onMoved: setValue(slider.value)
     }
 }
