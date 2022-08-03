@@ -61,7 +61,7 @@ Rectangle {
                     // Start busy indicator for loading
                     loadingScreen.busyText = "Loading 3D File..."
                     loadingScreen.on = true
-                    backend.loadMesh("Align", selectedFile, scanFlag)
+                    backend.load_mesh("Align", selectedFile, scanFlag)
                 }
             }
         }

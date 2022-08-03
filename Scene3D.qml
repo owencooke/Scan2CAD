@@ -15,7 +15,7 @@ View3D {
         // Disable gridlines and adjust color for high contrast
         axes.enableXYGrid = false
         axes.enableAxisLines = false
-        light.targetColor = root.textColor
+        light.color = root.textColor
         //mesh.eulerRotation = Qt.vector3d(0,0,0)
         // Front
         view3D.grabToImage(function(result) {
@@ -44,7 +44,7 @@ View3D {
                                 // Give gridline/color control back to user
                                 axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
                                 axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
-                                light.targetColor = Qt.binding(function() { return nodeColor })
+                                light.color = Qt.binding(function() { return nodeColor })
                                 mesh.eulerRotation.y -= 270
                                 if (fname == "cad") {
                                     backend.crop2D(root.theme, true, false)
@@ -79,6 +79,7 @@ View3D {
 
     // for OPEN-GL graphics use
     DirectionalLight{
+        id: light
         color: nodeColor
         brightness: 4
     }

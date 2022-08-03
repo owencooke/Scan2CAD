@@ -6,26 +6,22 @@ from PySide6.QtQuick3D import QQuick3DGeometry
 QML_IMPORT_NAME = "PointCloud"
 QML_IMPORT_MAJOR_VERSION = 1
 
+''' Custom geometry that can be loaded into a Qt Quick 3D scene.
+The geometry is a point cloud that uses colored points to represent
+the distance/similarity between two 3D model files. '''
 @QmlElement
 class PointCloud(QQuick3DGeometry):
     def __init__(self):
         QQuick3DGeometry.__init__(self)
         self.setStride(1)
-        
-    def checkURL(self, file):
-        s_list = file.split('file:///')
-        return s_list[len(s_list) - 1]
 
-    def getPoints(self, cad_file, scan_file, samples=10000):
-        # Clear old data
-        self.clear()
-        print('running')
+    def get_points(self, cad_file, scan_file, samples=10000):
         # Load new data from user input
-        self.cad = trimesh.load(self.checkURL(cad_file), force='mesh')
-        self.scan = trimesh.load(self.checkURL(scan_file), force='mesh')
+        self.clear()
+        self.cad = trimesh.load(cad_file, force='mesh')
+        self.scan = trimesh.load(scan_file, force='mesh')
 
         # Run vertex comparison algorithm
-        # Returns closest points on CAD and threshold colors
         self.closest, self.colors = self.sort_sampled_vertices(self.cad, self.scan, samples)
 
         # Init custom geometry format
@@ -36,23 +32,44 @@ class PointCloud(QQuick3DGeometry):
 
         # Combine all vertex information into a single array (1 index per vertex, w/ all info)
         data = np.concatenate((self.closest, self.colors), axis=1, dtype='float32')
-
-        # Pass data to byte stream
+        # Pass vertex data to byte stream
         self.setVertexData(data.tobytes())
 
         # Add attribute descriptors for data
-        ## Position (x,y,z)
         self.addAttribute(
+            # Position (x,y,z)
             QQuick3DGeometry.Attribute.PositionSemantic, 0, QQuick3DGeometry.Attribute.F32Type
         )
-        ## Color (r,g,b,a)
         self.addAttribute(
+            # Color (r,g,b,a)
             QQuick3DGeometry.Attribute.ColorSemantic, 3*FLOAT_SIZE, QQuick3DGeometry.Attribute.F32Type
         )
 
+        # Update model in GUI
         self.update()
-        print('done')
 
+    def sort_sampled_vertices(self, cad, scan, samples):
+        # Sample scan's vertices/surface
+        scan_pts = self.key_points(scan, samples)
+
+        # Find nearest CAD point to each scan point sampled
+        closest, distance, _ = cad.nearest.on_surface(scan_pts)
+
+        # Determine thresholds for assigning colors to points
+        colors = np.zeros((samples, 4), dtype='float32')
+        NUM_COLORS = 7
+        thresh_level = np.max(distance) / NUM_COLORS
+        for count, dist in enumerate(distance):
+            for i in range(1, NUM_COLORS+1):
+                # Find the threshold color for each distance
+                if (dist < (thresh_level*i)):
+                    colors[count] = np.array(self.depth_color(i, 255), dtype='float32')
+                    break
+
+        # Return the closest CAD points, as well as their threshold colors 
+        return closest, colors
+
+    # from Trimesh's registration.py module
     def key_points(self, m, count):
         """
         Return a combination of mesh vertices and surface samples
@@ -66,10 +83,11 @@ class PointCloud(QQuick3DGeometry):
         else:
             return m.sample(count)
 
-    def getDepthColor(self, index, ambience):
-        # RGB dictionary for dist thresholds
+    def depth_color(self, index, ambience):
+        # RGBA switch for distance thresholds
+        # Change NUM_COLORS in sort_sampled_vertices() to
+        # match the last case number
         case = {
-            # for each threshold, assign (r,g,b,a)
             1: (19, 78, 19, ambience),
             2: (105, 179, 76, ambience),
             3: (172, 179, 52, ambience),
@@ -79,22 +97,3 @@ class PointCloud(QQuick3DGeometry):
             7: (255, 13, 13, ambience),
         }
         return tuple(i/255 for i in case[index])
-
-    def sort_sampled_vertices(self, cad, scan, samples):
-        # Uniform sample scan's vertices/surface
-        scan_pts = self.key_points(scan, samples)
-        closest, distance, _ = cad.nearest.on_surface(scan_pts)
-        # Preallocate array for RGBA colors
-        colors = np.zeros((samples, 4), dtype='float32')
-        # Determine thresholds for assigning colors to points
-        max = np.max(distance)
-        num_colors = 7
-        thresh_level = max / num_colors
-
-        for count, dist in enumerate(distance):
-            for i in range(1, num_colors+1):
-                if (dist < (thresh_level*i)):
-                    colors[count] = np.array(self.getDepthColor(i, 255), dtype='float32')
-                    break
-        
-        return closest, colors

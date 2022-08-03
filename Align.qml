@@ -308,7 +308,7 @@ Item {
                         cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
                         loadingScreen.busyText = "Calculating alignment..."
                         loadingScreen.on = true
-                        backend.alignMeshes(cad.source, scan.source, cad.sceneTransform,
+                        backend.align_meshes(cad.source, scan.source, cad.sceneTransform,
                                                     scan.sceneTransform, toggleScale.toggle)
                         cad.source = scan.source = " "
                     }
@@ -325,7 +325,7 @@ Item {
                 
                 onClicked: {
                     // cloudClass.getPoints(cad.source, scan.source, 10000)
-                    backend.getDepthMap(cloudClass, cad.source, scan.source, 10000)
+                    backend.depth_map(cloudClass, cad.source, scan.source, 10000)
                     cad.opacity = scan.opacity = 0
                     cloud.opacity = 1
                 }

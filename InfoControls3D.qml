@@ -12,12 +12,6 @@ Rectangle {
     property bool scan
     property bool loading: false
 
-    // // Rounding function for outputting dimensional values (in mm)
-    // //FIXME: add support for different units (cm, m, etc.)
-    // function round1dec(num) {
-    //     return (Math.round(num * 10) / 10).toFixed(1)
-    // }
-
     color: root.bgColor
 
     IconButton {
@@ -84,7 +78,7 @@ Rectangle {
                         fileLabel.text = getFilename(selectedFile.toString())
                         // Reset source and load new model
                         target.source = " "
-                        backend.loadMesh("Model3D", selectedFile, scan)
+                        backend.load_mesh("Model3D", selectedFile, scan)
                         controls.loading = true
                     }
                 }

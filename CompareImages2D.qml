@@ -59,7 +59,7 @@ Item {
                     font.family: titleFont.font.family
                     font.pointSize: 10.5
                     background: Rectangle { color: root.textColor; radius: height/6 }
-                    onClicked: backend.compareContours(cadFrame.urls[cadFrame.index], 
+                    onClicked: backend.compare_contours(cadFrame.urls[cadFrame.index], 
                                                         scanFrame.urls[scanFrame.index])
                 }
             }
