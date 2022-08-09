@@ -123,19 +123,19 @@ Item {
         //     }
         // }
 
-        Model {
-            id: cloud
-            scale: Qt.vector3d(5, 5, 5)
-            pivot: cad.pivot
-            geometry: PointCloud { id: cloudClass } 
-            materials: [
-                DefaultMaterial {
-                    lighting: DefaultMaterial.NoLighting
-                    vertexColorsEnabled: true
-                    pointSize: pointSlider.value
-                }
-            ]
-        }
+        // Model {
+        //     id: cloud
+        //     scale: Qt.vector3d(5, 5, 5)
+        //     pivot: cad.pivot
+        //     geometry: PointCloud { id: cloudClass } 
+        //     materials: [
+        //         DefaultMaterial {
+        //             lighting: DefaultMaterial.NoLighting
+        //             vertexColorsEnabled: true
+        //             pointSize: pointSlider.value
+        //         }
+        //     ]
+        // }
 
         // Mouse controls for zooming/rotation
         MeshController {
@@ -230,8 +230,8 @@ Item {
     // Dropdown menu for CAD model controls
     AlignControls {
         id: cadControl
-        anchors { right: mouseMenu.left; rightMargin: 32
-                verticalCenter: mouseMenu.verticalCenter }
+        anchors { right: mouseMenu.left; rightMargin: 32; 
+                    verticalCenter: mouseMenu.verticalCenter }
         target: cad
         scanFlag: false
     }
@@ -240,58 +240,101 @@ Item {
     AlignControls {
         id: scanControl
         anchors { left: mouseMenu.right; leftMargin: 32
-                verticalCenter: mouseMenu.verticalCenter }
+                    verticalCenter: mouseMenu.verticalCenter }
         target: scan
         scanFlag: true
     }
 
-    // Menu for running alignment/comparison algorithm
+    Rectangle {
+        id: algoBorder
+        anchors.left: parent.left
+        width: 2
+        color: root.secondaryText
+        height: parent.height
+    }
+
     Rectangle {
         id: algoMenu
-        //anchors { top: parent.top; right: results.left; margins: 16 }
-        anchors { bottom: parent.bottom; left: parent.left; margins: 16 }
+        anchors { left: algoBorder.right; top: parent.top }
         opacity: 0.9
         color: root.menuColor
-        height: algoColumn.height * 1.5
-        width: algoColumn.width * 1.25
-        radius: height/6
-
+        width: 200
+        height: 600
+        
         ColumnLayout {
-            id: algoColumn
+            anchors { left: parent.left; right: parent.right
+                        top: parent.top; margins: 16 }
             spacing: 8
-            // anchors { //left: parent.left; right: parent.right; 
-            //         verticalCenter: parent.verticalCenter; margins: 24 }
-            anchors.centerIn: parent
 
-            RowLayout {
-                spacing: 16
-                //Layout.alignment: Qt.AlignCenter
+            Label {
+                Layout.alignment: Qt.AlignCenter
+                text: "Alignment"
+                color: root.textColor
+                font.family: titleFont.font.family
+                font.pointSize: 12
+            }
+
+            GridLayout {
+                columns: 2
+                columnSpacing: 16
+                rowSpacing: 10
+                width: parent.width
+
                 Label {
-                    text: "CORRECTIVE SCALING:"
-                    color: root.secondaryText
-                    font.family: titleFont.font.family
-                    font.pointSize: 11
+                    text: "Sampled Points"
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 9
                 }
-                Button {
+
+                TextBox {
+                    Layout.alignment: Qt.AlignRight
+                    tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
+                    text: "2000"
+                    fontSize: 10 
+                    validator: IntValidator {
+                        bottom: 1
+                        top: 1000000
+                    }
+                }
+
+                Label {
+                    text: "Number of Iterations"
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 9
+                }
+                
+                TextBox {
+                    Layout.alignment: Qt.AlignRight
+                    Layout.fillWidth: true
+                    text: "50"
+                    fontSize: 10 
+                    validator: IntValidator {
+                        bottom: 1
+                        top: 999
+                    }
+                }
+
+                Label {
+                    text: "Corrective Scaling"
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 9
+                }
+                
+                CheckBox {
                     id: toggleScale
-                    property bool toggle: false
-                    text: (toggle) ? "ENABLED" : "DISABLED"
-                    palette.buttonText: root.bgColor
-                    font.family: titleFont.font.family
-                    font.pointSize: 10
-                    //font.weight: Font.DemiBold
-                    background: Rectangle { radius: height/6;
-                                color: (parent.toggle) ? root.selectedColor : root.textColor;}
-                    onClicked: toggle = !toggle
+                    Layout.alignment: Qt.AlignRight
                 }
             }
 
             Button {
                 id: alignButton
                 Layout.alignment: Qt.AlignCenter
-                text: "ALIGN AND COMPARE MESHES"
+                text: "Align Meshes"
                 font.family: titleFont.font.family
-                font.pointSize: 11
+                font.pointSize: 10
                 palette.buttonText: root.bgColor
                 background: Rectangle { color: root.textColor; radius: height/6 }
                 onClicked: {
@@ -315,35 +358,138 @@ Item {
                 }
             }
 
-            Button {
+            Label {
                 Layout.alignment: Qt.AlignCenter
-                text: "DISPLAY DEPTH MAP COMPARISON"
+                text: "Depth Map"
+                color: root.textColor
                 font.family: titleFont.font.family
-                font.pointSize: 11
-                palette.buttonText: root.bgColor
-                background: Rectangle { color: root.textColor; radius: height/6 }
-                
-                onClicked: {
-                    // cloudClass.getPoints(cad.source, scan.source, 10000)
-                    backend.depth_map(cloudClass, cad.source, scan.source, 10000)
-                    cad.opacity = scan.opacity = 0
-                    cloud.opacity = 1
-                }
+                font.pointSize: 12
             }
 
-            Slider {
-                id: pointSlider
-                from: 1
-                value: 1
-                to: 50
+            RowLayout {
+                spacing: 16
+                width: parent.width
+            
+                Label {
+                    text: "Sampled Points"
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 9
+                }
+
+                TextBox {
+                    Layout.alignment: Qt.AlignRight
+                    tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
+                    text: "2000"
+                    fontSize: 10 
+                    validator: IntValidator {
+                        bottom: 1
+                        top: 1000000
+                    }
+                }
             }
         }
     }
 
-    ResultWidget {
-        id: results
-        anchors { bottom: algoMenu.top; bottomMargin: 16; left: algoMenu.left}
-        distText: "Average Squared Distance \n Between Meshes"
-        percentText: "Similarity Percentage"
-    }
+    // // Menu for running alignment/comparison algorithm
+    // Rectangle {
+    //     id: algoMenu
+    //     //anchors { top: parent.top; right: results.left; margins: 16 }
+    //     anchors { bottom: parent.bottom; left: parent.left; margins: 16 }
+    //     opacity: 0.9
+    //     color: root.menuColor
+    //     height: algoColumn.height * 1.5
+    //     width: algoColumn.width * 1.25
+    //     radius: height/6
+
+    //     ColumnLayout {
+    //         id: algoColumn
+    //         spacing: 8
+    //         // anchors { //left: parent.left; right: parent.right; 
+    //         //         verticalCenter: parent.verticalCenter; margins: 24 }
+    //         anchors.centerIn: parent
+
+    //         RowLayout {
+    //             spacing: 16
+    //             //Layout.alignment: Qt.AlignCenter
+    //             Label {
+    //                 text: "CORRECTIVE SCALING:"
+    //                 color: root.secondaryText
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 11
+    //             }
+    //             Button {
+    //                 id: toggleScale
+    //                 property bool toggle: false
+    //                 text: (toggle) ? "ENABLED" : "DISABLED"
+    //                 palette.buttonText: root.bgColor
+    //                 font.family: titleFont.font.family
+    //                 font.pointSize: 10
+    //                 //font.weight: Font.DemiBold
+    //                 background: Rectangle { radius: height/6;
+    //                             color: (parent.toggle) ? root.selectedColor : root.textColor;}
+    //                 onClicked: toggle = !toggle
+    //             }
+    //         }
+
+    //         Button {
+    //             id: alignButton
+    //             Layout.alignment: Qt.AlignCenter
+    //             text: "ALIGN AND COMPARE MESHES"
+    //             font.family: titleFont.font.family
+    //             font.pointSize: 11
+    //             palette.buttonText: root.bgColor
+    //             background: Rectangle { color: root.textColor; radius: height/6 }
+    //             onClicked: {
+    //                 var error = false
+    //                 // Turn labels red to indicate error if no file selected
+    //                 if (cad.status != RuntimeLoader.Success) {
+    //                     scanControl.fileColor = "red"
+    //                     error = true
+    //                 } if (scan.status != RuntimeLoader.Success) {
+    //                     cadControl.fileColor = "red"
+    //                     error = true
+    //                 // Reset loader sources and run alignment from backend
+    //                 } if (!error) {
+    //                     cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
+    //                     loadingScreen.busyText = "Calculating alignment..."
+    //                     loadingScreen.on = true
+    //                     backend.align_meshes(cad.source, scan.source, cad.sceneTransform,
+    //                                                 scan.sceneTransform, toggleScale.toggle)
+    //                     cad.source = scan.source = " "
+    //                 }
+    //             }
+    //         }
+
+    //         Button {
+    //             Layout.alignment: Qt.AlignCenter
+    //             text: "DISPLAY DEPTH MAP COMPARISON"
+    //             font.family: titleFont.font.family
+    //             font.pointSize: 11
+    //             palette.buttonText: root.bgColor
+    //             background: Rectangle { color: root.textColor; radius: height/6 }
+                
+    //             onClicked: {
+    //                 // cloudClass.getPoints(cad.source, scan.source, 10000)
+    //                 backend.depth_map(cloudClass, cad.source, scan.source, 10000)
+    //                 cad.opacity = scan.opacity = 0
+    //                 cloud.opacity = 1
+    //             }
+    //         }
+
+    //         Slider {
+    //             id: pointSlider
+    //             from: 1
+    //             value: 1
+    //             to: 50
+    //         }
+    //     }
+    // }
+
+    // ResultWidget {
+    //     id: results
+    //     anchors { bottom: algoMenu.top; bottomMargin: 16; left: algoMenu.left}
+    //     distText: "Average Squared Distance \n Between Meshes"
+    //     percentText: "Similarity Percentage"
+    // }
 }

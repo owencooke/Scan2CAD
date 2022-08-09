@@ -17,7 +17,6 @@ class PointCloud(QQuick3DGeometry):
 
     def get_points(self, cad_file, scan_file, samples=10000):
         # Load new data from user input
-        self.clear()
         self.cad = trimesh.load(cad_file, force='mesh')
         self.scan = trimesh.load(scan_file, force='mesh')
 

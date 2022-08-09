@@ -10,7 +10,7 @@ Item {
         triggeredOnStart: true
         onTriggered: {
             pageLoader.source = ""
-            backend.clearCache()
+            backend.clear_cache()
             // PUT PAGE TO BE RELOADED HERE
             pageLoader.source = "Align.qml"
         }

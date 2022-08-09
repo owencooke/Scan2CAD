@@ -9,7 +9,7 @@ from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool
 # Import backend method bodies and Classes
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan
-from cloud import PointCloud
+from _depth_map import PointCloud
 
 
 ''' For functions in the Backend class that can have a long
@@ -80,6 +80,10 @@ class Backend(QObject):
     # Generate the depth map between Scan and CAD
     @Slot(PointCloud, str, str, int)
     def depth_map(self, cloud, cad_file, scan_file, samples=10000):
+        # Reset cloud to empty in GUI
+        cloud.clear()
+        cloud.update()
+        # Calculate new depth map and display
         thread = Thread(cloud.get_points, self.check_url(cad_file), self.check_url(scan_file), samples)
         self.threadpool.start(thread)
 

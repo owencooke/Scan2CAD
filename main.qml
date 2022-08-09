@@ -53,8 +53,8 @@ ApplicationWindow {
         HomePage {} // index = 0
         Model3D {} // index = 1 ...
         CompareImages2D { id: compare2D } 
-        //LiveEdit {}
-        Align {}
+        LiveEdit {}
+        //Align {}
         //Test {}
         Settings {} // leave settings as last index
     }
