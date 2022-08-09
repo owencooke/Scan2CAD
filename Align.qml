@@ -123,19 +123,19 @@ Item {
         //     }
         // }
 
-        // Model {
-        //     id: cloud
-        //     scale: Qt.vector3d(5, 5, 5)
-        //     pivot: cad.pivot
-        //     geometry: PointCloud { id: cloudClass } 
-        //     materials: [
-        //         DefaultMaterial {
-        //             lighting: DefaultMaterial.NoLighting
-        //             vertexColorsEnabled: true
-        //             pointSize: pointSlider.value
-        //         }
-        //     ]
-        // }
+        Model {
+            id: cloud
+            scale: Qt.vector3d(5, 5, 5)
+            pivot: cad.pivot
+            geometry: PointCloud { id: cloudClass } 
+            materials: [
+                DefaultMaterial {
+                    lighting: DefaultMaterial.NoLighting
+                    vertexColorsEnabled: true
+                    pointSize: pointSlider.value
+                }
+            ]
+        }
 
         // Mouse controls for zooming/rotation
         MeshController {
@@ -352,7 +352,7 @@ Item {
                         loadingScreen.busyText = "Calculating alignment..."
                         loadingScreen.on = true
                         backend.align_meshes(cad.source, scan.source, cad.sceneTransform,
-                                                    scan.sceneTransform, toggleScale.toggle)
+                                                    scan.sceneTransform, toggleScale.checked)
                         cad.source = scan.source = " "
                     }
                 }
@@ -366,11 +366,14 @@ Item {
                 font.pointSize: 12
             }
 
-            RowLayout {
-                spacing: 16
+            GridLayout {
+                columns: 2
+                columnSpacing: 16
+                rowSpacing: 10
                 width: parent.width
             
                 Label {
+                    Layout.fillWidth: true
                     text: "Sampled Points"
                     color: root.textColor
                     font.family: regFont.font.family
@@ -387,6 +390,43 @@ Item {
                         top: 1000000
                     }
                 }
+
+                Label {
+                    text: "Point Size"
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 9
+                }
+
+                Slider {
+                    id: pointSlider
+                    from: 1
+                    value: 1
+                    to: 50
+                }
+            }
+
+            Button {
+                Layout.alignment: Qt.AlignCenter
+                text: "Calculate Depth Map"
+                font.family: titleFont.font.family
+                font.pointSize: 10
+                palette.buttonText: root.bgColor
+                background: Rectangle { color: root.textColor; radius: height/6 }
+                
+                onClicked: {
+                    backend.depth_map(cloudClass, cad.source, scan.source, 10000)
+                    cad.opacity = scan.opacity = 0
+                    cloud.opacity = 1
+                }
+            }
+
+            Label {
+                Layout.alignment: Qt.AlignCenter
+                text: "Distance Similarity"
+                color: root.textColor
+                font.family: titleFont.font.family
+                font.pointSize: 12
             }
         }
     }
@@ -486,10 +526,10 @@ Item {
     //     }
     // }
 
-    // ResultWidget {
-    //     id: results
-    //     anchors { bottom: algoMenu.top; bottomMargin: 16; left: algoMenu.left}
-    //     distText: "Average Squared Distance \n Between Meshes"
-    //     percentText: "Similarity Percentage"
-    // }
+    ResultWidget {
+        id: results
+        anchors { bottom: algoMenu.top; bottomMargin: 16; left: algoMenu.left}
+        distText: "Average Squared Distance \n Between Meshes"
+        percentText: "Similarity Percentage"
+    }
 }
