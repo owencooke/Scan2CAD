@@ -1,10 +1,40 @@
 import numpy as np
 import trimesh
+from math import copysign
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
+from PySide6.QtCore import QObject, Slot, Property, Signal, QPointFList, QAbstractListModel
+from PySide6.QtGui import QLinearGradient, QColor
 
-QML_IMPORT_NAME = "PointCloud"
+QML_IMPORT_NAME = "DepthMap"
 QML_IMPORT_MAJOR_VERSION = 1
+
+RGBA = {
+    # Purple to green
+    #6: (57, 30, 148, 255),
+    # 6: (29, 39, 145, 255),
+    # 5: (0, 55, 165, 255),
+    # 4: (33, 84, 238, 255),
+    # 3: (55, 150, 223, 255),
+    # 2: (71, 210, 204, 255),
+    # 1: (42, 245, 152, 255),
+    6: (30, 38, 145, 255),
+    5: (39, 80, 174, 255),
+    4: (44, 108, 194, 255),
+    3: (53, 150, 223, 255),
+    2: (63, 202, 204, 255), #(35, 109, 110, 255),
+    1: (42, 191, 144, 255), #(29, 97, 77, 255),
+    # Green: Highly Similar (dist ~0)
+    0: (19, 78, 19, 255),
+    # Green to red (over-extruded)
+    -1: (105, 179, 76, 255),
+    -2: (172, 179, 52, 255),
+    -3: (250, 183, 51, 255),
+    -4: (255, 142, 21, 255),
+    -5: (255, 78, 17, 255),
+    -6: (255, 13, 13, 255),
+}
+NUM_COLORS = len(RGBA)
 
 ''' Custom geometry that can be loaded into a Qt Quick 3D scene.
 The geometry is a point cloud that uses colored points to represent
@@ -14,6 +44,17 @@ class PointCloud(QQuick3DGeometry):
     def __init__(self):
         QQuick3DGeometry.__init__(self)
         self.setStride(1)
+        self._thresh_model = [1E-16, 2.4]
+
+    threshChanged = Signal()
+
+    @Property("QVariantList", notify=threshChanged) #"QVariantList"
+    def thresh_model(self):
+        return self._thresh_model
+
+    def update_thresh(self, l):
+        self._thresh_model = l
+        self.threshChanged.emit()
 
     def get_points(self, cad_file, scan_file, samples=10000):
         # Load new data from user input
@@ -48,32 +89,27 @@ class PointCloud(QQuick3DGeometry):
         self.update()
 
     def sort_sampled_vertices(self, cad, scan, samples):
-        # Sample scan's vertices/surface
+        # Sample scan's vertices and surface points
         scan_pts = self.key_points(scan, samples)
-
-        # Find nearest CAD point to each scan point sampled
-        # closest, distance, _ = cad.nearest.on_surface(scan_pts)
-
+        # Find nearest distance from CAD to each scan point sampled
         d = cad.nearest.signed_distance(scan_pts)
         colors = np.zeros((samples, 4), dtype='float32')
-        NUM_COLORS = 13
         min = np.min(d)
-        thresh_level = (np.max(d) - min) / NUM_COLORS
+        thresh = (np.max(d) - min) / NUM_COLORS
         for count, dist in enumerate(d):
-            if (-thresh_level < dist and dist < thresh_level):
-                # Highly similar
-                colors[count] = np.array(self.depth_color(0, 255))
-            else:
-                # Check whether over or under extrusion occured
-                sign = 1
-                if (-thresh_level > dist):
-                # Points outside mesh have NEGATIVE distance
-                    sign = -1
-                for i in range(1, round(NUM_COLORS/2)+1):
-                    if (dist > (sign*i*thresh_level)):
-                        colors[count] = self.depth_color(sign*i, 255)
-                        break
+            for i in range(0, round(NUM_COLORS/2)+1):
+                # Find closest threshold
+                bound = thresh*(i+1/2)
+                if (-bound <= dist and dist <= bound):
+                    colors[count] = self.get_depth_color(copysign(i, dist))
+                    break
+            # Ensure a color was assigned (ambience should be > 0)
+            if colors[count][3] == 0:
+                colors[count] = self.get_depth_color(copysign(i, dist))
+                
         # Return the closest CAD points, as well as their threshold colors 
+        thresh_list = list(float(min + i*thresh) for i in range(0, NUM_COLORS))
+        self.update_thresh(thresh_list)
         return scan_pts, colors
 
     # from Trimesh's registration.py module
@@ -90,38 +126,7 @@ class PointCloud(QQuick3DGeometry):
         else:
             return m.sample(count)
 
-    # def depth_color(self, index, ambience):
-    #     # RGBA switch for distance thresholds
-    #     # Change NUM_COLORS in sort_sampled_vertices() to
-    #     # match the last case number
-    #     case = {
-    #         1: (19, 78, 19, ambience),
-    #         2: (105, 179, 76, ambience),
-    #         3: (172, 179, 52, ambience),
-    #         4: (250, 183, 51, ambience),
-    #         5: (255, 142, 21, ambience),
-    #         6: (255, 78, 17, ambience),
-    #         7: (255, 13, 13, ambience),
-    #     }
-    #     return tuple(i/255 for i in case[index])
-
-    def depth_color(self, index, ambience):
-        case = {
-            # Purple to green
-            6: (57, 30, 148, ambience),
-            5: (29, 39, 145, ambience),
-            4: (0, 55, 165, ambience),
-            3: (33, 84, 238, ambience),
-            2: (55, 150, 223, ambience),
-            1: (71, 210, 204, ambience),
-            # Green: Highly Similar (dist ~0)
-            0: (19, 78, 19, ambience),
-            # Green to red (over-extruded)
-            -1: (105, 179, 76, ambience),
-            -2: (172, 179, 52, ambience),
-            -3: (250, 183, 51, ambience),
-            -4: (255, 142, 21, ambience),
-            -5: (255, 78, 17, ambience),
-            -6: (255, 13, 13, ambience),
-        }
-        return tuple(i/255 for i in case[index])
+    # Getter for constant global colors
+    def get_depth_color(self, index):
+        return tuple(i/255 for i in RGBA[index])
+        

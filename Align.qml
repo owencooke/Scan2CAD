@@ -5,7 +5,7 @@ import QtQuick3D
 import QtQuick3D.Helpers
 import QtQuick3D.AssetUtils
 
-import PointCloud
+import DepthMap
 
 Item {
     id: align
@@ -114,12 +114,7 @@ Item {
         // Timer { 
         //     interval: 1000; repeat: true; running: true
         //     onTriggered: {
-        //         // console.log("Position:", camera.position)
-        //         // console.log("Rotation:", scan.sceneTransform)
-        //         console.log(sceneEnvironment.clearColor)
-        //         sceneEnvironment.clearColor = "white"
-        //         console.log(sceneEnvironment.clearColor)
-        //         console.log(" ")
+        //         console.log(cloudClass.thresh_model[0])
         //     }
         // }
 
@@ -127,7 +122,9 @@ Item {
             id: cloud
             scale: Qt.vector3d(5, 5, 5)
             pivot: cad.pivot
-            geometry: PointCloud { id: cloudClass } 
+            geometry: PointCloud {
+                id: cloudClass
+            } 
             materials: [
                 DefaultMaterial {
                     lighting: DefaultMaterial.NoLighting
@@ -431,100 +428,77 @@ Item {
         }
     }
 
-    // // Menu for running alignment/comparison algorithm
-    // Rectangle {
-    //     id: algoMenu
-    //     //anchors { top: parent.top; right: results.left; margins: 16 }
-    //     anchors { bottom: parent.bottom; left: parent.left; margins: 16 }
-    //     opacity: 0.9
-    //     color: root.menuColor
-    //     height: algoColumn.height * 1.5
-    //     width: algoColumn.width * 1.25
-    //     radius: height/6
+    // Scale for depth map
+    Rectangle {
+        anchors { right: parent.right; rightMargin: 16
+                    verticalCenter: parent.verticalCenter }
+        height: parent.height * 0.75
+        width: 128
+        opacity: 0.9
+        radius: width / 8
+        color: root.menuColor
 
-    //     ColumnLayout {
-    //         id: algoColumn
-    //         spacing: 8
-    //         // anchors { //left: parent.left; right: parent.right; 
-    //         //         verticalCenter: parent.verticalCenter; margins: 24 }
-    //         anchors.centerIn: parent
+        Label {
+            id: overLabel
+            anchors { top: parent.top; margins: 16;
+                        horizontalCenter: parent.horizontalCenter }
+            text: "Over-Extrusion"
+            color: root.textColor
+            font.family: titleFont.font.family
+            font.pointSize: 10
+        }
 
-    //         RowLayout {
-    //             spacing: 16
-    //             //Layout.alignment: Qt.AlignCenter
-    //             Label {
-    //                 text: "CORRECTIVE SCALING:"
-    //                 color: root.secondaryText
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 11
-    //             }
-    //             Button {
-    //                 id: toggleScale
-    //                 property bool toggle: false
-    //                 text: (toggle) ? "ENABLED" : "DISABLED"
-    //                 palette.buttonText: root.bgColor
-    //                 font.family: titleFont.font.family
-    //                 font.pointSize: 10
-    //                 //font.weight: Font.DemiBold
-    //                 background: Rectangle { radius: height/6;
-    //                             color: (parent.toggle) ? root.selectedColor : root.textColor;}
-    //                 onClicked: toggle = !toggle
-    //             }
-    //         }
+        Label {
+            id: underLabel
+            anchors { bottom: parent.bottom; margins: 16;
+                        horizontalCenter: parent.horizontalCenter }
+            text: "Under-Extrusion"
+            color: root.textColor
+            font.family: titleFont.font.family
+            font.pointSize: 10
+        }
 
-    //         Button {
-    //             id: alignButton
-    //             Layout.alignment: Qt.AlignCenter
-    //             text: "ALIGN AND COMPARE MESHES"
-    //             font.family: titleFont.font.family
-    //             font.pointSize: 11
-    //             palette.buttonText: root.bgColor
-    //             background: Rectangle { color: root.textColor; radius: height/6 }
-    //             onClicked: {
-    //                 var error = false
-    //                 // Turn labels red to indicate error if no file selected
-    //                 if (cad.status != RuntimeLoader.Success) {
-    //                     scanControl.fileColor = "red"
-    //                     error = true
-    //                 } if (scan.status != RuntimeLoader.Success) {
-    //                     cadControl.fileColor = "red"
-    //                     error = true
-    //                 // Reset loader sources and run alignment from backend
-    //                 } if (!error) {
-    //                     cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
-    //                     loadingScreen.busyText = "Calculating alignment..."
-    //                     loadingScreen.on = true
-    //                     backend.align_meshes(cad.source, scan.source, cad.sceneTransform,
-    //                                                 scan.sceneTransform, toggleScale.toggle)
-    //                     cad.source = scan.source = " "
-    //                 }
-    //             }
-    //         }
+        Rectangle {
+            id: depthGradient
+            anchors { right: parent.right; margins: 8
+                        top: overLabel.bottom; bottom: underLabel.top }
+            width: parent.width / 4
+            radius: width / 4
+        
+            gradient: Gradient {
+                GradientStop { position: 0; color: "red" }
+                GradientStop { position: 0.167; color: "orange" }
+                GradientStop { position: 0.333; color: "yellow" }
+                GradientStop { position: 0.5; color: "green" }
+                GradientStop { position: 0.667; color: "cyan" }
+                GradientStop { position: 0.833; color: "blue" }
+                GradientStop { position: 1; color: "indigo" }
+            }
 
-    //         Button {
-    //             Layout.alignment: Qt.AlignCenter
-    //             text: "DISPLAY DEPTH MAP COMPARISON"
-    //             font.family: titleFont.font.family
-    //             font.pointSize: 11
-    //             palette.buttonText: root.bgColor
-    //             background: Rectangle { color: root.textColor; radius: height/6 }
-                
-    //             onClicked: {
-    //                 // cloudClass.getPoints(cad.source, scan.source, 10000)
-    //                 backend.depth_map(cloudClass, cad.source, scan.source, 10000)
-    //                 cad.opacity = scan.opacity = 0
-    //                 cloud.opacity = 1
-    //             }
-    //         }
+            // Middle line indicator
+            Rectangle {
+                height: 3
+                width: parent.width
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
 
-    //         Slider {
-    //             id: pointSlider
-    //             from: 1
-    //             value: 1
-    //             to: 50
-    //         }
-    //     }
-    // }
+        ColumnLayout {
+            anchors {right: depthGradient.left; left: parent.left; rightMargin: 8
+                        top: depthGradient.top; bottom: depthGradient.bottom; leftMargin: 8 }
+
+            Repeater {
+                model: cloudClass.thresh_model
+                Label {
+                    Layout.alignment: Qt.AlignRight
+                    text: cloudClass.thresh_model[index].toPrecision(3)
+                    color: root.textColor
+                    font.family: regFont.font.family
+                    font.pointSize: 10
+                }
+            }
+        }
+    }
 
     ResultWidget {
         id: results
