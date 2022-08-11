@@ -6,6 +6,7 @@ from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool
+from sklearn.metrics import max_error
 # Import backend method bodies and Classes
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan
@@ -78,13 +79,14 @@ class Backend(QObject):
         self.threadpool.start(thread)
     
     # Generate the depth map between Scan and CAD
-    @Slot(PointCloud, str, str, int)
-    def depth_map(self, cloud, cad_file, scan_file, samples=10000):
+    @Slot(PointCloud, str, str, int, float, float, float)
+    def depth_map(self, cloud, cad_file, scan_file, samples, mtch, min, max):
         # Reset cloud to empty in GUI
         cloud.clear()
         cloud.update()
         # Calculate new depth map and display
-        thread = Thread(cloud.get_points, self.check_url(cad_file), self.check_url(scan_file), samples)
+        thread = Thread(cloud.get_points, self.check_url(cad_file),
+                            self.check_url(scan_file), samples, mtch, min, max)
         self.threadpool.start(thread)
 
     # Automatic image capture and display of the 6 sides of 3D model

@@ -21,7 +21,7 @@ Rectangle {
         return !prev_state
     }
     
-    opacity: 0.9
+    // opacity: 0.9
     color: root.menuColor
     implicitHeight: 48
     width: textRow.width + title.width + dropButton.width + 75
@@ -92,7 +92,7 @@ Rectangle {
     // Drop down menu for button controls
     Rectangle {
         anchors { top: parent.bottom; left: parent.left }
-        opacity: (dropButton.toggle) ? 0.9 : 0
+        opacity: (dropButton.toggle) ? parent.opacity : 0
         color: root.menuColor
         implicitHeight: 32
         width: parent.width
@@ -150,7 +150,7 @@ Rectangle {
         Rectangle {
             id: colorContainer
             anchors { left: parent.left; top: parent.bottom}
-            opacity: 0.9
+            opacity: parent.opacity
             color: root.menuColor
             implicitHeight: 40
             width: parent.width
@@ -169,7 +169,7 @@ Rectangle {
         Rectangle {
             id: rotateContainer
             anchors { left: parent.left; top: parent.bottom}
-            opacity: 0.9
+            opacity: parent.opacity
             color: root.menuColor
             implicitHeight: 100
             width: parent.width
@@ -212,7 +212,7 @@ Rectangle {
         Rectangle {
             id: scaleContainer
             anchors { left: parent.left; top: parent.bottom}
-            opacity: 0.9
+            opacity: parent.opacity
             color: root.menuColor
             implicitHeight: 100
             width: parent.width

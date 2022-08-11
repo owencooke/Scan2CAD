@@ -18,14 +18,14 @@ Rectangle {
         id: field
         anchors { right: parent.right;
                     verticalCenter: parent.verticalCenter }
-        color: root.textColor
+        color: (container.enabled) ? root.textColor : root.secondaryText
         text: "type here"
         horizontalAlignment: TextInput.AlignRight
         font.family: regFont.font.family
         font.pointSize: 12
         background: Rectangle {
             y: field.height - height - field.bottomPadding
-            color: root.textColor
+            color: (container.enabled) ? root.textColor : root.secondaryText
             height: 1
             border.width: 0.001
         }

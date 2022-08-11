@@ -6,7 +6,7 @@ Item {
     Loader { id: pageLoader; anchors.fill: parent }
 
     Timer {
-        interval: 10000; running: true; repeat: true;
+        interval: 3000; running: true; repeat: true;
         triggeredOnStart: true
         onTriggered: {
             pageLoader.source = ""
