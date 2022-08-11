@@ -45,7 +45,7 @@ def load3D(self, QMLpage, selectedFile, scanFlag):
     self.convertedMesh.emit(QMLpage, scanFlag, centroid, dim)
 
 # Run ICP alignment algorithm between two meshes, output to GUI
-def align_scan(self, cad, scan, cadMatrix, scanMatrix, scale):
+def align_scan(self, cad, scan, cadMatrix, scanMatrix, scale, samples, iters):
     # Load each file into trimesh
     model = trimesh.load(self.check_url(cad), force='mesh')
     scanned = trimesh.load(self.check_url(scan), force='mesh')
@@ -59,8 +59,14 @@ def align_scan(self, cad, scan, cadMatrix, scanMatrix, scale):
     # Trim scan if necessary
     scanned = tidyUpMesh(scanned)
 
+    # Check inputs for errors, assign default if error
+    if samples <= 0:
+        samples = 500
+    if iters <= 0:
+        iters = 50
+        
     # Align scan mesh relative to the model mesh, save result to disk
-    t_matrix, cost = trimesh.registration.mesh_other(scanned, model, scale=scale) # samples=2000,icp_first=10, icp_final=500)
+    t_matrix, cost = trimesh.registration.mesh_other(scanned, model, samples, scale, icp_final=iters)
     scanned.apply_transform(t_matrix)
 
     # Convert and export files to be loaded

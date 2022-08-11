@@ -106,6 +106,7 @@ Item {
             pivot: cad.pivot
             geometry: PointCloud {
                 id: cloudClass
+                onCloudCalculated: loadingScreen.on = false
             } 
             materials: [
                 DefaultMaterial {
@@ -141,38 +142,33 @@ Item {
     }
 
     Rectangle {
-        id: algoMenu
         anchors { left: parent.left; top: cadControl.bottom; margins: 16 }
-        //opacity: 0.9
         color: root.menuColor
-        width: 200
-        height: 420
+        width: algoMenu.width + 48
+        height: algoMenu.height + 48
         radius: width / 8
         
         ColumnLayout {
-            anchors { left: parent.left; right: parent.right;
-                        verticalCenter: parent.verticalCenter; margins: 16 }
+            id: algoMenu
+            anchors.centerIn: parent
             spacing: 32
-
-            AlignMenu {
-                id: alignMenu
-            }
-
-            DepthMenu {
-                id: depthMenu
-            }
+            // Menu module instances go here
+            AlignMenu { id: alignMenu }
+            DepthMenu { id: depthMenu }
         }
     }
 
     // Scale for depth map
     DepthScale {
+        id: depthScale
         anchors { right: parent.right; top: scanControl.bottom;
                     bottom: parent.bottom; margins: 16 }
         height: parent.height * 0.75
         implicitWidth: 128
         radius: width / 8
-        // opacity: 0.9
         color: root.menuColor
+        // Initially hidden; visible after running depth map
+        visible: false 
     }
 
     // Toggle menu for user's mouse control

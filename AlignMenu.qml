@@ -28,9 +28,10 @@ ColumnLayout {
         }
 
         TextBox {
+            id: samples
             Layout.alignment: Qt.AlignRight
             tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
-            text: "2000"
+            text: "500"
             fontSize: 10 
             validator: IntValidator {
                 bottom: 1
@@ -46,6 +47,7 @@ ColumnLayout {
         }
         
         TextBox {
+            id: iterations
             Layout.alignment: Qt.AlignRight
             Layout.fillWidth: true
             text: "50"
@@ -89,10 +91,11 @@ ColumnLayout {
             // Reset loader sources and run alignment from backend
             } if (!error) {
                 cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
-                loadingScreen.busyText = "Calculating alignment..."
+                loadingScreen.busyText = "Aligning Meshes..."
                 loadingScreen.on = true
-                backend.align_meshes(cad.source, scan.source, cad.sceneTransform,
-                                            scan.sceneTransform, toggleScale.checked)
+                backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
+                                        scan.sceneTransform, toggleScale.checked, 
+                                        parseInt(samples.text), parseInt(iterations.text))
                 cad.source = scan.source = " "
             }
         }

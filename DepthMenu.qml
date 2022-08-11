@@ -34,7 +34,7 @@ ColumnLayout {
             id: sampled
             Layout.alignment: Qt.AlignRight
             tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
-            text: "2000"
+            text: "10000"
             fontSize: 10 
             validator: IntValidator {
                 bottom: 1
@@ -44,7 +44,7 @@ ColumnLayout {
 
         Label {
             Layout.fillWidth: true
-            text: "Assert Match (mm)"
+            text: "Match Precision (mm)"
             color: root.textColor
             font.family: regFont.font.family
             font.pointSize: 9
@@ -61,7 +61,7 @@ ColumnLayout {
 
         Label {
             Layout.fillWidth: true
-            text: "Enable Custom Range"
+            text: "Set Custom Maximums"
             color: root.textColor
             font.family: regFont.font.family
             font.pointSize: 9
@@ -75,14 +75,14 @@ ColumnLayout {
         Label {
             Layout.leftMargin: 16
             Layout.fillWidth: true
-            text: "Maximum (mm)"
+            text: "Over-Extrusion (mm)"
             color: (customRange.checked) ? root.textColor : root.secondaryText
             font.family: regFont.font.family
             font.pointSize: 9
         }
 
         TextBox {
-            id: max
+            id: maxField
             Layout.alignment: Qt.AlignRight
             tipText: "Set the maximum distance to be considered for over-extrusion."
             text: ""
@@ -94,14 +94,14 @@ ColumnLayout {
         Label {
             Layout.leftMargin: 16
             Layout.fillWidth: true
-            text: "Minimum (mm)"
+            text: "Under-Extrusion (mm)"
             color: (customRange.checked) ? root.textColor : root.secondaryText
             font.family: regFont.font.family
             font.pointSize: 9
         }
 
         TextBox {
-            id: min
+            id: minField
             Layout.alignment: Qt.AlignRight
             tipText: "Set the minimum distance to be considered for under-extrusion."
             text: ""
@@ -109,6 +109,44 @@ ColumnLayout {
             validator: DoubleValidator {}
             enabled: customRange.checked
         }
+    }
+
+    Rectangle { implicitHeight: 1; implicitWidth: 1; color: root.menuColor }
+
+    Button {
+        Layout.alignment: Qt.AlignCenter
+        text: "Calculate Depth Map"
+        font.family: titleFont.font.family
+        font.pointSize: 10
+        palette.buttonText: root.bgColor
+        background: Rectangle { color: root.textColor; radius: height/6 }
+        
+        onClicked: {
+            // Check whether to use custom max/min values
+            var min, max
+            if (customRange.checked) {
+                min = parseFloat(minField.text)
+                max = parseFloat(maxField.text)
+            }
+            // Calculate the point cloud in threaded backend
+            backend.depth_map(cloudClass, cad.source, scan.source, parseInt(sampled.text),
+                                    parseFloat(matchThresh.text), min, max)
+            // Hide meshes, show cloud and depth scale
+            cad.opacity = scan.opacity = 0
+            cloud.opacity = 1
+            depthScale.visible = true
+            scaleToggle.checked = true
+            // Display busy indicator
+            loadingScreen.busyText = "Calculating Depth Map..."
+            loadingScreen.on = true
+        }
+    }
+
+    Rectangle { implicitHeight: 1; implicitWidth: 1; opacity: 0 }
+
+    
+    RowLayout {
+        spacing: 16
 
         Label {
             text: "Point Size"
@@ -125,19 +163,37 @@ ColumnLayout {
         }
     }
 
-    Button {
-        Layout.alignment: Qt.AlignCenter
-        text: "Calculate Depth Map"
-        font.family: titleFont.font.family
-        font.pointSize: 10
-        palette.buttonText: root.bgColor
-        background: Rectangle { color: root.textColor; radius: height/6 }
-        
-        onClicked: {
-            backend.depth_map(cloudClass, cad.source, scan.source, parseInt(sampled.text),
-                                parseFloat(matchThresh.text), parseFloat(min.text), parseFloat(max.text))
-            cad.opacity = scan.opacity = 0
-            cloud.opacity = 1
+    GridLayout {
+        columns: 2
+        columnSpacing: 16
+        rowSpacing: 10
+        width: parent.width
+
+        Label {
+            Layout.fillWidth: true
+            text: "Hide Depth Map"
+            color: root.textColor
+            font.family: regFont.font.family
+            font.pointSize: 9
         }
-    }
+        
+        CheckBox {
+            Layout.alignment: Qt.AlignRight
+            onToggled: cloud.visible = !cloud.visible 
+        }
+
+        Label {
+            Layout.fillWidth: true
+            text: "Show Extrusion Scale"
+            color: root.textColor
+            font.family: regFont.font.family
+            font.pointSize: 9
+        }
+        
+        CheckBox {
+            id: scaleToggle
+            Layout.alignment: Qt.AlignRight
+            onToggled: depthScale.visible = !depthScale.visible 
+        }
+    }    
 }

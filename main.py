@@ -73,9 +73,9 @@ class Backend(QObject):
         self.threadpool.start(thread)
 
     # Run the ICP alignment algorithm for aligning Scan to CAD
-    @Slot(str, str, QMatrix4x4, QMatrix4x4, bool)
-    def align_meshes(self, cad, scan, cadMatrix, scanMatrix, scale):
-        thread = Thread(align_scan, self, cad, scan, cadMatrix, scanMatrix, scale)
+    @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
+    def align_meshes(self, cad, scan, cadMatrix, scanMatrix, scale, samples, iters):
+        thread = Thread(align_scan, self, cad, scan, cadMatrix, scanMatrix, scale, samples, iters)
         self.threadpool.start(thread)
     
     # Generate the depth map between Scan and CAD
