@@ -7,10 +7,12 @@ RowLayout {
     property string title: "Scale"
     property string handleColour: "black"
     property real value: 0.0
+    property real initial_dim: 0.0
     signal setValue(double value)
 
     spacing: 8
 
+    // Title
     Label {
         text: title
         color: root.textColor
@@ -18,17 +20,19 @@ RowLayout {
         font.pointSize: 11
     }
 
+    // Input textfield (default is initial measurement)
     TextField {
-        id: field
-        Layout.preferredWidth: 80
+        id: distField
+        Layout.preferredWidth: 140
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
         text: row.value
         horizontalAlignment: TextInput.AlignRight
         font.family: regFont.font.family
         font.pointSize: 12
+
         background: Rectangle {
-            y: field.height - height - field.bottomPadding
+            y: distField.height - height - distField.bottomPadding
             color: root.textColor
             height: 1
             border.width: 0.001
@@ -38,43 +42,45 @@ RowLayout {
             var val = parseFloat(text)
             setValue(val)
             text = Qt.binding(function() { return value })
+            percentField.text = roundDecimal(val * 100 / initial_dim, 2)
         }
     }
 
+    // Distance units
     Label {
         text: "(mm)"
         color: root.secondaryText
         font.family: regFont.font.family
-        font.pointSize: 9
+        font.pointSize: 10
     }
 
-    Slider {
-        id: slider
-        Layout.fillWidth: true
-        Layout.alignment: Qt.AlignCenter
-        from: 0
-        value: parseFloat(field.text)
-        to: 500
+    // Percentage scale based on initial distance
+    TextField {
+        id: percentField
+        Layout.preferredWidth: 80
+        Layout.alignment: Qt.AlignHCenter
+        color: root.textColor
+        text: "100"
+        horizontalAlignment: TextInput.AlignRight
+        font.family: regFont.font.family
+        font.pointSize: 12
 
         background: Rectangle {
-            x: slider.leftPadding
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            implicitWidth: 200
-            implicitHeight: 4
-            width: slider.availableWidth
-            height: implicitHeight
-            radius: 2
+            y: percentField.height - height - percentField.bottomPadding
             color: root.textColor
+            height: 1
+            border.width: 0.001
         }
 
-        handle: Rectangle {
-            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            implicitWidth: 10
-            implicitHeight: 20
-            color: handleColour
+        onEditingFinished: {
+            setValue(parseFloat(percentField.text)*initial_dim/100)
         }
+    }
 
-        onMoved: setValue(slider.value)
+    Label {
+        text: "%"
+        color: root.secondaryText
+        font.family: regFont.font.family
+        font.pointSize: 11
     }
 }

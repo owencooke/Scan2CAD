@@ -16,12 +16,12 @@ Item {
                 if (scanFlag) {
                     scan.source = "backend_resources/converted_mesh/scan_align.glb"
                     scan.pivot = centroid
-                    scan.dimensions = dim
+                    scan.dimensions = scan.init_dims = dim
                     scan.scale = Qt.vector3d(5,5,5)
                 } else {
                     cad.source = "backend_resources/converted_mesh/cad_align.glb"
                     cad.pivot = centroid
-                    cad.dimensions = dim
+                    cad.dimensions = cad.init_dims = dim
                     cad.scale = Qt.vector3d(5,5,5)
                 }
                 loadingScreen.on = false
@@ -68,6 +68,7 @@ Item {
         RuntimeLoader {
             id: cad
             property vector3d dimensions: Qt.vector3d(0,0,0)
+            property vector3d init_dims: Qt.vector3d(0,0,0)
             scale:  Qt.vector3d(5,5,5)
         }
 
@@ -83,6 +84,7 @@ Item {
         RuntimeLoader {
             id: scan
             property vector3d dimensions: Qt.vector3d(0,0,0)
+            property vector3d init_dims: Qt.vector3d(0,0,0)
             scale:  Qt.vector3d(5,5,5)
         }
 

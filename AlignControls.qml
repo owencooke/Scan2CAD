@@ -21,7 +21,6 @@ Rectangle {
         return !prev_state
     }
     
-    // opacity: 0.9
     color: root.menuColor
     implicitHeight: 48
     width: textRow.width + title.width + dropButton.width + 75
@@ -40,6 +39,7 @@ Rectangle {
             font.pointSize: 11
         }
 
+        // File upload button
         IconButton {
             icon { source: "backend_resources/icons/upload-solid.svg"; 
                     width: 24; height: 24 }
@@ -67,6 +67,7 @@ Rectangle {
         }
     }
 
+    // Title
     Label {
         id: title
         anchors { left: dropButton.right; verticalCenter: parent.verticalCenter; margins: 8}
@@ -76,6 +77,7 @@ Rectangle {
         font.pointSize: 18
     }
 
+    // Dropdown menu button
     IconButton {
         id: dropButton
         property bool toggle: false
@@ -83,7 +85,7 @@ Rectangle {
         icon.source: (toggle) ? "backend_resources/icons/angle-down-solid.svg" :
                         "backend_resources/icons/angle-right-solid.svg"
         icon.width: (toggle) ? 24 : 16; icon.height: 24
-        // icon.source: "backend_resources/icons/toolbox-solid.svg"
+        
         onClicked: {
             toggle = !toggle
         }
@@ -97,10 +99,8 @@ Rectangle {
         implicitHeight: 32
         width: parent.width
 
-        // Align buttons in a row
         RowLayout {
             id: buttonRow
-            //spacing: 0
             anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter}
 
             // Toggle mesh visibility 
@@ -122,7 +122,7 @@ Rectangle {
                 }
             }
 
-            // Button for opening color slider
+            // Color dropdown
             IconButton {
                 tipText: "Color"
                 icon { source: "backend_resources/icons/palette-solid.svg";
@@ -130,7 +130,7 @@ Rectangle {
                 onClicked: colorContainer.visible = closeTools(colorContainer.visible)
             }
 
-            // Rotations
+            // Rotate dropdown
             IconButton {
                 tipText: "Rotate"
                 icon { source: "backend_resources/icons/rotate-solid.svg";
@@ -138,7 +138,7 @@ Rectangle {
                 onClicked: rotateContainer.visible = closeTools(rotateContainer.visible)
             }
 
-            // Scaling
+            // Scale dropdown
             IconButton {
                 tipText: "Scale"
                 icon { source: "backend_resources/icons/maximize-solid.svg";
@@ -147,6 +147,7 @@ Rectangle {
             }
         }
 
+        // Slider for mesh color 
         Rectangle {
             id: colorContainer
             anchors { left: parent.left; top: parent.bottom}
@@ -166,6 +167,7 @@ Rectangle {
             }
         }
 
+        // Rotational tools for x, y, z axes
         Rectangle {
             id: rotateContainer
             anchors { left: parent.left; top: parent.bottom}
@@ -209,6 +211,7 @@ Rectangle {
             }
         }
 
+        // Scale tools for length, width, height
         Rectangle {
             id: scaleContainer
             anchors { left: parent.left; top: parent.bottom}
@@ -224,10 +227,10 @@ Rectangle {
                 spacing: 4
 
                 ScalingTool {
-                    //id: xRot
                     title: " L "
                     handleColour: "red"
-                    value: roundDecimal(target.dimensions.x, 3) // (mm)
+                    value: roundDecimal(target.dimensions.x, 3)
+                    initial_dim: target.init_dims.x
                     onSetValue: function(new_dim) {
                         if (new_dim != 0) { 
                             target.scale.x = (new_dim * target.scale.x) / target.dimensions.x
@@ -237,10 +240,10 @@ Rectangle {
                 }
 
                 ScalingTool {
-                    //id: yRot
                     title: "W"
                     handleColour: "green"
-                    value: roundDecimal(target.dimensions.y, 3) // (mm)
+                    value: roundDecimal(target.dimensions.y, 3)
+                    initial_dim: target.init_dims.y
                     onSetValue: function(new_dim) {
                         if (new_dim != 0) { 
                             target.scale.y = (new_dim * target.scale.y) / target.dimensions.y
@@ -250,10 +253,10 @@ Rectangle {
                 }
 
                 ScalingTool {
-                    //id: zRot
                     title: " H "
                     handleColour: "blue"
-                    value: roundDecimal(target.dimensions.z, 3) // (mm)
+                    value: roundDecimal(target.dimensions.z, 3)
+                    initial_dim: target.init_dims.z
                     onSetValue: function(new_dim) {
                         if (new_dim != 0) { 
                             target.scale.z = (new_dim * target.scale.z) / target.dimensions.z
