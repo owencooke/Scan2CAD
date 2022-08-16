@@ -9,7 +9,9 @@ Item {
     property var views: ["FRONT", "TOP", "LEFT",
                         "REAR", "BOTTOM", "RIGHT"]
     property var urls: ["", "", "", "", "", ""]
+    property bool scan
     
+    // Functions for cycling through list of images
     function increment() {
         if (index < 5) {
             index += 1
@@ -31,11 +33,13 @@ Item {
 
     Connections {
         target: backend
+        // Display detected contours to user for comparison
         function onIterateContour(idx, percent) {
             var img = "backend_resources/contours/mask" + idx + ".png"
             contour.source = img
             console.log(percent+"%")
         }
+        // Reset contour source
         function onContourResult(dist, percent) {
             contour.source = ''
         }
@@ -44,15 +48,15 @@ Item {
     implicitHeight: 300
     implicitWidth: 300
     
+    // Picture frame
     Rectangle {
         id: frame
         anchors { top: viewLabel.bottom; left: parent.left; right: parent.right; 
                     bottom: buttonLayout.top; bottomMargin: 8}
         color: root.menuColor
-        // border.color: root.textColor
-        // border.width: 2
         clip: true
 
+        // Image of 3D part
         Image {
             id: image
             anchors.fill: parent
@@ -62,6 +66,8 @@ Item {
             source: urls[index]
             cache: false
         }
+
+        // Contour image with transparent bg
         Image {
             id: contour
             anchors.fill: parent
@@ -72,6 +78,7 @@ Item {
         }
     }
 
+    // Title (view perspective)
     Label {
         id: viewLabel
         anchors { horizontalCenter: parent.horizontalCenter;
@@ -82,6 +89,7 @@ Item {
         font.pointSize: 24
     }
 
+    // Arrows for flipping through images
     IconButton {
         anchors { left: frame.left; verticalCenter: viewLabel.verticalCenter }
         icon.source: "backend_resources/icons/square-caret-left-solid.svg"
@@ -109,7 +117,7 @@ Item {
 
             onClicked: {
                 root.index = 1
-                compare2D.captureRotations(true, true)
+                compare2D.captureRotations(!scan, scan)
             }
         }
 

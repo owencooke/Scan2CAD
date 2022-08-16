@@ -3,12 +3,16 @@ import QtQuick.Controls
 
 Slider {
     id: slider
+    // Enable for black->white gradient;
+    // otherwise, rainbow gradient
     property bool bnw: false
+
     from: 0
     to: 1
     implicitHeight: 20
     implicitWidth: 100
 
+    // Gradient
     background: Rectangle {
         width: parent.width
         height: parent.height
@@ -26,6 +30,7 @@ Slider {
         }
     }
 
+    // Handle
     handle: Rectangle {
         color: (bnw) ? Qt.hsla(0, 0, colorSlider.value, 1) 
                     : Qt.hsla(slider.value, 1, 0.5, 1)

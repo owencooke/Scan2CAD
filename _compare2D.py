@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 # Crop auto-captured images from 3D viewer and display
-def crop_faces(self, theme, images):
+def crop_faces(self, theme, cad, scan, images):
     for file in images:
         splitPath = file.split('/')
         filename = splitPath[-1].split('.')[0]
@@ -30,7 +30,7 @@ def crop_faces(self, theme, images):
         crop = img[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
         cv2.imwrite(os.path.join(self.basedir,'backend_resources/cropped/'+ filename + '.png'), crop)
 
-    self.displayCrop.emit()
+    self.displayCrop.emit(cad, scan)
 
 # Iteratively match contours between two part images
 def match_contours(self, cad_img, scan_img):

@@ -13,6 +13,7 @@ RowLayout {
 
     spacing: 15
 
+    // Title
     Label {
         text: title
         color: root.textColor
@@ -20,6 +21,7 @@ RowLayout {
         font.pointSize: 12
     }
 
+    // Slider (degrees)
     Slider {
         id: slider
         Layout.fillWidth: true
@@ -53,6 +55,7 @@ RowLayout {
         }
     }
 
+    // Input textbox
     TextField {
         id: field
         Layout.preferredWidth: 60
@@ -62,12 +65,14 @@ RowLayout {
         horizontalAlignment: TextInput.AlignHCenter
         font.family: regFont.font.family
         font.pointSize: 12
+
         background: Rectangle {
             y: field.height - height - field.bottomPadding
             color: root.textColor
             height: 1
             border.width: 0.001
         }
+
         onEditingFinished: {
             field.text = zeroTo360(parseFloat(field.text))
             slider.value = parseFloat(field.text)

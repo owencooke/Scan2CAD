@@ -62,7 +62,7 @@ class Backend(QObject):
     # ------------------------------------------------------------------#
     convertedMesh = Signal(str, bool, QVector3D, QVector3D)
 
-    displayCrop = Signal()
+    displayCrop = Signal(bool, bool)
     iterateContour = Signal(int, float)
     contourResult = Signal(float, float)
 
@@ -122,7 +122,7 @@ class Backend(QObject):
         if scan: 
             file_list += [dir+"scan_front.png", dir+"scan_top.png", dir+"scan_left.png",
                             dir+"scan_rear.png", dir+"scan_bottom.png", dir+"scan_right.png"]
-        thread = Thread(crop_faces, self, theme, file_list)
+        thread = Thread(crop_faces, self, theme, cad, scan, file_list)
         self.threadpool.start(thread)
 
     # Compare two images based on their detected contours

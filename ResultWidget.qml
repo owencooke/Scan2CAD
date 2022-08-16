@@ -19,6 +19,8 @@ Rectangle {
         id: column
         anchors.centerIn: parent
         spacing: 0
+
+        // Distance measurement
         Label {
             id: distValue
             Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
@@ -28,6 +30,7 @@ Rectangle {
             font.pointSize: 24
             font.weight: Font.DemiBold
         }
+
         Label {
             id: distTitle
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
@@ -38,6 +41,7 @@ Rectangle {
             font.pointSize: 9
             font.weight: Font.DemiBold
         }
+
         Rectangle {
             Layout.alignment: Qt.AlignCenter
             color: root.menuColor
@@ -45,6 +49,8 @@ Rectangle {
             implicitHeight: 10
             implicitWidth: 10
         }
+
+        // Similarity Percentage
         Label {
             id: percentValue
             Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
@@ -54,6 +60,7 @@ Rectangle {
             font.pointSize: 24
             font.weight: Font.DemiBold
         }
+        
         Label {
             id: percentTitle
             text: "Percent label"
