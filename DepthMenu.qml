@@ -16,6 +16,7 @@ ColumnLayout {
         font.pointSize: 12
     }
 
+    // Parameter controls
     GridLayout {
         columns: 2
         columnSpacing: 16
@@ -113,6 +114,7 @@ ColumnLayout {
 
     Rectangle { implicitHeight: 1; implicitWidth: 1; color: root.menuColor }
 
+    // Depth map algorithm button
     Button {
         Layout.alignment: Qt.AlignCenter
         text: "Calculate Depth Map"
@@ -128,23 +130,23 @@ ColumnLayout {
                 min = parseFloat(minField.text)
                 max = parseFloat(maxField.text)
             }
-            // Calculate the point cloud in threaded backend
+            // Calculate the point cloud in backend
             backend.depth_map(cloudClass, cad.source, scan.source, parseInt(sampled.text),
                                     parseFloat(matchThresh.text), min, max)
-            // Hide meshes, show cloud and depth scale
+            // Hide meshes, display cloud and depth scale
             cad.opacity = scan.opacity = 0
             cloud.opacity = 1
             depthScale.visible = true
             scaleToggle.checked = true
             // Display busy indicator
-            loadingScreen.busyText = "Calculating Depth Map..."
+            loadingScreen.text = "Calculating Depth Map..."
             loadingScreen.on = true
         }
     }
 
     Rectangle { implicitHeight: 1; implicitWidth: 1; opacity: 0 }
 
-    
+    // Display controls for post-algorithm use
     RowLayout {
         spacing: 16
 

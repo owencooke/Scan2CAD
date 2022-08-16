@@ -10,13 +10,13 @@ View3D {
     property bool activateGrid
     property vector3d meshRotation
 
-    // Rotating mesh to each side view and capturing image of the scene
+    // Rotate mesh to each orthographic view and capture image of the scene
     function capture2D(fname) {
-        // Disable gridlines and adjust color for high contrast
+        // Disable gridlines and adjust color for high image contrast
         axes.enableXYGrid = false
         axes.enableAxisLines = false
         light.color = root.textColor
-        //mesh.eulerRotation = Qt.vector3d(0,0,0)
+        
         // Front
         view3D.grabToImage(function(result) {
             result.saveToFile("backend_resources/captured_imgs/" + fname + "_front.png")
@@ -46,6 +46,7 @@ View3D {
                                 axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
                                 light.color = Qt.binding(function() { return nodeColor })
                                 mesh.eulerRotation.y -= 270
+                                // Call backend function to crop the images
                                 if (fname == "cad") {
                                     backend.crop2D(root.theme, true, false)
                                 } else {
@@ -61,23 +62,10 @@ View3D {
 
     camera: OrthographicCamera {
         id: camera
-        property double zoomX: 1
-        property double zoomY: 1
         clipNear: -9999
         pivot: target.pivot
-        horizontalMagnification: zoomX
-        verticalMagnification: zoomY
     }
 
-    // for Direct3D 11 graphics use 
-    // MeshLighting {
-    //     id: light
-    //     target: mesh
-    //     targetColor: nodeColor
-    //     camera: camera
-    // }
-
-    // for OPEN-GL graphics use
     DirectionalLight{
         id: light
         color: nodeColor
@@ -92,6 +80,7 @@ View3D {
         scale:  Qt.vector3d(5,5,5)
     }
 
+    // Scene rendering options
     environment: SceneEnvironment {
         id: env
         antialiasingMode: SceneEnvironment.MSAA
@@ -100,6 +89,7 @@ View3D {
         clearColor: root.bgColor 
     }
 
+    // Mouse control tool
     MeshController {
         id: mouse
         scene: view3D
@@ -109,6 +99,7 @@ View3D {
         keysEnabled: false
     }
 
+    // Gridlines
     AxisHelper {
         id: axes
         enableXZGrid: false // Model kept in XY plane

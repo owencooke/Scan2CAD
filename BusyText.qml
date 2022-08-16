@@ -5,39 +5,39 @@ import QtQuick.Layouts
 
 Item {
     id: loadingScreen
-    property string busyText: "Loading..."
-    property bool on: false
+    property alias text: label.text
+    property alias on: busy.running
 
     implicitHeight: 150
     implicitWidth: 200
 
     ColumnLayout {
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        // anchors.bottomMargin: loadingScreen.radius
+        anchors { top: parent.top; bottom: parent.bottom;
+                    horizontalCenter: parent.horizontalCenter }
         spacing: 0
 
+        // Loading progress wheel
         BusyIndicator {
             id: busy
             Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
             Layout.preferredHeight: loadingScreen.height/2
             Layout.preferredWidth: loadingScreen.height/2
-            running: on
+            running: false
             Material.accent: root.textColor
         }
 
+        // Descriptive text
         Label {
-            id: loadText
+            id: label
             Layout.alignment: Qt.AlignCenter
-            text: busyText
+            text: "Loading..."
             color: root.textColor
             font.family: titleFont.font.family
             font.pointSize: 12
             visible: on
         }
 
-        // FIXME: add cancel button to abort long scripts
+        // // Cancel button
         // Button {
         //     Layout.alignment: Qt.AlignCenter
         //     Layout.fillWidth: true
@@ -47,8 +47,7 @@ Item {
         //     font.pointSize: 10
         //     visible: on
         //     onClicked: {
-        //         backend.cancel_loading()
-        //         console.log('cancelling')
+        //         // FIXME: add cancel function to abort current task
         //     }
         // }
     }

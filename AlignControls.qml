@@ -59,7 +59,7 @@ Rectangle {
                     fileLabel.text = getFilename(selectedFile.toString())
                     fileLabel.color = Qt.binding(function() { return root.secondaryText })
                     // Start busy indicator for loading
-                    loadingScreen.busyText = "Loading 3D File..."
+                    loadingScreen.text = "Loading 3D File..."
                     loadingScreen.on = true
                     backend.load_mesh("Align", selectedFile, scanFlag)
                 }

@@ -8,8 +8,6 @@ import QtQuick3D.AssetUtils
 import DepthMap
 
 Item {
-    id: align
-
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
@@ -61,12 +59,8 @@ Item {
 
         camera: OrthographicCamera {
             id: camera
-            property double zoomX: 1
-            property double zoomY: 1
             clipNear: -9999
             pivot: cad.pivot
-            horizontalMagnification: zoomX
-            verticalMagnification: zoomY
             eulerRotation: Qt.vector3d(-20.4556, 52.6713, 0)
         }
 
@@ -100,10 +94,12 @@ Item {
             eulerRotation: camera.eulerRotation
         }
 
+        // Model for storing the calculated Depth Cloud
         Model {
             id: cloud
             scale: Qt.vector3d(5, 5, 5)
             pivot: cad.pivot
+            // Custom geometry from _depth_map.py
             geometry: PointCloud {
                 id: cloudClass
                 onCloudCalculated: loadingScreen.on = false
@@ -112,6 +108,7 @@ Item {
                 DefaultMaterial {
                     lighting: DefaultMaterial.NoLighting
                     vertexColorsEnabled: true
+                    // Controlled by slider
                     pointSize: depthMenu.pointSize
                 }
             ]
@@ -141,6 +138,7 @@ Item {
         }
     }
 
+    // Algorithm sidebar menu
     Rectangle {
         anchors { left: parent.left; top: cadControl.bottom; margins: 16 }
         color: root.menuColor
@@ -152,7 +150,7 @@ Item {
             id: algoMenu
             anchors.centerIn: parent
             spacing: 32
-            // Menu module instances go here
+            // Seperate menu modules in column
             AlignMenu { id: alignMenu }
             DepthMenu { id: depthMenu }
         }
@@ -167,11 +165,11 @@ Item {
         implicitWidth: 128
         radius: width / 8
         color: root.menuColor
-        // Initially hidden; visible after running depth map
+        // Visible after running depth map calculation
         visible: false 
     }
 
-    // Toggle menu for user's mouse control
+    // Toggle menu for switching user mouse control
     Rectangle {
         id: mouseMenu
         anchors { horizontalCenter: parent.horizontalCenter
@@ -194,11 +192,12 @@ Item {
                 font.pointSize: 8
             }
 
+            // Button toggles mouse controls between camera, CAD or scan
             Button {
                 id: mouseButton
                 Layout.alignment: Qt.AlignCenter
                 text: "CAMERA"
-                palette.buttonText: root.selectedColor
+                palette.buttonText: root.textColor
                 font.family: titleFont.font.family
                 font.pointSize: 18
                 background: Rectangle { opacity: 0 }
@@ -228,7 +227,7 @@ Item {
         }
     }
 
-    // Dropdown menu for CAD model controls
+    // Dropdown menu for CAD model's controls
     AlignControls {
         id: cadControl
         anchors { right: mouseMenu.left; rightMargin: 32; 
@@ -237,7 +236,7 @@ Item {
         scanFlag: false
     }
 
-    // Dropdown menu for 3D scan controls
+    // Dropdown menu for 3D scan's controls
     AlignControls {
         id: scanControl
         anchors { left: mouseMenu.right; leftMargin: 32
@@ -246,12 +245,11 @@ Item {
         scanFlag: true
     }
 
-    // Running Indicator
+    // Loading indicator
     BusyText {
         id: loadingScreen
         anchors.centerIn: view3D
         width: 200
         height: 150
-        on: false
     }
 }

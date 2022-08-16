@@ -6,6 +6,7 @@ import QtQuick3D.AssetUtils
 ColumnLayout {
     spacing: 8
 
+    // Title
     Label {
         Layout.alignment: Qt.AlignCenter
         text: "Alignment"
@@ -14,6 +15,7 @@ ColumnLayout {
         font.pointSize: 12
     }
 
+    // Parameter controls
     GridLayout {
         columns: 2
         columnSpacing: 16
@@ -71,6 +73,7 @@ ColumnLayout {
         }
     }
 
+    // Button for running alignment algorithm
     Button {
         id: alignButton
         Layout.alignment: Qt.AlignCenter
@@ -79,19 +82,21 @@ ColumnLayout {
         font.pointSize: 10
         palette.buttonText: root.bgColor
         background: Rectangle { color: root.textColor; radius: height/6 }
+
         onClicked: {
             var error = false
-            // Turn labels red to indicate error if no file selected
+            // Check if 3D files have been selected
             if (cad.status != RuntimeLoader.Success) {
                 scanControl.fileColor = "red"
                 error = true
             } if (scan.status != RuntimeLoader.Success) {
                 cadControl.fileColor = "red"
                 error = true
+
             // Reset loader sources and run alignment from backend
             } if (!error) {
                 cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
-                loadingScreen.busyText = "Aligning Meshes..."
+                loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
                 backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
                                         scan.sceneTransform, toggleScale.checked, 

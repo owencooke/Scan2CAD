@@ -35,7 +35,7 @@ Item {
         }
     }
 
-    // 3D SCENE #1 (left)
+    // Left layout for 3D scene and menu
     SplitView {
         id: cadLayout
         orientation: Qt.Vertical
@@ -52,6 +52,7 @@ Item {
             }
         }
 
+        // Left 3D scene
         Scene3D {
             id: cadScene
             SplitView.preferredHeight: parent.height * (3/4)
@@ -60,6 +61,7 @@ Item {
             activateGrid: cadControls.gridChecked
         }
 
+        // Left 3D menu
         InfoControls3D {
             id: cadControls
             SplitView.fillHeight: false
@@ -78,7 +80,7 @@ Item {
         color: root.menuColor
     }
 
-    // 3D SCENE #2 (right)
+    // Right layout for 3D scene and menu
     SplitView {
         id: scanLayout
         orientation: Qt.Vertical
@@ -95,6 +97,7 @@ Item {
             }
         }
 
+        // Right 3D Scene
         Scene3D {
             id: scanScene
             SplitView.preferredHeight: parent.height * (3/4)
@@ -103,6 +106,7 @@ Item {
             activateGrid: scanControls.gridChecked
         }
 
+        // Right 3D menu
         InfoControls3D {
             id: scanControls
             SplitView.fillHeight: false
@@ -114,9 +118,8 @@ Item {
 
     // Loading progess indicator
     BusyText {
-        id: loadIndicator
         anchors.centerIn: parent
-        busyText: "Loading 3D File..."
+        text: "Loading 3D File..."
         on: cadControls.loading || scanControls.loading
     }
 }

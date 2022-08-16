@@ -6,26 +6,29 @@ Rectangle {
     implicitHeight: 600
     implicitWidth: 200
 
+    // Upper label
     Label {
         id: overLabel
         anchors { top: parent.top; margins: 16;
                     horizontalCenter: parent.horizontalCenter }
         text: "Over-Extrusion"
         color: root.textColor
-        font.family: titleFont.font.family
+        font.family: regFont.font.family
         font.pointSize: 10
     }
 
+    // Lower label
     Label {
         id: underLabel
         anchors { bottom: parent.bottom; margins: 16;
                     horizontalCenter: parent.horizontalCenter }
         text: "Under-Extrusion"
         color: root.textColor
-        font.family: titleFont.font.family
+        font.family: regFont.font.family
         font.pointSize: 10
     }
 
+    // Rainbow gradient for color-distance association
     Rectangle {
         id: depthGradient
         anchors { right: parent.right; margins: 8
@@ -49,13 +52,34 @@ Rectangle {
             width: parent.width
             anchors.verticalCenter: parent.verticalCenter
         }
+
+        // Unit labels
+        Label {
+            anchors { top: parent.top; margins: 6;
+                        horizontalCenter: parent.horizontalCenter }
+            text: "(mm)"
+            color: root.textColor
+            font.family: regFont.font.family
+            font.pointSize: 8
+        }
+
+        Label {
+            anchors { bottom: parent.bottom; margins: 6;
+                        horizontalCenter: parent.horizontalCenter }
+            text: "(mm)"
+            color: root.textColor
+            font.family: regFont.font.family
+            font.pointSize: 8
+        }
     }
 
+    // Column of thresholds from calculated distances
     ColumnLayout {
         anchors {right: depthGradient.left; left: parent.left; rightMargin: 8
                     top: depthGradient.top; bottom: depthGradient.bottom; leftMargin: 8 }
 
         Repeater {
+            // List of floats calculated in _depth_map.py
             model: try {cloudClass.thresh_model} catch(TypeError) {}
             Label {
                 Layout.alignment: Qt.AlignRight

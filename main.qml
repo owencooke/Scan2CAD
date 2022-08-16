@@ -6,31 +6,25 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: root
     property alias index: stack.currentIndex
-    width: 1280
-    height: 720
-    color: root.bgColor
-    visible: true
-    title: qsTr("LIMDA")
-    // Application formatting properties
-    // Colors
+
+    // Theme and Colors
     property string theme: "dark"
     property string textColor: "white"
     property string secondaryText: "#9e9d9d"
     property string menuColor: "#303030"
     property string bgColor: "#252525"
-    property string selectedColor: "#7BCCDF"
-    // Fonts, loaded from local file
+
+    // Fonts
     FontLoader { id: regFont; source: "backend_resources/fonts/Inter-Regular.otf" }
     FontLoader { id: titleFont; source: "backend_resources/fonts/Inter-Black.otf" }
 
+    // Takes a filepath from FileDialog as input; returns just the file name and ext
     function getFilename(filepath) {
         var dirs = filepath.split("/")
         return dirs[dirs.length-1]
-        // var with_ext = dirs[dirs.length-1]
-        // dirs = with_ext.split(".")
-        // return dirs[dirs.length-2]
     }
 
+    // Rounds input value to the specified number of digits (dec_digits)
     function roundDecimal(value, dec_digits) {
         var multiplier = 10 ** dec_digits
         var result = (Math.round(value * multiplier) / multiplier).toFixed(dec_digits)
@@ -44,138 +38,105 @@ ApplicationWindow {
         return result_string
     }
 
-    // Page layout for application
+    // Default window properties
+    width: 1280
+    height: 720
+    visible: true
+    color: root.bgColor
+    title: "LIMDA GUI 1.0.0"
+
+    // Page Layout
     StackLayout {
         id: stack
-        anchors.fill: parent
-        anchors.leftMargin: 48
-        // PAGES placed below (same name as respective QML file)
-        HomePage {} // index = 0
-        Model3D {} // index = 1 ...
+        anchors { fill: parent; leftMargin: 48 }
+
+        // QML pages (index=0,1,2...)
+        HomePage {}
+        Model3D {}
         CompareImages2D { id: compare2D } 
-        LiveEdit {}
-        //Align {}
-        //Test {}
-        Settings {} // leave settings as last index
+        //LiveEdit {}
+        Align {}
+        // Always leave settings as last index (bottom icon)
+        Settings {}
     }
 
-    // Menu navigation button (always on top of pages)
-    Button {
-        id: menuButton
-        icon { source: "backend_resources/icons/bars.svg";
-                color: root.textColor; height: 32; width: 32 }
-        background: Rectangle {
-            implicitWidth: 48
-            implicitHeight: 48
-            color: root.menuColor
-        }
-
-        onClicked: menuNav.open()
-    }
-
+    // Quick access sidebar menu for popular page's icons
     Rectangle {
-        id: leftMenu
-        color: root.menuColor
+        anchors { top: parent.top; left: parent.left; bottom: parent.bottom }
         implicitWidth: 48
-        anchors.top: menuButton.bottom
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
+        color: root.menuColor
 
-        GridLayout {
-            id: gridMenu
-            columns: 1
-            rowSpacing: 0
-            anchors.horizontalCenter: parent.horizontalCenter
-            // Buttons for the different pages laid out in a column
-            // Customized button defined in MenuButton.qml: assign text, page index (0,1,2...), and icon source below
-            MenuButton { tipText: "Homepage"; pageIndex: 0; iconURL: "backend_resources/icons/house.svg"}
-            MenuButton { tipText: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
-            MenuButton { tipText: "2D Projection Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/camera-retro-solid.svg" }
-            MenuButton { tipText: "3D Comparison"; pageIndex: 3; iconURL: "backend_resources/icons/cubes-solid.svg" }
-            //MenuButton { tipText: "Testing"; pageIndex: 4; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
+        ColumnLayout {
+            anchors { top: parent.top; horizontalCenter: parent.horizontalCenter }
+            spacing: 0
+
+            // Navigation menu button
+            MenuButton { iconURL: "backend_resources/icons/bars.svg"; icon.height: 32; 
+                                icon.width: 32; pageIndex: -1; onClicked: menuNav.open() }
+            // Customized menu icons: assign text, page index (0,1,2...), and icon source below
+            MenuButton { tipText: "Homepage"; pageIndex: 0;
+                            iconURL: "backend_resources/icons/house.svg" }
+            MenuButton { tipText: "3D Viewer"; pageIndex: 1; 
+                            iconURL: "backend_resources/icons/cube-solid.svg" }
+            MenuButton { tipText: "2D Projection Comparison"; pageIndex: 2; 
+                            iconURL: "backend_resources/icons/camera-retro-solid.svg" }
+            MenuButton { tipText: "3D Comparison"; pageIndex: 3;
+                            iconURL: "backend_resources/icons/cubes-solid.svg" }
         }
-
-        MenuButton { 
+        // Settings button placed at bottom
+        MenuButton {
             anchors.bottom: parent.bottom
             tipText: "Settings"
             pageIndex: stack.count - 1
             iconURL: "backend_resources/icons/gear-solid.svg"
         }
-            
     }
 
+    // Expandable and scrollable navigation menu
     Drawer {
         id: menuNav
         clip: true
         modal: true
-        //width: 0.25 * parent.width
-        implicitWidth: 300
+        width: navColumn.width + navColumn.anchors.leftMargin
         height: parent.height
-        //height: parent.height - menuButton.background.implicitHeight
-        //y: menuButton.background.implicitHeight
         background: Rectangle { color: root.menuColor }
 
         Flickable {
-            // Enables scrolling for menu
             id: flickable
-            clip: true
             anchors.fill: parent
-            //anchors.topMargin: 20
-            contentHeight: grid.height
-            contentWidth: grid.width
+            clip: true
+            contentHeight: navColumn.height
+            contentWidth: navColumn.width
+            flickableDirection: Flickable.VerticalFlick
 
             ScrollIndicator.vertical: ScrollIndicator {
-                id: scrollBar
                 parent: flickable.parent
+                anchors { top: flickable.top; right: flickable.right;
+                            bottom: flickable.bottom }
                 active: true
-                anchors.top: flickable.top
-                anchors.right: flickable.right
-                anchors.bottom: flickable.bottom
             }
 
-            Item {
-                // Purpose: to center gridlayout in the menuNav window
-                id: wrapper
-                width: menuNav.width - scrollBar.width
-                height: 3000 // Should be larger than grid s.t. grid is fully scrollable
-                anchors.horizontalCenter: parent.horizontalCenter
+            ColumnLayout {
+                id: navColumn
+                anchors { top: parent.top; left: parent.left; leftMargin: 2 }
+                spacing: 0
 
-                GridLayout {
-                    id: grid
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    columns: 1
-                    rowSpacing: 0
-                    // Buttons for the different pages laid out in a column
-                    Button { 
-                        icon {
-                            source: "backend_resources/icons/bars.svg"; 
-                            color: root.textColor; height: 32; width: 32 
-                        }
-                        background: Rectangle { 
-                            implicitWidth: 48
-                            implicitHeight: 48
-                            color: root.menuColor 
-                        }
-                        onClicked: menuNav.close()
-                    }
-                    // Customized button defined in MenuButton.qml: assign text, page index (0,1,2...), and icon source below
-                    MenuButton { text: "Homepage"; pageIndex: 0; iconURL: "backend_resources/icons/house.svg"}
-                    MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
-                    MenuButton { text: "2D Projection Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/camera-retro-solid.svg" }
-                    MenuButton { text: "3D Comparison"; pageIndex: 3; iconURL: "backend_resources/icons/cubes-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
+                // Navigation menu button
+                MenuButton { 
+                    text: root.title
+                    font.family: titleFont.font.family
+                    icon { height: 32; width: 32; source: "backend_resources/icons/bars.svg" }
+                    pageIndex: -1; 
+                    onClicked: menuNav.close() 
+                }
+                // Customized button defined in MenuButton.qml: assign text, page index (0,1,2...), and icon source below
+                MenuButton { text: "Homepage"; pageIndex: 0; iconURL: "backend_resources/icons/house.svg"}
+                MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
+                MenuButton { text: "2D Projection Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/camera-retro-solid.svg" }
+                MenuButton { text: "3D Comparison"; pageIndex: 3; iconURL: "backend_resources/icons/cubes-solid.svg" }
+                // For demo-ing scrollable menu
+                Repeater {
+                    model: 15
                     MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
                 }
             }
