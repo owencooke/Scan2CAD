@@ -30,10 +30,26 @@ Item {
         Label {
             id: loadText
             Layout.alignment: Qt.AlignCenter
-            text: (on) ? busyText : ""
+            text: busyText
             color: root.textColor
             font.family: titleFont.font.family
             font.pointSize: 12
+            visible: on
         }
+
+        // FIXME: add cancel button to abort long scripts
+        // Button {
+        //     Layout.alignment: Qt.AlignCenter
+        //     Layout.fillWidth: true
+        //     text: "Cancel"
+        //     palette.buttonText: root.textColor
+        //     font.family: titleFont.font.family
+        //     font.pointSize: 10
+        //     visible: on
+        //     onClicked: {
+        //         backend.cancel_loading()
+        //         console.log('cancelling')
+        //     }
+        // }
     }
 }

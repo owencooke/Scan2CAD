@@ -5,8 +5,7 @@ import sys
 from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool
-from sklearn.metrics import max_error
+from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool, QThread
 # Import backend method bodies and Classes
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan
@@ -26,6 +25,18 @@ class Thread(QRunnable):
     def run(self):
         self.function(*self.args, **self.kwargs)
 
+class Worker(QObject):
+    def __init__(self, function, *args, **kwargs):
+        super(Worker, self).__init__()
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+
+    finished = Signal()
+
+    def run(self):
+        self.function(*self.args, **self.kwargs)
+        self.finished.emit()
 
 ''' Class containing all of the Python backend functions for the GUI.
 Contains the following types of attributes/methods:
@@ -66,11 +77,21 @@ class Backend(QObject):
     def clear_cache(self):
         self.engine.clearComponentCache()
 
+    # @Slot()
+    # def cancel_loading(self):
+    #     self.thread.requestInterruption()
+
     # Load model into the 3D viewer or Align page of GUI
     @Slot(str, str, bool)
     def load_mesh(self, QMLpage, file, scanFlag):
         thread = Thread(load3D, self, QMLpage, file, scanFlag)
         self.threadpool.start(thread)
+        # self.thread = QThread()
+        # self.worker = Worker(load3D, self, QMLpage, file, scanFlag)
+        # self.worker.moveToThread(self.thread)
+        # self.worker.finished.connect(self.thread.quit)
+        # self.thread.started.connect(self.worker.run)
+        # self.thread.start()
 
     # Run the ICP alignment algorithm for aligning Scan to CAD
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
@@ -136,4 +157,3 @@ if __name__ == "__main__":
     if not engine.rootObjects():
         sys.exit(-1)
     sys.exit(app.exec())
-    # FIXME: implement garbage collecting function for temp files
