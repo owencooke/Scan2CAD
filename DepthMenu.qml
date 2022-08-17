@@ -7,15 +7,6 @@ ColumnLayout {
 
     spacing: 8
 
-    // Title
-    Label {
-        Layout.alignment: Qt.AlignCenter
-        text: "Depth Map"
-        color: root.textColor
-        font.family: titleFont.font.family
-        font.pointSize: 12
-    }
-
     // Parameter controls
     GridLayout {
         columns: 2
@@ -131,8 +122,12 @@ ColumnLayout {
                 max = parseFloat(maxField.text)
             }
             // Calculate the point cloud in backend
-            backend.depth_map(cloudClass, cad.source, scan.source, parseInt(sampled.text),
-                                    parseFloat(matchThresh.text), min, max)
+            // backend.depth_map(cloudClass, cad.source, cad.sceneTransform, scan.source, 
+            //                     scan.sceneTransform, parseInt(sampled.text),
+            //                     parseFloat(matchThresh.text), min, max)
+            cloudClass.calc_cloud(cad.source, cad.sceneTransform, scan.source, 
+                                scan.sceneTransform, parseInt(sampled.text),
+                                parseFloat(matchThresh.text), min, max)
             // Hide meshes, display cloud and depth scale
             cad.opacity = scan.opacity = 0
             cloud.opacity = 1

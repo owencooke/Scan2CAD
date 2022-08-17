@@ -6,15 +6,6 @@ import QtQuick3D.AssetUtils
 ColumnLayout {
     spacing: 8
 
-    // Title
-    Label {
-        Layout.alignment: Qt.AlignCenter
-        text: "Alignment"
-        color: root.textColor
-        font.family: titleFont.font.family
-        font.pointSize: 12
-    }
-
     // Parameter controls
     GridLayout {
         columns: 2
@@ -42,7 +33,7 @@ ColumnLayout {
         }
 
         Label {
-            text: "Number of Iterations"
+            text: "Max Iterations"
             color: root.textColor
             font.family: regFont.font.family
             font.pointSize: 9
@@ -95,7 +86,7 @@ ColumnLayout {
 
             // Reset loader sources and run alignment from backend
             } if (!error) {
-                cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
+                // cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
                 loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
                 backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 

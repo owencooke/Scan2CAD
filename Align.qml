@@ -14,15 +14,17 @@ Item {
         function onConvertedMesh(pageName, scanFlag, centroid, dim) {
             if (pageName == "Align") {
                 if (scanFlag) {
+                    resetNode(scan)
                     scan.source = "backend_resources/converted_mesh/scan_align.glb"
                     scan.pivot = centroid
                     scan.dimensions = scan.init_dims = dim
-                    scan.scale = Qt.vector3d(5,5,5)
+                    //scan.scale = Qt.vector3d(5,5,5)
                 } else {
+                    resetNode(cad)
                     cad.source = "backend_resources/converted_mesh/cad_align.glb"
                     cad.pivot = centroid
                     cad.dimensions = cad.init_dims = dim
-                    cad.scale = Qt.vector3d(5,5,5)
+                    // cad.scale = Qt.vector3d(5,5,5)
                 }
                 loadingScreen.on = false
                 // Show meshes and hide depth cloud
@@ -51,6 +53,15 @@ Item {
             userControl.keysEnabled = false
         }
     }
+
+    // Reset all Node properties to their "default", NOT including source
+    function resetNode(mesh) {
+        mesh.scale = Qt.vector3d(5, 5, 5)
+        mesh.eulerRotation = Qt.vector3d(0, 0, 0)
+        mesh.position = Qt.vector3d(0, 0, 0)
+        mesh.opacity = 1
+        mesh.dimensions = mesh.init_dims
+    } 
 
     // 3D scene for rendering the models
     View3D {
@@ -128,6 +139,7 @@ Item {
 
         // Gridlines
         AxisHelper {
+            id: axes
             enableAxisLines: true
             gridColor: root.secondaryText
         }
@@ -144,17 +156,22 @@ Item {
     Rectangle {
         anchors { left: parent.left; top: cadControl.bottom; margins: 16 }
         color: root.menuColor
-        width: algoMenu.width + 48
-        height: algoMenu.height + 48
+        width: algoMenu.width + 36
+        height: algoMenu.height + 36
         radius: width / 8
+        visible: (algoMenu.width == 0) ? false : true
         
         ColumnLayout {
             id: algoMenu
             anchors.centerIn: parent
-            spacing: 32
-            // Seperate menu modules in column
-            AlignMenu { id: alignMenu }
-            DepthMenu { id: depthMenu }
+            spacing: 8
+
+            // Pairs of dropdown titles and menu modules
+            DropDownLabel { id: alignment; text: "Alignment"; open: true}
+            AlignMenu { id: alignMenu; visible: alignment.open }
+
+            DropDownLabel { id: depth; text: "Depth Map"; open: false}
+            DepthMenu { id: depthMenu;  visible: depth.open}
         }
     }
 
@@ -176,7 +193,6 @@ Item {
         id: mouseMenu
         anchors { horizontalCenter: parent.horizontalCenter
             top: parent.top; topMargin: 16 }
-        opacity: 0.9
         color: root.menuColor
         implicitHeight: 56
         implicitWidth: 150
@@ -225,6 +241,33 @@ Item {
                             break
                     }
                 }
+            }
+        }
+    }
+
+    Rectangle {
+        anchors { horizontalCenter: parent.horizontalCenter
+            top: mouseMenu.bottom }
+        height: pageControls.height
+        width: pageControls.width + 8
+        color: root.menuColor
+
+        RowLayout {
+            id: pageControls
+            anchors.centerIn: parent
+            spacing: 0
+
+            IconButton {
+                icon { source: "backend_resources/icons/chart-line-solid.svg";
+                        height: 20; width: 20 }
+                onClicked: axes.enableAxisLines = !axes.enableAxisLines 
+            }
+
+            IconButton {
+                icon { source: !axes.enableXZGrid ? "backend_resources/icons/border-all-solid.svg" 
+                        : "backend_resources/icons/border-none-solid.svg";
+                        height: 20; width: 20 }
+                onClicked: axes.enableXZGrid = !axes.enableXZGrid 
             }
         }
     }

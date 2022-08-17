@@ -73,7 +73,7 @@ Rectangle {
     IconButton { 
         id: colorToggle
         anchors { top: gridToggle.top; right: gridToggle.left; rightMargin: 5 }
-        iconURL: "backend_resources/icons/palette-solid.svg"
+        iconURL: "backend_resources/icons/fill-solid.svg"
         onClicked: colorSlider.visible = !colorSlider.visible
     }
 

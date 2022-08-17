@@ -86,9 +86,7 @@ Rectangle {
                         "backend_resources/icons/angle-right-solid.svg"
         icon.width: (toggle) ? 24 : 16; icon.height: 24
         
-        onClicked: {
-            toggle = !toggle
-        }
+        onClicked: toggle = !toggle
     }
 
     // Drop down menu for button controls
@@ -125,7 +123,7 @@ Rectangle {
             // Color dropdown
             IconButton {
                 tipText: "Color"
-                icon { source: "backend_resources/icons/palette-solid.svg";
+                icon { source: "backend_resources/icons/fill-solid.svg";
                         width: 24; height: 24 }
                 onClicked: colorContainer.visible = closeTools(colorContainer.visible)
             }
@@ -144,6 +142,14 @@ Rectangle {
                 icon { source: "backend_resources/icons/maximize-solid.svg";
                         width: 24; height: 24 }
                 onClicked: scaleContainer.visible = closeTools(scaleContainer.visible)
+            }
+            
+            // Reset button
+            IconButton {
+                tipText: "Reset to default"
+                icon { source: "backend_resources/icons/eraser-solid.svg";
+                        width: 24; height: 24 }
+                onClicked: resetNode(target)
             }
         }
 
