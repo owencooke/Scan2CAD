@@ -14,6 +14,52 @@ Rectangle {
 
     color: root.bgColor
 
+    // Header with filename and upload button
+    RowLayout {
+        id: header
+        anchors { top: parent.top; left: parent.left;
+                    topMargin: 16; leftMargin: 24 }
+        spacing: 16
+
+        // Title
+        Label {
+            text: "FILENAME"
+            color: root.textColor
+            font.family: titleFont.font.family
+            font.pointSize: 12.5
+        }
+
+        // Input filename
+        Label {
+            id: fileLabel
+            text: "No model selected."
+            color: root.secondaryText
+            font.family: regFont.font.family
+            font.pointSize: 11
+        }
+
+        // Upload Button
+        IconButton {
+            id: uploadButton
+            iconURL: "backend_resources/icons/upload-solid.svg"
+            onClicked: dialog.open()
+
+            FileDialog {
+                id: dialog
+                title: "Select a 3D model file"
+                nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
+                onAccepted: {
+                    fileLabel.text = getFilename(selectedFile.toString())
+                    // Reset source and load new model
+                    target.source = " "
+                    backend.load_mesh("Model3D", selectedFile, scan)
+                    controls.loading = true
+                }
+            }
+        }
+    }
+
+    // Gridline button
     IconButton {
         id: gridToggle
         property bool toggle: false
@@ -23,6 +69,7 @@ Rectangle {
         onClicked: toggle = !toggle
     }
 
+    // Toggle for color slider
     IconButton { 
         id: colorToggle
         anchors { top: gridToggle.top; right: gridToggle.left; rightMargin: 5 }
@@ -40,135 +87,143 @@ Rectangle {
         value: (scan) ? 0.84 : 0.4
     }
 
-    ColumnLayout {
-        anchors { top: parent.top; left: parent.left; topMargin: 16;
-                leftMargin: 24; right: parent.right; rightMargin: 48 }
-        spacing: 16
+    // Scrollable tools below file header
+    Flickable {
+        id: flickable
+        anchors { top: header.bottom; left: header.left; topMargin: 16
+                    bottom: parent.bottom; right: parent.right }
+        clip: true
+        contentHeight: toolColumn.height + 24
+        contentWidth: toolColumn.width
+        flickableDirection: Flickable.VerticalFlick
 
-        RowLayout {
+        ScrollIndicator.vertical: ScrollIndicator {
+            anchors { top: flickable.top; right: flickable.right;
+                        bottom: flickable.bottom }
+            active: true
+        }
+
+        // Tool and info layout
+        ColumnLayout {
+            id: toolColumn
+            anchors { top: parent.top; left: parent.left; right: parent.right }
             spacing: 16
 
+            // Dimension labels
+            RowLayout {
+                spacing: 16
+                
+                Label {
+                    text: "DIMENSIONS"
+                    color: root.textColor
+                    font.family: titleFont.font.family
+                    font.pointSize: 12.5
+                }
+
+                Label {
+                    text: "Length: " + roundDecimal(target.dimensions.x, 1) + "mm"
+                    color: root.secondaryText
+                    font.family: regFont.font.family
+                    font.pointSize: 11
+                }
+
+                Label {
+                    text: "Width: " + roundDecimal(target.dimensions.y, 1) + "mm"
+                    color: root.secondaryText
+                    font.family: regFont.font.family
+                    font.pointSize: 11
+                }
+                
+                Label {
+                    text: "Height: " + roundDecimal(target.dimensions.z, 1) + "mm"
+                    color: root.secondaryText
+                    font.family: regFont.font.family
+                    font.pointSize: 11
+                }
+            }
+
+            // Rotational tools
             Label {
-                text: "FILENAME:"
-                color: root.secondaryText
+                text: "ROTATE"
+                color: root.textColor
                 font.family: titleFont.font.family
-                font.pointSize: 14
+                font.pointSize: 12.5
             }
 
-            // Model filename
+            RotationTool {
+                id: xRot
+                title: "X"
+                handleColour: "red"
+                Layout.leftMargin: 15
+                onSetEuler: function(value) {
+                    target.eulerRotation.x = value
+                }
+            }
+
+            RotationTool {
+                id: yRot
+                title: "Y"
+                handleColour: "green"
+                Layout.leftMargin: 15
+                onSetEuler: function(value) {
+                    target.eulerRotation.y = value
+                }
+            }
+
+            RotationTool {
+                id: zRot
+                title: "Z"
+                handleColour: "blue"
+                Layout.leftMargin: 15
+                onSetEuler: function(value) {
+                    target.eulerRotation.z = value
+                }
+            }
+
+            // Scaling tools
             Label {
-                id: fileLabel
-                text: "No model selected."
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 12
+                text: "SCALE"
+                color: root.textColor
+                font.family: titleFont.font.family
+                font.pointSize: 12.5
             }
 
-            // Upload Button
-            IconButton {
-                id: uploadButton
-                iconURL: "backend_resources/icons/upload-solid.svg"
-                onClicked: dialog.open()
+            ScalingTool {
+                title: " L "
+                value: roundDecimal(target.dimensions.x, 3)
+                initial_dim: target.init_dims.x
+                onSetValue: function(new_dim) {
+                    if (new_dim != 0) { 
+                        target.scale.x = (new_dim * target.scale.x) / target.dimensions.x
+                        target.dimensions.x = new_dim
+                    } 
+                }
+            }
 
-                FileDialog {
-                    id: dialog
-                    title: "Select a 3D model file"
-                    nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
-                    onAccepted: {
-                        fileLabel.text = getFilename(selectedFile.toString())
-                        // Reset source and load new model
-                        target.source = " "
-                        backend.load_mesh("Model3D", selectedFile, scan)
-                        controls.loading = true
-                    }
+            ScalingTool {
+                title: "W"
+                value: roundDecimal(target.dimensions.y, 3)
+                initial_dim: target.init_dims.y
+                onSetValue: function(new_dim) {
+                    if (new_dim != 0) { 
+                        target.scale.y = (new_dim * target.scale.y) / target.dimensions.y
+                        target.dimensions.y = new_dim
+                    } 
+                }
+            }
+
+            ScalingTool {
+                title: " H "
+                value: roundDecimal(target.dimensions.z, 3)
+                initial_dim: target.init_dims.z
+                onSetValue: function(new_dim) {
+                    if (new_dim != 0) { 
+                        target.scale.z = (new_dim * target.scale.z) / target.dimensions.z
+                        target.dimensions.z = new_dim
+                    } 
                 }
             }
         }
-
-        RowLayout {
-            spacing: 16
-            
-            Label {
-                text: "DIMENSIONS:"
-                color: root.secondaryText
-                font.family: titleFont.font.family
-                font.pointSize: 14
-            }
-
-            Label {
-                text: "Length: " + roundDecimal(target.dimensions.x, 1) + "mm"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 12
-            }
-
-            Label {
-                text: "Width: " + roundDecimal(target.dimensions.y, 1) + "mm"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 12
-            }
-            
-            Label {
-                text: "Height: " + roundDecimal(target.dimensions.z, 1) + "mm"
-                color: root.secondaryText
-                font.family: regFont.font.family
-                font.pointSize: 12
-            }
-        }
-
-        Label {
-            text: "ROTATE ABOUT AXIS:"
-            color: root.secondaryText
-            font.family: titleFont.font.family
-            font.pointSize: 14
-        }
-
-        RotationTool {
-            id: xRot
-            title: "X:"
-            handleColour: "red"
-            Layout.leftMargin: 15
-            onSetEuler: function(value) {
-                target.eulerRotation.x = value
-            }
-         }
-
-        RotationTool {
-            id: yRot
-            title: "Y:"
-            handleColour: "green"
-            Layout.leftMargin: 15
-            onSetEuler: function(value) {
-                target.eulerRotation.y = value
-            }
-        }
-
-        RotationTool {
-            id: zRot
-            title: "Z:"
-            handleColour: "blue"
-            Layout.leftMargin: 15
-            onSetEuler: function(value) {
-                target.eulerRotation.z = value
-            }
-        }
-
-        // Label {
-        //     text: "SCALE MODEL:"
-        //     color: root.secondaryText
-        //     font.family: titleFont.font.family
-        //     font.pointSize: 14
-        // }
-
-        // RotationTool {
-        //     handleColour: root.secondaryText
-        //     bgContainer: controls
-        //     Layout.leftMargin: 15
-        //     onSetEuler: function(value) {
-        //         target.scale = Qt.vector3d(5, value, 5)
-        //     }
-        // }
     }
 }
         

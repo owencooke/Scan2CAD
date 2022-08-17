@@ -10,12 +10,12 @@ Item {
                 if (scanFlag) {
                     scanScene.target.source = "backend_resources/converted_mesh/scan_model3D.glb"
                     scanScene.target.pivot = centroid
-                    scanScene.target.dimensions = dim
+                    scanScene.target.dimensions = scanScene.target.init_dims = dim
                     scanControls.loading = false
                 } else {
                     cadScene.target.source = "backend_resources/converted_mesh/cad_model3D.glb"
                     cadScene.target.pivot = centroid
-                    cadScene.target.dimensions = dim
+                    cadScene.target.dimensions = cadScene.target.init_dims = dim
                     cadControls.loading = false
                 }
             }
@@ -56,7 +56,7 @@ Item {
         Scene3D {
             id: cadScene
             SplitView.preferredHeight: parent.height * (3/4)
-            SplitView.minimumHeight: parent.height / 2
+            SplitView.minimumHeight: parent.height * (5/12)
             nodeColor: cadControls.targetColor
             activateGrid: cadControls.gridChecked
         }

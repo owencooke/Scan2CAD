@@ -75,7 +75,8 @@ View3D {
     // Node storing model loaded by user
     RuntimeLoader {
         id: mesh
-        property vector3d dimensions
+        property vector3d dimensions: Qt.vector3d(0,0,0)
+        property vector3d init_dims: Qt.vector3d(0,0,0)
         eulerRotation: meshRotation
         scale:  Qt.vector3d(5,5,5)
     }

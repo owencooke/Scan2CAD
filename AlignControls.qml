@@ -228,7 +228,6 @@ Rectangle {
 
                 ScalingTool {
                     title: " L "
-                    handleColour: "red"
                     value: roundDecimal(target.dimensions.x, 3)
                     initial_dim: target.init_dims.x
                     onSetValue: function(new_dim) {
@@ -241,7 +240,6 @@ Rectangle {
 
                 ScalingTool {
                     title: "W"
-                    handleColour: "green"
                     value: roundDecimal(target.dimensions.y, 3)
                     initial_dim: target.init_dims.y
                     onSetValue: function(new_dim) {
@@ -254,7 +252,6 @@ Rectangle {
 
                 ScalingTool {
                     title: " H "
-                    handleColour: "blue"
                     value: roundDecimal(target.dimensions.z, 3)
                     initial_dim: target.init_dims.z
                     onSetValue: function(new_dim) {

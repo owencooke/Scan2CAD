@@ -5,7 +5,6 @@ import QtQuick.Layouts
 RowLayout {
     id: row
     property string title: "Scale"
-    property string handleColour: "black"
     property real value: 0.0
     property real initial_dim: 0.0
     signal setValue(double value)
@@ -23,7 +22,7 @@ RowLayout {
     // Input textfield (default is initial measurement)
     TextField {
         id: distField
-        Layout.preferredWidth: 140
+        Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
         text: row.value
@@ -57,7 +56,7 @@ RowLayout {
     // Percentage scale based on initial distance
     TextField {
         id: percentField
-        Layout.preferredWidth: 80
+        Layout.preferredWidth: 100
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
         text: "100"
