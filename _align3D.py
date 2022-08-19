@@ -3,6 +3,7 @@ import time
 import trimesh
 import numpy as np
 from PySide6.QtGui import QVector3D
+from backend_utils import check_url, qmatrix4x4_to_np
 
 # Determine output file type/destination
 def outFilename(page, scan):
@@ -26,7 +27,7 @@ def tidyUpMesh(mesh, min_len=5000):
 
 # Load 3D model into GUI and calculate its dimensional attributes
 def load3D(self, QMLpage, selectedFile, scanFlag):
-    loaded = tidyUpMesh(trimesh.load(self.check_url(selectedFile), force='mesh'))
+    loaded = tidyUpMesh(trimesh.load(check_url(selectedFile), force='mesh'))
 
     # Export model for loading in QML (only .glb or .gltf)
     out = os.path.join(self.basedir, "backend_resources/converted_mesh/" 
@@ -45,16 +46,16 @@ def load3D(self, QMLpage, selectedFile, scanFlag):
     self.convertedMesh.emit(QMLpage, scanFlag, centroid, dim)
 
 # Run ICP alignment algorithm between two meshes, output to GUI
-def align_scan(self, cad, scan, cadMatrix, scanMatrix, scale, samples, iters):
+def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # Load each file into trimesh
-    model = trimesh.load(self.check_url(cad), force='mesh')
-    scanned = trimesh.load(self.check_url(scan), force='mesh')
+    model = trimesh.load(check_url(cad), force='mesh')
+    scanned = trimesh.load(check_url(scan), force='mesh')
 
     # Apply intial transformation matrices from GUI
-    cadMatrix = np.array(cadMatrix.copyDataTo()).reshape(4,4)
-    scanMatrix = np.array(scanMatrix.copyDataTo()).reshape(4,4)
-    model.apply_transform(cadMatrix)
-    scanned.apply_transform(scanMatrix)
+    cad_mat = qmatrix4x4_to_np(cad_mat)
+    scan_mat = qmatrix4x4_to_np(scan_mat)
+    model.apply_transform(cad_mat)
+    scanned.apply_transform(scan_mat)
 
     # Trim scan if necessary
     scanned = tidyUpMesh(scanned)

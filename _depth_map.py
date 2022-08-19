@@ -2,7 +2,9 @@ import numpy as np
 import trimesh
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
-from PySide6.QtCore import Property, Signal
+from PySide6.QtGui import QMatrix4x4
+from PySide6.QtCore import Property, Signal, Slot, QThreadPool
+from backend_utils import Thread, check_url, qmatrix4x4_to_np
 
 QML_IMPORT_NAME = "DepthMap"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -37,6 +39,8 @@ class PointCloud(QQuick3DGeometry):
         QQuick3DGeometry.__init__(self)
         self.setStride(1)
         self._thresh_model = []
+        self.threadpool = QThreadPool()
+        self.threadpool.setExpiryTimeout(1)
 
     threshChanged = Signal()
     cloudCalculated = Signal()
@@ -48,10 +52,39 @@ class PointCloud(QQuick3DGeometry):
     def update_thresh(self, l):
         self._thresh_model = l
         self.threshChanged.emit()
+        
+    @Slot(str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
+    def calc_cloud(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
+        # Reset cloud to empty in GUI
+        self.clear()
+        self.update()
+        # Calculate new depth map and display
+        thread = Thread(self.get_points, check_url(cad_file), cad_mat,
+                            check_url(scan_file), scan_mat, samples, mtch, min, max)
+        self.threadpool.start(thread)
 
-    def get_points(self, cad_file, scan_file, samples, mtch, min, max):
+    @Slot(str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
+    def get_points(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
+        self.clear()
+        self.update()
+        # Load new data from user input
+        cad = trimesh.load(check_url(cad_file), force='mesh')
+        scan = trimesh.load(check_url(scan_file), force='mesh')
+
+        # Apply transformation matrices from GUI 
+        trimesh.Scene([cad, scan]).show()
+        cad_mat = qmatrix4x4_to_np(cad_mat)
+        scan_mat = qmatrix4x4_to_np(scan_mat)
+        cad.apply_transform(cad_mat)
+        scan.apply_transform(scan_mat)
+        trimesh.Scene([cad, scan]).show()
+
         # Run vertex comparison algorithm
-        pts, colors = self.sort_sampled_vertices(cad_file, scan_file, samples, mtch, min, max)
+        pts, colors = self.sort_sampled_vertices(cad, scan, samples, mtch, min, max)
+
+        # Set centroid to origin and adjust points to centralize final display
+        for i in range (3):
+            np.subtract(pts[:,i], scan.centroid[i], out=pts[:,i])
 
         # Init custom geometry format
         FLOAT_SIZE = 4
@@ -78,10 +111,7 @@ class PointCloud(QQuick3DGeometry):
         self.update()
         self.cloudCalculated.emit()
 
-    def sort_sampled_vertices(self, cad_file, scan_file, samples, match_thresh, min, max):
-        # Load new data from user input
-        cad = trimesh.load(cad_file, force='mesh')
-        scan = trimesh.load(scan_file, force='mesh')
+    def sort_sampled_vertices(self, cad, scan, samples, match_thresh, min, max):
         colors = np.zeros((samples, 4), dtype='float32')
         # Sample scan's vertices and surface points
         scan_pts = self.key_points(scan, samples)

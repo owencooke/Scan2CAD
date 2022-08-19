@@ -125,8 +125,8 @@ ColumnLayout {
             // backend.depth_map(cloudClass, cad.source, cad.sceneTransform, scan.source, 
             //                     scan.sceneTransform, parseInt(sampled.text),
             //                     parseFloat(matchThresh.text), min, max)
-            cloudClass.calc_cloud(cad.source, cad.sceneTransform, scan.source, 
-                                scan.sceneTransform, parseInt(sampled.text),
+            cloudClass.get_points(cad.source, getSpatialMatrix(cad), scan.source, 
+                                getSpatialMatrix(scan), parseInt(sampled.text),
                                 parseFloat(matchThresh.text), min, max)
             // Hide meshes, display cloud and depth scale
             cad.opacity = scan.opacity = 0

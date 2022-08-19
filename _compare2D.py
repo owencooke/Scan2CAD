@@ -2,6 +2,7 @@ import os
 import time
 import cv2
 import numpy as np
+from backend_utils import check_url
 
 # Crop auto-captured images from 3D viewer and display
 def crop_faces(self, theme, cad, scan, images):
@@ -35,8 +36,8 @@ def crop_faces(self, theme, cad, scan, images):
 # Iteratively match contours between two part images
 def match_contours(self, cad_img, scan_img):
     # Load images
-    img0 = cv2.imread(self.check_url(cad_img))
-    img1 = cv2.imread(self.check_url(scan_img))
+    img0 = cv2.imread(check_url(cad_img))
+    img1 = cv2.imread(check_url(scan_img))
 
     dim0 = img0.shape
     dim1 = img1.shape

@@ -58,7 +58,7 @@ Rectangle {
             anchors { top: parent.top; margins: 6;
                         horizontalCenter: parent.horizontalCenter }
             text: "(mm)"
-            color: root.textColor
+            color: "white"
             font.family: regFont.font.family
             font.pointSize: 8
         }
@@ -67,7 +67,7 @@ Rectangle {
             anchors { bottom: parent.bottom; margins: 6;
                         horizontalCenter: parent.horizontalCenter }
             text: "(mm)"
-            color: root.textColor
+            color: "white"
             font.family: regFont.font.family
             font.pointSize: 8
         }

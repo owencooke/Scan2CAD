@@ -8,6 +8,54 @@ import QtQuick3D.AssetUtils
 import DepthMap
 
 Item {
+    Timer {
+        interval: 5000; repeat: true; running: true
+        onTriggered: {
+            //console.log("CAD pivot", cad.pivot)
+            console.log("glob translate", cad.sceneTransform.column(3).toVector3d())
+            console.log("my t pivot", cad.t_pivot)
+            console.log("local translate", cad.position)
+            console.log("local rot", cad.rotation)
+            console.log()
+            // console.log("SCAN pivot", scan.pivot)
+            // console.log("SCAN T matrix", scan.sceneTransform)
+            // console.log('###################################################################')
+        }
+    }
+    // Reset all Node properties to their "default", NOT including source
+    function resetNode(mesh) {
+        mesh.scale = Qt.vector3d(5, 5, 5)
+        mesh.eulerRotation = Qt.vector3d(0, 0, 0)
+        mesh.position = Qt.vector3d(0, 0, 0)
+        mesh.opacity = 1
+        mesh.dimensions = mesh.init_dims
+    }
+
+    // Initialize Node properties upon loading from external file
+    function setNodeProperties(mesh, fname, centroid, dim) {
+        mesh.source = "backend_resources/converted_mesh/" + fname + ".glb"
+        mesh.pivot = centroid
+        mesh.dimensions = mesh.init_dims = dim
+        // Get initial global translation
+        mesh.t_pivot = mesh.sceneTransform.column(3).toVector3d()
+    }
+
+    function getSpatialMatrix(mesh) {
+        // Get new scene translation
+        var mat = mesh.sceneTransform
+        console.log(mat)
+        var new_pos = mat.column(3).toVector3d()
+        // var vec = mesh.t_pivot.times(-1)
+        console.log("old", mesh.t_pivot)
+        console.log("new", new_pos)
+        var vec = new_pos.minus(mesh.t_pivot)
+        console.log(vec)
+        mat.translate(vec)
+        console.log(mat)
+        console.log()
+        return mat
+    }
+
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
@@ -15,20 +63,12 @@ Item {
             if (pageName == "Align") {
                 if (scanFlag) {
                     resetNode(scan)
-                    scan.source = "backend_resources/converted_mesh/scan_align.glb"
-                    scan.pivot = centroid
-                    scan.dimensions = scan.init_dims = dim
-                    //scan.scale = Qt.vector3d(5,5,5)
+                    setNodeProperties(scan, "scan_align", centroid, dim)
                 } else {
                     resetNode(cad)
-                    cad.source = "backend_resources/converted_mesh/cad_align.glb"
-                    cad.pivot = centroid
-                    cad.dimensions = cad.init_dims = dim
-                    // cad.scale = Qt.vector3d(5,5,5)
+                    setNodeProperties(cad, "cad_align", centroid, dim)
                 }
                 loadingScreen.on = false
-                // Show meshes and hide depth cloud
-                cad.opacity = scan.opacity = 1
                 cloud.opacity = 0
             }
         }
@@ -54,15 +94,6 @@ Item {
         }
     }
 
-    // Reset all Node properties to their "default", NOT including source
-    function resetNode(mesh) {
-        mesh.scale = Qt.vector3d(5, 5, 5)
-        mesh.eulerRotation = Qt.vector3d(0, 0, 0)
-        mesh.position = Qt.vector3d(0, 0, 0)
-        mesh.opacity = 1
-        mesh.dimensions = mesh.init_dims
-    } 
-
     // 3D scene for rendering the models
     View3D {
         id: view3D
@@ -80,7 +111,7 @@ Item {
             id: cad
             property vector3d dimensions: Qt.vector3d(0,0,0)
             property vector3d init_dims: Qt.vector3d(0,0,0)
-            scale:  Qt.vector3d(5,5,5)
+            property vector3d t_pivot
         }
 
         // CAD's lighting (color)
@@ -96,7 +127,7 @@ Item {
             id: scan
             property vector3d dimensions: Qt.vector3d(0,0,0)
             property vector3d init_dims: Qt.vector3d(0,0,0)
-            scale:  Qt.vector3d(5,5,5)
+            property vector3d t_pivot
         }
 
         // Scan's lighting (color)
@@ -111,7 +142,6 @@ Item {
         Model {
             id: cloud
             scale: Qt.vector3d(5, 5, 5)
-            pivot: cad.pivot
             // Custom geometry from _depth_map.py
             geometry: PointCloud {
                 id: cloudClass
