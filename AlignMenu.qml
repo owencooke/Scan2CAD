@@ -88,6 +88,7 @@ ColumnLayout {
             } if (!error) {
                 loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
+                cad.opacity = scan.opacity = 0
                 backend.align_meshes(cad.source, scan.source, getSpatialMatrix(cad), 
                                         getSpatialMatrix(scan), toggleScale.checked, 
                                         parseInt(samples.text), parseInt(iterations.text))

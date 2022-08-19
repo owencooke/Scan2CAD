@@ -74,14 +74,16 @@ Item {
         function onDisplayAligned(centroid, translation, scale, eRotation, cost) {
             loadingScreen.on = false
             // Reset all Node properties to default
-            // resetNode(cad)
-            // resetNode(scan)
+            cad.opacity = scan.opacity = 1
+            //resetNode(scan)
             // Set scan's aligned transformation
-            scan.pivot = centroid
+            scan.pivot = scan.pivot.plus(translation)
+            scan.eulerRotation = eRotation
             scan.position = translation
             scan.scale = scale.times(5)
-            scan.eulerRotation = eRotation
+            //scan.source = "backend_resources/converted_mesh/scan_align.glb"
             console.log(translation, '\n', scale, '\n', eRotation)
+            console.log('pivot', scan.pivot, '\n', 'pos', scan.position)
             // Hide depth cloud
             cloud.opacity = 0
             // Set user controls back to camera
