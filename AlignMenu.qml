@@ -86,13 +86,11 @@ ColumnLayout {
 
             // Reset loader sources and run alignment from backend
             } if (!error) {
-                // cad.scale = scan.scale = Qt.vector3d(1, 1, 1)
                 loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
-                backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
-                                        scan.sceneTransform, toggleScale.checked, 
+                backend.align_meshes(cad.source, scan.source, getSpatialMatrix(cad), 
+                                        getSpatialMatrix(scan), toggleScale.checked, 
                                         parseInt(samples.text), parseInt(iterations.text))
-                cad.source = scan.source = " "
             }
         }
     }

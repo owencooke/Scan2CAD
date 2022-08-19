@@ -8,20 +8,20 @@ import QtQuick3D.AssetUtils
 import DepthMap
 
 Item {
-    Timer {
-        interval: 5000; repeat: true; running: true
-        onTriggered: {
-            //console.log("CAD pivot", cad.pivot)
-            console.log("glob translate", cad.sceneTransform.column(3).toVector3d())
-            console.log("my t pivot", cad.t_pivot)
-            console.log("local translate", cad.position)
-            console.log("local rot", cad.rotation)
-            console.log()
-            // console.log("SCAN pivot", scan.pivot)
-            // console.log("SCAN T matrix", scan.sceneTransform)
-            // console.log('###################################################################')
-        }
-    }
+    // Timer {
+    //     interval: 5000; repeat: true; running: true
+    //     onTriggered: {
+    //         //console.log("CAD pivot", cad.pivot)
+    //         console.log("glob translate", cad.sceneTransform.column(3).toVector3d())
+    //         console.log("my t pivot", cad.t_pivot)
+    //         console.log("local translate", cad.position)
+    //         console.log("local rot", cad.rotation)
+    //         console.log()
+    //         // console.log("SCAN pivot", scan.pivot)
+    //         // console.log("SCAN T matrix", scan.sceneTransform)
+    //         // console.log('###################################################################')
+    //     }
+    // }
     // Reset all Node properties to their "default", NOT including source
     function resetNode(mesh) {
         mesh.scale = Qt.vector3d(5, 5, 5)
@@ -40,19 +40,16 @@ Item {
         mesh.t_pivot = mesh.sceneTransform.column(3).toVector3d()
     }
 
+    // Returns the 4x4 transformation matrix representing the input Node
     function getSpatialMatrix(mesh) {
-        // Get new scene translation
-        var mat = mesh.sceneTransform
-        console.log(mat)
-        var new_pos = mat.column(3).toVector3d()
-        // var vec = mesh.t_pivot.times(-1)
-        console.log("old", mesh.t_pivot)
-        console.log("new", new_pos)
-        var vec = new_pos.minus(mesh.t_pivot)
-        console.log(vec)
-        mat.translate(vec)
-        console.log(mat)
-        console.log()
+        // Init transform matrix
+        var mat = Qt.matrix4x4()
+        // Calculate total translation vector (pivot moved to origin)
+        var move = mesh.position.minus(mesh.pivot)
+        // Apply scale, rotation, translation to matrix
+        mat.rotate(mesh.rotation)
+        mat.translate(move)
+        mat.scale(mesh.scale.times(1/5))
         return mat
     }
 
@@ -73,19 +70,19 @@ Item {
             }
         }
 
-        // Display results of the ICP algorithm to user
-        function onDisplayAligned(centroid, dist, percent) {
+        // Display results of the alignment algorithm to user
+        function onDisplayAligned(centroid, translation, scale, eRotation, cost) {
             loadingScreen.on = false
-            // Set source URLs of aligned output
-            cad.source = "backend_resources/converted_mesh/cad_align.glb"
-            scan.source = "backend_resources/converted_mesh/scan_align.glb"
             // Reset all Node properties to default
-            cad.scale = scan.scale = Qt.vector3d(5, 5, 5)
-            cad.eulerRotation = scan.eulerRotation = Qt.vector3d(0, 0, 0)
-            cad.position = scan.position = Qt.vector3d(0, 0, 0)
-            cad.pivot = scan.pivot = camera.pivot = centroid
-            // Show meshes and hide depth cloud
-            cad.opacity = scan.opacity = 1
+            // resetNode(cad)
+            // resetNode(scan)
+            // Set scan's aligned transformation
+            scan.pivot = centroid
+            scan.position = translation
+            scan.scale = scale.times(5)
+            scan.eulerRotation = eRotation
+            console.log(translation, '\n', scale, '\n', eRotation)
+            // Hide depth cloud
             cloud.opacity = 0
             // Set user controls back to camera
             mouseButton.text = "CAMERA"

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 import sys
 # Pyside6 Imports for Qt
-from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D
+from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D, QQuaternion
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QRunnable, QThreadPool
@@ -36,7 +36,7 @@ class Backend(QObject):
     iterateContour = Signal(int, float)
     contourResult = Signal(float, float)
 
-    displayAligned = Signal(QVector3D, float, float)
+    displayAligned = Signal(QVector3D, QVector3D, QVector3D, QVector3D, float)
 
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
@@ -57,17 +57,6 @@ class Backend(QObject):
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
     def align_meshes(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
         thread = Thread(align_scan, self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
-        self.threadpool.start(thread)
-    
-    # Generate the depth map between Scan and CAD
-    @Slot(PointCloud, str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
-    def depth_map(self, cloud, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
-        # Reset cloud to empty in GUI
-        cloud.clear()
-        cloud.update()
-        # Calculate new depth map and display
-        thread = Thread(cloud.get_points, check_url(cad_file), cad_mat,
-                            check_url(scan_file), scan_mat, samples, mtch, min, max)
         self.threadpool.start(thread)
 
     # Automatic image capture and display of the 6 sides of 3D model

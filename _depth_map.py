@@ -52,39 +52,38 @@ class PointCloud(QQuick3DGeometry):
     def update_thresh(self, l):
         self._thresh_model = l
         self.threshChanged.emit()
-        
+    
+    # Generate the depth map between Scan and CAD
     @Slot(str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
-    def calc_cloud(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
-        # Reset cloud to empty in GUI
-        self.clear()
-        self.update()
-        # Calculate new depth map and display
+    def calc_depth(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
+        # Run in thread due to potential for long runtime
         thread = Thread(self.get_points, check_url(cad_file), cad_mat,
                             check_url(scan_file), scan_mat, samples, mtch, min, max)
         self.threadpool.start(thread)
 
-    @Slot(str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
     def get_points(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
+        # Reset cloud to empty in GUI
         self.clear()
         self.update()
+
         # Load new data from user input
-        cad = trimesh.load(check_url(cad_file), force='mesh')
-        scan = trimesh.load(check_url(scan_file), force='mesh')
+        cad = trimesh.load(cad_file, force='mesh')
+        scan = trimesh.load(scan_file, force='mesh')
 
         # Apply transformation matrices from GUI 
-        trimesh.Scene([cad, scan]).show()
+        # trimesh.Scene([cad, scan]).show()
         cad_mat = qmatrix4x4_to_np(cad_mat)
         scan_mat = qmatrix4x4_to_np(scan_mat)
         cad.apply_transform(cad_mat)
         scan.apply_transform(scan_mat)
-        trimesh.Scene([cad, scan]).show()
+        # trimesh.Scene([cad, scan]).show()
 
         # Run vertex comparison algorithm
         pts, colors = self.sort_sampled_vertices(cad, scan, samples, mtch, min, max)
 
-        # Set centroid to origin and adjust points to centralize final display
-        for i in range (3):
-            np.subtract(pts[:,i], scan.centroid[i], out=pts[:,i])
+        # # Set centroid to origin and adjust points to centralize final display
+        # for i in range (3):
+        #     np.subtract(pts[:,i], scan.centroid[i], out=pts[:,i])
 
         # Init custom geometry format
         FLOAT_SIZE = 4
@@ -94,6 +93,7 @@ class PointCloud(QQuick3DGeometry):
 
         # Combine all vertex information into a single array (1 index per vertex, w/ all info)
         data = np.concatenate((pts, colors), axis=1, dtype='float32')
+
         # Pass vertex data to byte stream
         self.setVertexData(data.tobytes())
 
