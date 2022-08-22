@@ -2,9 +2,8 @@ import os
 import time
 import trimesh
 import numpy as np
-from PySide6.QtGui import QVector3D
-from backend_utils import check_url, qmatrix4x4_to_np, np_to_qmatrix4x4#, split_t_matrix
-from trimesh.transformations import decompose_matrix
+from PySide6.QtGui import QVector3D, QQuaternion
+from backend_utils import check_url, qmatrix4x4_to_np, split_t_matrix
 
 # Determine output file type/destination
 def outFilename(page, scan):
@@ -40,7 +39,7 @@ def load3D(self, QMLpage, selectedFile, scanFlag):
     w = abs(loaded.bounds[0][1] - loaded.bounds[1][1])
     h = abs(loaded.bounds[0][2] - loaded.bounds[1][2])
     dim = QVector3D(l, w, h)
-    centroid = QVector3D(loaded.centroid[0], loaded.centroid[1], loaded.centroid[2])
+    centroid = QVector3D(*loaded.centroid)
 
     # Output results to QML
     time.sleep(0.01)
@@ -65,19 +64,13 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
         iters = 50
         
     # Align scan mesh relative to the model mesh, save result to disk
-    #trimesh.Scene([model, scanned]).show()
-    # print('old', scanned.centroid)
     t_matrix, cost = trimesh.registration.mesh_other(scanned, model, samples, scale, icp_final=iters)
-    print(t_matrix)
-    scanned.apply_transform(t_matrix)
-    #trimesh.Scene([model, scanned]).show()
-    # print('new', scanned.centroid)
-    # Convert align matrix to Qt data types
-    scale, _, rotation, translation, _ = decompose_matrix(t_matrix)
-    scale = QVector3D(*scale)
-    rotation = QVector3D(*(np.array(rotation) * 180 / np.pi))
-    translation = QVector3D(*translation)
-    centroid = QVector3D(*scanned.centroid)
 
-    # Output to GUI
-    self.displayAligned.emit(centroid, translation, scale, rotation, cost)
+    # Decompose matrix into singular transforms for GUI
+    scale, rotation, translation = split_t_matrix(t_matrix)
+    
+    # Convert to Qt data types and output to GUI via signal
+    scale = QVector3D(*scale)
+    translation = QVector3D(*translation)
+    rotation = QQuaternion(*rotation)
+    self.displayAligned.emit(translation, scale, rotation, cost)

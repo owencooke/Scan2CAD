@@ -7,21 +7,8 @@ import QtQuick3D.AssetUtils
 
 import DepthMap
 
+// Page for running the 3D alignment/comparison algorithms
 Item {
-    // Timer {
-    //     interval: 5000; repeat: true; running: true
-    //     onTriggered: {
-    //         //console.log("CAD pivot", cad.pivot)
-    //         console.log("glob translate", cad.sceneTransform.column(3).toVector3d())
-    //         console.log("my t pivot", cad.t_pivot)
-    //         console.log("local translate", cad.position)
-    //         console.log("local rot", cad.rotation)
-    //         console.log()
-    //         // console.log("SCAN pivot", scan.pivot)
-    //         // console.log("SCAN T matrix", scan.sceneTransform)
-    //         // console.log('###################################################################')
-    //     }
-    // }
     // Reset all Node properties to their "default", NOT including source
     function resetNode(mesh) {
         mesh.scale = Qt.vector3d(5, 5, 5)
@@ -71,19 +58,13 @@ Item {
         }
 
         // Display results of the alignment algorithm to user
-        function onDisplayAligned(centroid, translation, scale, eRotation, cost) {
+        function onDisplayAligned(translation, scale, rotation, cost) {
             loadingScreen.on = false
-            // Reset all Node properties to default
             cad.opacity = scan.opacity = 1
-            //resetNode(scan)
             // Set scan's aligned transformation
-            scan.pivot = scan.pivot.plus(translation)
-            scan.eulerRotation = eRotation
-            scan.position = translation
-            scan.scale = scale.times(5)
-            //scan.source = "backend_resources/converted_mesh/scan_align.glb"
-            console.log(translation, '\n', scale, '\n', eRotation)
-            console.log('pivot', scan.pivot, '\n', 'pos', scan.position)
+            scan.position = scan.position.plus(translation)
+            scan.scale = scan.scale.times(scale)
+            scan.rotation = rotation
             // Hide depth cloud
             cloud.opacity = 0
             // Set user controls back to camera
