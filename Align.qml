@@ -64,7 +64,8 @@ Item {
             // Set scan's aligned transformation
             scan.position = scan.position.plus(translation)
             scan.scale = scan.scale.times(scale)
-            scan.rotation = rotation
+            //scan.rotation = scan.rotation.times(rotation)
+            scan.eulerRotation = scan.eulerRotation.plus(rotation.toEulerAngles())
             // Hide depth cloud
             cloud.opacity = 0
             // Set user controls back to camera

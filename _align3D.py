@@ -65,6 +65,8 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
         
     # Align scan mesh relative to the model mesh, save result to disk
     t_matrix, cost = trimesh.registration.mesh_other(scanned, model, samples, scale, icp_final=iters)
+    scanned.apply_transform(t_matrix)
+    trimesh.Scene([model, scanned]).show()
 
     # Decompose matrix into singular transforms for GUI
     scale, rotation, translation = split_t_matrix(t_matrix)
