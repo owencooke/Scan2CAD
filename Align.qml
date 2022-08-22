@@ -20,7 +20,7 @@ Item {
 
     // Initialize Node properties upon loading from external file
     function setNodeProperties(mesh, fname, centroid, dim) {
-        mesh.source = "backend_resources/converted_mesh/" + fname + ".glb"
+        mesh.source = "backend_resources/_converted_mesh/" + fname + ".glb"
         mesh.pivot = centroid
         mesh.dimensions = mesh.init_dims = dim
         // Get initial global translation

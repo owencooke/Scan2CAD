@@ -1,4 +1,3 @@
-from genericpath import isdir
 import os
 from pathlib import Path
 import sys
@@ -64,7 +63,7 @@ class Backend(QObject):
     @Slot(str, bool, bool)
     def crop2D(self, theme, cad, scan):
         file_list = []
-        dir = os.path.join(self.basedir, 'backend_resources/captured_imgs/')
+        dir = os.path.join(self.basedir, 'backend_resources/_captured_imgs/')
         # Determine which files are to be cropped
         if cad:
             file_list += [dir+"cad_front.png", dir+"cad_top.png", dir+"cad_left.png",
@@ -88,10 +87,11 @@ def garbage_collect(basedir):
     directories = os.listdir(basedir)
     for folder in directories:
         dir = os.path.join(basedir, folder)
-        # Ensure it is a temporary folder (prefix: _)
+        # Ensure it is a folder w/ prefix: _ (temporary file indicator)
         if os.path.isdir(dir) and folder[0] == '_':
             for f in os.listdir(dir):
                 path = os.path.join(dir, f)
+                # Remove each temp file
                 if os.path.isfile(path) and f != 'README':
                     os.unlink(path)
 

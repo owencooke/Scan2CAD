@@ -16,31 +16,32 @@ View3D {
         axes.enableXYGrid = false
         axes.enableAxisLines = false
         light.color = root.textColor
+        var dir = "backend_resources/_captured_imgs/"
         
         // Front
         view3D.grabToImage(function(result) {
-            result.saveToFile("backend_resources/captured_imgs/" + fname + "_front.png")
+            result.saveToFile(dir + fname + "_front.png")
             // Top
             mesh.eulerRotation.x += 90
             view3D.grabToImage(function(result) {
-                result.saveToFile("backend_resources/captured_imgs/" + fname + "_top.png")
+                result.saveToFile(dir + fname + "_top.png")
                 // Bottom 
                 mesh.eulerRotation.x += 180
                 view3D.grabToImage(function(result) {
-                    result.saveToFile("backend_resources/captured_imgs/" + fname + "_bottom.png")
+                    result.saveToFile(dir + fname + "_bottom.png")
                     // Left
                     mesh.eulerRotation.x -= 270
                     mesh.eulerRotation.y += 90
                     view3D.grabToImage(function(result) {
-                        result.saveToFile("backend_resources/captured_imgs/" + fname + "_left.png")
+                        result.saveToFile(dir + fname + "_left.png")
                         // Rear
                         mesh.eulerRotation.y += 90
                         view3D.grabToImage(function(result) {
-                            result.saveToFile("backend_resources/captured_imgs/" + fname + "_rear.png")
+                            result.saveToFile(dir + fname + "_rear.png")
                             // Right
                             mesh.eulerRotation.y += 90
                             view3D.grabToImage(function(result) {
-                                result.saveToFile("backend_resources/captured_imgs/" + fname + "_right.png")
+                                result.saveToFile(dir + fname + "_right.png")
                                 // Give gridline/color control back to user
                                 axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
                                 axes.enableAxisLines = Qt.binding(function() { return !activateGrid })

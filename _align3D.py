@@ -30,7 +30,7 @@ def load3D(self, QMLpage, selectedFile, scanFlag):
     loaded = tidyUpMesh(trimesh.load(check_url(selectedFile), force='mesh'))
 
     # Export model for loading in QML (only .glb or .gltf)
-    out = os.path.join(self.basedir, "backend_resources/converted_mesh/" 
+    out = os.path.join(self.basedir, "backend_resources/_converted_mesh/" 
                         + outFilename(QMLpage, scanFlag) + ".glb")
     trimesh.exchange.export.export_mesh(loaded, out, file_type="glb")
 

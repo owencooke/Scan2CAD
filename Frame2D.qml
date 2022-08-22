@@ -35,7 +35,7 @@ Item {
         target: backend
         // Display detected contours to user for comparison
         function onIterateContour(idx, percent) {
-            var img = "backend_resources/contours/mask" + idx + ".png"
+            var img = "backend_resources/_contours/mask" + idx + ".png"
             contour.source = img
             console.log(percent+"%")
         }
