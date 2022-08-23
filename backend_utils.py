@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QRunnable
 from PySide6.QtGui import QVector4D, QMatrix4x4
-from trimesh.transformations import quaternion_from_matrix
+from trimesh.transformations import quaternion_from_matrix, decompose_matrix, euler_from_matrix
 
 ''' For functions in the Backend class that can have a long
 run time. This class runs functions in a separate Python thread than the one
@@ -36,10 +36,7 @@ def np_to_qmatrix4x4(np_mat):
     return q_mat
 
 # Decompose a 4x4 transformation matrix into scale, translation, rotation
-def split_t_matrix(mat):
-    # Extract translation vector (last column)
-    translation = mat[:3, 3]
-
+def split_t_matrix(mat, combo):
     # Get 3x3 rotation matrix from total transform
     rot_mat = mat[:3, :3].copy()
 
@@ -48,11 +45,18 @@ def split_t_matrix(mat):
     for i in range(3):
         scale.append(np.linalg.norm(rot_mat[:,i]))
 
+    # Extract translation vector and scale values
+    translation = mat[:3, 3].copy() #* scale
+
     # Normalize columns to eliminate scale factor from rotation
     for i in range(3):
         rot_mat[:,i] = np.divide(rot_mat[:,i], scale[i])
     
     # Get rotation quaternion from norm matrix
     rotation = quaternion_from_matrix(rot_mat)
-
+    # rotation = euler_from_matrix(rot_mat, combo)
+    # print(combo, rotation)
+    # print()
+    # triscale, shear, angles, trans, persp = decompose_matrix(mat)
+    # print('decompose', triscale, np.array(angles) * 180 / np.pi, trans)
     return scale, rotation, translation

@@ -9,6 +9,18 @@ import DepthMap
 
 // Page for running the 3D alignment/comparison algorithms
 Item {
+    // Timer {
+    //     interval: 3000; repeat: true; running: true
+    //     onTriggered: {
+    //         // scan.eulerRotation = scan.eulerRotation.plus(Qt.vector3d(30,0,0))
+    //         // scan.position = scan.position.plus(Qt.vector3d(0,0,30))
+    //         //console.log(scan.scale, scan.eulerRotation, scan.position)
+    //         for (let i = 1; i < 6; i++) {
+    //             scan.scale = scan.scale.times(i)
+    //             console.log(scan.scale)
+    //         }
+    //     }
+    // }
     // Reset all Node properties to their "default", NOT including source
     function resetNode(mesh) {
         mesh.scale = Qt.vector3d(5, 5, 5)
@@ -23,21 +35,29 @@ Item {
         mesh.source = "backend_resources/_converted_mesh/" + fname + ".glb"
         mesh.pivot = centroid
         mesh.dimensions = mesh.init_dims = dim
-        // Get initial global translation
-        mesh.t_pivot = mesh.sceneTransform.column(3).toVector3d()
     }
 
-    // Returns the 4x4 transformation matrix representing the input Node
-    function getSpatialMatrix(mesh) {
-        // Init transform matrix
-        var mat = Qt.matrix4x4()
-        // Calculate total translation vector (pivot moved to origin)
-        var move = mesh.position.minus(mesh.pivot)
-        // Apply scale, rotation, translation to matrix
-        mat.rotate(mesh.rotation)
-        mat.translate(move)
-        mat.scale(mesh.scale.times(1/5))
-        return mat
+    // // Returns the 4x4 transformation matrix representing the input Node
+    // function getSpatialMatrix(mesh) {
+    //     var mat = Qt.matrix4x4()
+    //     // Calculate total translation vector (pivot auto moved to origin)
+    //     var move = mesh.position.minus(mesh.pivot)
+    //     // Form 4x4 matrix by applying individual transforms
+    //     mat.translate(move)
+    //     mat.rotate(mesh.rotation)
+    //     mat.scale(mesh.scale)
+    //     return mat
+    // }
+
+    // Toggle mouse controls between camera, CAD or scan 
+    function switchControls(node, label) {
+        mouseButton.text = label
+        userControl.target = node
+        if (label == "CAMERA") {
+            userControl.keysEnabled = false
+        } else {
+            userControl.keysEnabled = true
+        }
     }
 
     Connections {
@@ -62,16 +82,22 @@ Item {
             loadingScreen.on = false
             cad.opacity = scan.opacity = 1
             // Set scan's aligned transformation
-            scan.position = scan.position.plus(translation)
-            scan.scale = scan.scale.times(scale)
             //scan.rotation = scan.rotation.times(rotation)
-            scan.eulerRotation = scan.eulerRotation.plus(rotation.toEulerAngles())
+            // scan.position = scan.position.plus(translation)
+            // scan.rotation = scan.rotation.times(rotation)
+            // //scan.eulerRotation = scan.eulerRotation.plus(rotation)
+            // // scan.position = scan.position.plus(scan.pivot.times(scan.scale))
+            // scan.scale = scan.scale.times(scale)
+            scan.position = scan.scenePosition.plus(translation)
+            scan.rotation = scan.sceneRotation.times(rotation)
+            scan.scale = scan.scale.times(scale)
             // Hide depth cloud
             cloud.opacity = 0
-            // Set user controls back to camera
-            mouseButton.text = "CAMERA"
-            userControl.target = camera
-            userControl.keysEnabled = false
+        }
+
+        function onFixRot(translation, rotation) {
+            scan.eulerRotation = scan.eulerRotation.minus(rotation)
+            scan.position = scan.position.minus(translation)
         }
     }
 
@@ -92,7 +118,6 @@ Item {
             id: cad
             property vector3d dimensions: Qt.vector3d(0,0,0)
             property vector3d init_dims: Qt.vector3d(0,0,0)
-            property vector3d t_pivot
         }
 
         // CAD's lighting (color)
@@ -108,7 +133,6 @@ Item {
             id: scan
             property vector3d dimensions: Qt.vector3d(0,0,0)
             property vector3d init_dims: Qt.vector3d(0,0,0)
-            property vector3d t_pivot
         }
 
         // Scan's lighting (color)
@@ -122,7 +146,6 @@ Item {
         // Model for storing the calculated Depth Cloud
         Model {
             id: cloud
-            scale: Qt.vector3d(5, 5, 5)
             // Custom geometry from _depth_map.py
             geometry: PointCloud {
                 id: cloudClass
@@ -132,7 +155,7 @@ Item {
                 DefaultMaterial {
                     lighting: DefaultMaterial.NoLighting
                     vertexColorsEnabled: true
-                    // Controlled by slider
+                    // Point size controlled by slider
                     pointSize: depthMenu.pointSize
                 }
             ]
@@ -221,7 +244,7 @@ Item {
                 font.pointSize: 8
             }
 
-            // Button toggles mouse controls between camera, CAD or scan
+            // Toggle mouse control
             Button {
                 id: mouseButton
                 Layout.alignment: Qt.AlignCenter
@@ -231,24 +254,19 @@ Item {
                 font.pointSize: 18
                 background: Rectangle { opacity: 0 }
 
+                // Cycle through different options
                 onClicked: {
                     switch(mouseButton.text) {
                         case "CAMERA":
-                            mouseButton.text = "CAD"
-                            userControl.target = cad
-                            userControl.keysEnabled = true
+                            switchControls(cad, "CAD")
                             break
 
                         case "CAD":
-                            mouseButton.text = "SCAN"
-                            userControl.target = scan
-                            userControl.keysEnabled = true
+                            switchControls(scan, "SCAN")
                             break
 
                         case "SCAN":
-                            mouseButton.text = "CAMERA"
-                            userControl.target = camera
-                            userControl.keysEnabled = false
+                            switchControls(camera, "CAMERA")
                             break
                     }
                 }

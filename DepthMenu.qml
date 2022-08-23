@@ -115,6 +115,16 @@ ColumnLayout {
         background: Rectangle { color: root.textColor; radius: height/6 }
         
         onClicked: {
+            // Hide meshes, display cloud and depth scale
+            cad.opacity = scan.opacity = 0
+            cloud.opacity = 1
+            depthScale.visible = true
+            scaleToggle.checked = true
+            // Set mouse controls back to camera
+            switchControls(camera, "CAMERA")
+            // Display busy indicator
+            loadingScreen.text = "Calculating Depth Map..."
+            loadingScreen.on = true
             // Check whether to use custom max/min values
             var min, max
             if (customRange.checked) {
@@ -122,17 +132,9 @@ ColumnLayout {
                 max = parseFloat(maxField.text)
             }
             // Run depth cloud calculation
-            cloudClass.calc_depth(cad.source, getSpatialMatrix(cad), scan.source, 
-                                getSpatialMatrix(scan), parseInt(sampled.text),
+            cloudClass.calc_depth(cad.source, cad.sceneTransform, scan.source, 
+                                scan.sceneTransform, parseInt(sampled.text),
                                 parseFloat(matchThresh.text), min, max)
-            // Hide meshes, display cloud and depth scale
-            cad.opacity = scan.opacity = 0
-            cloud.opacity = 1
-            depthScale.visible = true
-            scaleToggle.checked = true
-            // Display busy indicator
-            loadingScreen.text = "Calculating Depth Map..."
-            loadingScreen.on = true
         }
     }
 

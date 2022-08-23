@@ -86,11 +86,16 @@ ColumnLayout {
 
             // Reset loader sources and run alignment from backend
             } if (!error) {
+                // Display running indicator
                 loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
                 cad.opacity = scan.opacity = 0
-                backend.align_meshes(cad.source, scan.source, getSpatialMatrix(cad), 
-                                        getSpatialMatrix(scan), toggleScale.checked, 
+                // Set mouse controls back to camera
+                switchControls(camera, "CAMERA")
+                console.log(cad.eulerRotation)
+                // Calculate alignment
+                backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
+                                        scan.sceneTransform, toggleScale.checked, 
                                         parseInt(samples.text), parseInt(iterations.text))
             }
         }

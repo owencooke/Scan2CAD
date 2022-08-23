@@ -37,7 +37,7 @@ class Backend(QObject):
     contourResult = Signal(float, float)
 
     displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
-
+    fixRot = Signal(QVector3D, QVector3D)
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
     # The backend functions ran after clicking buttons, etc.
