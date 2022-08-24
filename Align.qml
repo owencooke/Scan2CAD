@@ -9,18 +9,29 @@ import DepthMap
 
 // Page for running the 3D alignment/comparison algorithms
 Item {
-    // Timer {
-    //     interval: 3000; repeat: true; running: true
-    //     onTriggered: {
-    //         // scan.eulerRotation = scan.eulerRotation.plus(Qt.vector3d(30,0,0))
-    //         // scan.position = scan.position.plus(Qt.vector3d(0,0,30))
-    //         //console.log(scan.scale, scan.eulerRotation, scan.position)
-    //         for (let i = 1; i < 6; i++) {
-    //             scan.scale = scan.scale.times(i)
-    //             console.log(scan.scale)
-    //         }
-    //     }
-    // }
+    Timer {
+        interval: 3000; repeat: true; running: true
+        onTriggered: {
+            // scan.eulerRotation = scan.eulerRotation.plus(Qt.vector3d(30,0,0))
+            // scan.position = scan.position.plus(Qt.vector3d(0,0,30))
+            //console.log(scan.scale, scan.eulerRotation, scan.position)
+            // for (let i = 1; i < 6; i++) {
+            //     scan.scale = scan.scale.times(i)
+            //     console.log(scan.scale)
+            // }
+            // console.log('local', scan.position, scan.rotation)
+            // console.log('global', scan.scenePosition, scan.sceneRotation)
+            // console.log(scan.rotation, Qt.quaternion(1,0,0,0).times(scan.rotation))
+            // var quat = scan.rotation
+            // console.log(quat, quat.times(quat))
+            // var eul = quat.toEulerAngles()
+            // console.log(eul, eul.plus((quat.times(quat)).toEulerAngles()))
+            console.log(scan.sceneTransform)
+            // console.log('cad', cad.eulerRotation)
+            // console.log('scan', scan.eulerRotation)
+            // console.log('scan', scan.position)
+        }
+    }
     // Reset all Node properties to their "default", NOT including source
     function resetNode(mesh) {
         mesh.scale = Qt.vector3d(5, 5, 5)
@@ -37,18 +48,6 @@ Item {
         mesh.dimensions = mesh.init_dims = dim
     }
 
-    // // Returns the 4x4 transformation matrix representing the input Node
-    // function getSpatialMatrix(mesh) {
-    //     var mat = Qt.matrix4x4()
-    //     // Calculate total translation vector (pivot auto moved to origin)
-    //     var move = mesh.position.minus(mesh.pivot)
-    //     // Form 4x4 matrix by applying individual transforms
-    //     mat.translate(move)
-    //     mat.rotate(mesh.rotation)
-    //     mat.scale(mesh.scale)
-    //     return mat
-    // }
-
     // Toggle mouse controls between camera, CAD or scan 
     function switchControls(node, label) {
         mouseButton.text = label
@@ -58,6 +57,16 @@ Item {
         } else {
             userControl.keysEnabled = true
         }
+    }
+
+    function translateMesh(mesh, translation) {
+        mesh.position = mesh.position.plus(translation)
+    }
+    function scaleMesh(mesh, scale) {
+        mesh.scale = mesh.scale.times(scale)
+    }
+    function rotateMesh(mesh, rotation) {
+        mesh.rotation = mesh.rotation.times(rotation)
     }
 
     Connections {
@@ -82,17 +91,27 @@ Item {
             loadingScreen.on = false
             cad.opacity = scan.opacity = 1
             // Set scan's aligned transformation
-            //scan.rotation = scan.rotation.times(rotation)
-            // scan.position = scan.position.plus(translation)
+            // scan.scale = scan.scale.times(scale)
             // scan.rotation = scan.rotation.times(rotation)
             // //scan.eulerRotation = scan.eulerRotation.plus(rotation)
-            // // scan.position = scan.position.plus(scan.pivot.times(scan.scale))
-            // scan.scale = scan.scale.times(scale)
-            scan.position = scan.scenePosition.plus(translation)
-            scan.rotation = scan.sceneRotation.times(rotation)
-            scan.scale = scan.scale.times(scale)
+            // scan.position = scan.position.plus(translation)
+
+            // console.log(scale)
+            // console.log(rotation.toEulerAngles())
+            // console.log(translation)
+            scan.trans = translation
+            // scaleMesh(scan, scale)
+            // rotateMesh(scan, rotation)
+            // translateMesh(scan, translation)
+
+            // scan.scale = scale
+            // scan.eulerRotation = rotation
+            // scan.position = translation
+
             // Hide depth cloud
             cloud.opacity = 0
+            // console.log('cad', cad.eulerRotation)
+            // console.log('scan', scan.eulerRotation)
         }
 
         function onFixRot(translation, rotation) {
@@ -133,6 +152,7 @@ Item {
             id: scan
             property vector3d dimensions: Qt.vector3d(0,0,0)
             property vector3d init_dims: Qt.vector3d(0,0,0)
+            property vector3d trans
         }
 
         // Scan's lighting (color)
@@ -325,5 +345,18 @@ Item {
         anchors.centerIn: view3D
         width: 200
         height: 150
+    }
+    Button {
+        width: 50
+        text: "test"
+        onClicked: {
+            // console.log('scale', scan.scale)
+            // console.log('rotation', scan.eulerRotation)
+            // console.log('translation', (scan.position.minus(scan.pivot)).times(scan.scale))
+            //backend.test(scan.sceneTransform)
+            // cad.rotate(scan.eulerRotation.x, Qt.vector3d(1,0,0), Node.LocalSpace)
+            translateMesh(scan, scan.trans)
+            //console.log(scan.rotation.toEulerAngles())
+        }
     }
 }

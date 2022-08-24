@@ -65,8 +65,10 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     scan_mat = qmatrix4x4_to_np(scan_mat)
     model.apply_transform(cad_mat)
     scanned.apply_transform(scan_mat)
-    scanned.visual.vertex_colors = trimesh.visual.random_color()
-    trimesh.Scene([model, scanned]).show()
+
+    # # DEBUG
+    # scanned.visual.vertex_colors = trimesh.visual.random_color()
+    # trimesh.Scene([model, scanned]).show()
 
     # Check inputs for errors, assign default if error
     if samples <= 0:
@@ -77,22 +79,28 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # Align scan mesh relative to the model mesh, save result to disk
     t_matrix, cost = trimesh.registration.mesh_other(scanned, model, samples, scale, icp_final=iters)
 
-    # DEBUG: show result in Trimesh viewer to verify with GUI result
-    scanned.apply_transform(t_matrix)
-    scanned.visual.vertex_colors = trimesh.visual.random_color()
-    trimesh.Scene([model, scanned]).show()
+    # # DEBUG: show result in Trimesh viewer to verify with GUI result
+    # scanned.apply_transform(t_matrix)
+    # scanned.visual.vertex_colors = trimesh.visual.random_color()
+    # trimesh.Scene([model, scanned]).show()
 
-    # Decompose matrix into singular transforms for GUI
-    #for combo in _AXES2TUPLE:
-    scale, rotation, translation = split_t_matrix(t_matrix, combo=None)
-
+    # Decompose matrices and combine into singular transforms for GUI
+    # scan_scale, scan_rot, scan_pos = split_t_matrix(scan_mat)
+    # print('py initial', scan_scale, scan_rot, scan_pos, sep='\n')
+    scale, rotation, translation = split_t_matrix(t_matrix)
+    # print('py transform', scale, rotation, translation, sep='\n')
+    # scan_scale *= scale
+    # scan_rot += rotation
+    # scan_pos += translation
+    # print('py final', scan_scale, scan_rot, scan_pos, sep='\n')
     # Convert to Qt data types and output to GUI via signal
     scale = QVector3D(*scale)
     translation = QVector3D(*translation)
     rotation = QQuaternion(*rotation)
-    #rotation = QVector3D(*(np.array(rotation) * 180 / np.pi))
+    #rotation = QVector3D(*rotation)
     self.displayAligned.emit(translation, scale, rotation, cost)
 
-    # time.sleep(3)
-    # self.fixRot.emit(translation, rotation)
-    # time.sleep(1)
+    # scan_scale = QVector3D(*scan_scale)
+    # scan_pos = QVector3D(*scan_pos)
+    # scan_rot = QVector3D(*scan_rot)
+    # self.displayAligned.emit(scan_pos, scan_scale, scan_rot, cost)

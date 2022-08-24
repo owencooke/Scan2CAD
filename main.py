@@ -10,7 +10,7 @@ from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan
 from _depth_map import PointCloud
-from backend_utils import Thread
+from backend_utils import Thread, split_t_matrix, qmatrix4x4_to_np
 
 
 ''' Class containing all of the Python backend functions for the GUI.
@@ -37,6 +37,7 @@ class Backend(QObject):
     contourResult = Signal(float, float)
 
     displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
+    #displayAligned = Signal(QVector3D, QVector3D, QVector3D, float)
     fixRot = Signal(QVector3D, QVector3D)
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
@@ -46,6 +47,16 @@ class Backend(QObject):
     @Slot()
     def clear_cache(self):
         self.engine.clearComponentCache()
+
+    @Slot(QMatrix4x4)
+    def test(self, mat):
+        mat = qmatrix4x4_to_np(mat)
+        scale, rotation, translation = split_t_matrix(mat)
+        rotation = QQuaternion(*rotation)
+        print(rotation.toEulerAngles())
+        # print('scale', scale)
+        # print('rotation', rotation)
+        # print('translation', translation)
 
     # Load model into the 3D viewer or Align page of GUI
     @Slot(str, str, bool)

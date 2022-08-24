@@ -35,28 +35,50 @@ def np_to_qmatrix4x4(np_mat):
         q_mat.setRow(i, row)
     return q_mat
 
-# Decompose a 4x4 transformation matrix into scale, translation, rotation
-def split_t_matrix(mat, combo):
-    # Get 3x3 rotation matrix from total transform
-    rot_mat = mat[:3, :3].copy()
+# Converts rotation matrix into its euler angles
+def euler_from_rotation(r):
+    ''' Pseudo code obtained from:
+    David Eberly, Geometric Tools, Redmond WA 98052
+    https://www.geometrictools.com/Documentation/EulerAngles.pdf '''
 
-    # Scale vector is the normal of each column
+    if r[2,1] < 1:
+        if r[2,1] > -1:
+            e_x = np.arcsin(r[2,1])
+            e_z = np.arctan2(-r[0,1], r[1,1])
+            e_y = np.arctan2(-r[2,0], r[2,2])
+        else:
+            e_x = -np.pi/2
+            e_z = -np.arctan2(r[0,2], r[0,0])
+            e_y = 0
+    else:
+        e_x = np.pi/2
+        e_z = np.arctan2(r[0,2], r[0,0])
+        e_y = 0
+    
+    return (np.array([e_x, e_y, e_z])) * 180 / np.pi
+
+# Decompose a 4x4 transformation matrix into scale, translation, rotation
+def split_t_matrix(mat):
+    # print(mat)
+    # Extract translation vector
+    translation = mat[:3, 3].copy()
+    mat[:3, 3] = 0
+    # print(translation, mat)
+    # # Get 3x3 rotation matrix from total transform
+    # rot_mat = mat[:3, :3].copy()
+    # rot_mat = np.transpose(rot_mat)
+
+    # Scale vector is the normal of first 3 columns
     scale = []
     for i in range(3):
-        scale.append(np.linalg.norm(rot_mat[:,i]))
-
-    # Extract translation vector and scale values
-    translation = mat[:3, 3].copy() #* scale
-
-    # Normalize columns to eliminate scale factor from rotation
-    for i in range(3):
-        rot_mat[:,i] = np.divide(rot_mat[:,i], scale[i])
-    
-    # Get rotation quaternion from norm matrix
-    rotation = quaternion_from_matrix(rot_mat)
-    # rotation = euler_from_matrix(rot_mat, combo)
-    # print(combo, rotation)
-    # print()
-    # triscale, shear, angles, trans, persp = decompose_matrix(mat)
-    # print('decompose', triscale, np.array(angles) * 180 / np.pi, trans)
-    return scale, rotation, translation
+        scale.append(np.linalg.norm(mat[:3, i]))
+        # Normalize columns to eliminate scale from rotation
+        mat[:, i] = np.divide(mat[:, i], scale[i])
+    # print(scale, mat)
+    #print(mat[:3, :3])
+    # Get rotation quaternion
+    rotation = quaternion_from_matrix(mat, isprecise=True)
+    #print(rotation)
+    my_rotation = euler_from_rotation(mat)
+    #print('my euler', my_rotation)
+    return np.array(scale), rotation, translation

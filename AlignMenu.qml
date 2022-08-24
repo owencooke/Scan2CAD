@@ -92,7 +92,6 @@ ColumnLayout {
                 cad.opacity = scan.opacity = 0
                 // Set mouse controls back to camera
                 switchControls(camera, "CAMERA")
-                console.log(cad.eulerRotation)
                 // Calculate alignment
                 backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
                                         scan.sceneTransform, toggleScale.checked, 
