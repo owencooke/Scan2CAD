@@ -71,9 +71,7 @@ RowLayout {
             border.width: 0.001
         }
 
-        onEditingFinished: {
-            setValue(parseFloat(percentField.text)*initial_dim/100)
-        }
+        onEditingFinished: setValue(parseFloat(percentField.text)*initial_dim/100)
     }
 
     Label {

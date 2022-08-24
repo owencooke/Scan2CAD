@@ -92,10 +92,11 @@ Rectangle {
     // Drop down menu for button controls
     Rectangle {
         anchors { top: parent.bottom; left: parent.left }
-        opacity: (dropButton.toggle) ? parent.opacity : 0
-        color: root.menuColor
         implicitHeight: 32
         width: parent.width
+        opacity: parent.opacity
+        color: root.menuColor
+        visible: (dropButton.toggle) ? true : false
 
         RowLayout {
             id: buttonRow
@@ -192,8 +193,9 @@ Rectangle {
                     id: xRot
                     title: "X"
                     handleColour: "red"
-                    onSetEuler: function(value) {
-                        target.eulerRotation.x = value
+                    value: target.eulerRotation.x
+                    onSetEuler: function(val) {
+                        target.eulerRotation.x = val
                     }
                 }
 
@@ -201,8 +203,9 @@ Rectangle {
                     id: yRot
                     title: "Y"
                     handleColour: "green"
-                    onSetEuler: function(value) {
-                        target.eulerRotation.y = value
+                    value: target.eulerRotation.y
+                    onSetEuler: function(val) {
+                        target.eulerRotation.y = val
                     }
                 }
 
@@ -210,8 +213,9 @@ Rectangle {
                     id: zRot
                     title: "Z"
                     handleColour: "blue"
-                    onSetEuler: function(value) {
-                        target.eulerRotation.z = value
+                    value: target.eulerRotation.z
+                    onSetEuler: function(val) {
+                        target.eulerRotation.z = val
                     }
                 }
             }

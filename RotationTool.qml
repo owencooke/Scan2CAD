@@ -3,12 +3,23 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 RowLayout {
+    id: row
     property string title
     property string handleColour
-    signal setEuler(double value)
+    property real value: 0.0
+    signal setEuler(double val)
     
     function zeroTo360(val) {
         return ((val % 360) + 360) % 360
+    }
+
+    function resetBinds() {
+        field.text = Qt.binding(function() { 
+            return roundDecimal(zeroTo360(row.value), 2).toString() + "°" 
+        })
+        slider.value = Qt.binding(function() {
+            return roundDecimal(zeroTo360(row.value), 2)
+        })
     }
 
     spacing: 15
@@ -27,7 +38,7 @@ RowLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignCenter
         from: 0
-        value: parseFloat(field.text)
+        value: roundDecimal(zeroTo360(row.value), 2)
         to: 360
 
         background: Rectangle {
@@ -50,18 +61,21 @@ RowLayout {
         }
 
         onMoved: {
-            field.text = Math.round(slider.value) + "°"
+            // Change target rotation via signal handler
             setEuler(slider.value)
+            resetBinds()
         }
     }
 
     // Input textbox
     TextField {
         id: field
-        Layout.preferredWidth: 60
+        // Layout.minimumWidth: 60
+        // Layout.maximumWidth: 120
+        Layout.preferredWidth: 80
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
-        text: "0°"
+        text: roundDecimal(zeroTo360(row.value), 2).toString() + "°"
         horizontalAlignment: TextInput.AlignHCenter
         font.family: regFont.font.family
         font.pointSize: 12
@@ -74,12 +88,9 @@ RowLayout {
         }
 
         onEditingFinished: {
-            field.text = zeroTo360(parseFloat(field.text))
-            slider.value = parseFloat(field.text)
-            if (field.text.indexOf("°") == -1) {
-                field.text += "°"
-            }
-            setEuler(slider.value)
+            // Change target rotation via signal handler
+            setEuler(parseFloat(field.text))
+            resetBinds()
         }
     }
 }

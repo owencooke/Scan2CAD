@@ -155,8 +155,9 @@ Rectangle {
                 title: "X"
                 handleColour: "red"
                 Layout.leftMargin: 15
-                onSetEuler: function(value) {
-                    target.eulerRotation.x = value
+                value: target.eulerRotation.x
+                onSetEuler: function(val) {
+                    target.eulerRotation.x = val
                 }
             }
 
@@ -165,8 +166,9 @@ Rectangle {
                 title: "Y"
                 handleColour: "green"
                 Layout.leftMargin: 15
-                onSetEuler: function(value) {
-                    target.eulerRotation.y = value
+                value: target.eulerRotation.y
+                onSetEuler: function(val) {
+                    target.eulerRotation.y = val
                 }
             }
 
@@ -175,8 +177,9 @@ Rectangle {
                 title: "Z"
                 handleColour: "blue"
                 Layout.leftMargin: 15
-                onSetEuler: function(value) {
-                    target.eulerRotation.z = value
+                value: target.eulerRotation.z
+                onSetEuler: function(val) {
+                    target.eulerRotation.z = val
                 }
             }
 
