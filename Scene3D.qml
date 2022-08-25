@@ -64,7 +64,8 @@ View3D {
     camera: OrthographicCamera {
         id: camera
         clipNear: -9999
-        pivot: target.pivot
+        horizontalMagnification: 5
+        verticalMagnification: 5
     }
 
     DirectionalLight{
@@ -74,12 +75,9 @@ View3D {
     }
 
     // Node storing model loaded by user
-    RuntimeLoader {
+    DynamicNode {
         id: mesh
-        property vector3d dimensions: Qt.vector3d(0,0,0)
-        property vector3d init_dims: Qt.vector3d(0,0,0)
         eulerRotation: meshRotation
-        scale:  Qt.vector3d(5,5,5)
     }
 
     // Scene rendering options
@@ -108,5 +106,6 @@ View3D {
         enableXYGrid: !activateGrid
         enableAxisLines: !activateGrid
         gridColor: root.secondaryText
+        scale: Qt.vector3d(1/5, 1/5, 1/5)
     }
 }

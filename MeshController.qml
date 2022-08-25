@@ -24,7 +24,7 @@ MouseArea {
             scale = 1/zoomFactor
         }
         // Set minimum zoom (x/y symmetric)
-        var zoomThreshold = 0.25
+        var zoomThreshold = 0.85
         if (camera.horizontalMagnification*scale > zoomThreshold) {
             camera.horizontalMagnification *= scale
             camera.verticalMagnification *= scale
@@ -43,5 +43,6 @@ MouseArea {
         controlledObject: target
         xInvert: true
         yInvert: false
+        speed: 0.2
     }
 }
