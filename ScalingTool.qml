@@ -4,10 +4,21 @@ import QtQuick.Layouts
 
 RowLayout {
     id: row
+
     property string title: "Scale"
-    property real value: 0.0
-    property real initial_dim: 0.0
+    property real value
+    property real initial_dim
+
     signal setValue(double value)
+
+    function resetBinds() {
+        distField.text = Qt.binding(function() { 
+            return roundDecimal(row.value, 2)
+        })
+        percentField.text = Qt.binding(function() {
+            return roundDecimal(row.value * 100 / initial_dim, 2)
+        })
+    }
 
     spacing: 8
 
@@ -23,9 +34,10 @@ RowLayout {
     TextField {
         id: distField
         Layout.fillWidth: true
+        Layout.minimumWidth: 70
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
-        text: row.value
+        text: roundDecimal(row.value, 2)
         horizontalAlignment: TextInput.AlignRight
         font.family: regFont.font.family
         font.pointSize: 12
@@ -38,10 +50,9 @@ RowLayout {
         }
 
         onEditingFinished: {
-            var val = parseFloat(text)
-            setValue(val)
-            text = Qt.binding(function() { return value })
-            percentField.text = roundDecimal(val * 100 / initial_dim, 2)
+            // Change value via signal handler
+            setValue(parseFloat(text))
+            resetBinds()
         }
     }
 
@@ -56,7 +67,8 @@ RowLayout {
     // Percentage scale based on initial distance
     TextField {
         id: percentField
-        Layout.preferredWidth: 100
+        Layout.fillWidth: true
+        Layout.minimumWidth: 70
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
         text: "100"
@@ -71,7 +83,11 @@ RowLayout {
             border.width: 0.001
         }
 
-        onEditingFinished: setValue(parseFloat(percentField.text)*initial_dim/100)
+        onEditingFinished: {
+            // Change value via signal handler
+            setValue(parseFloat(percentField.text)*initial_dim/100)
+            resetBinds()
+        }
     }
 
     Label {

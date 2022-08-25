@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 RowLayout {
     id: row
+
     property string title
     property string handleColour
     property real value: 0.0
@@ -40,6 +41,7 @@ RowLayout {
         from: 0
         value: roundDecimal(zeroTo360(row.value), 2)
         to: 360
+        stepSize: 1
 
         background: Rectangle {
             x: slider.leftPadding
@@ -70,8 +72,6 @@ RowLayout {
     // Input textbox
     TextField {
         id: field
-        // Layout.minimumWidth: 60
-        // Layout.maximumWidth: 120
         Layout.preferredWidth: 80
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
