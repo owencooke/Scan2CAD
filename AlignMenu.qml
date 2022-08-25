@@ -96,6 +96,8 @@ ColumnLayout {
                 backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
                                         scan.sceneTransform, toggleScale.checked, 
                                         parseInt(samples.text), parseInt(iterations.text))
+                // FIXME: remove when align matrix properly applied
+                scan.source = ''
             }
         }
     }

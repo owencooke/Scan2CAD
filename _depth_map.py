@@ -2,7 +2,7 @@ import numpy as np
 import trimesh
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
-from PySide6.QtGui import QMatrix4x4
+from PySide6.QtGui import QMatrix4x4, QVector3D
 from PySide6.QtCore import Property, Signal, Slot, QThreadPool
 from backend_utils import Thread, check_url, qmatrix4x4_to_np
 
@@ -43,7 +43,7 @@ class PointCloud(QQuick3DGeometry):
         self.threadpool.setExpiryTimeout(1)
 
     threshChanged = Signal()
-    cloudCalculated = Signal()
+    cloudCalculated = Signal(QVector3D) # Centroid for points
 
     @Property("QVariantList", notify=threshChanged)
     def thresh_model(self):
@@ -109,7 +109,7 @@ class PointCloud(QQuick3DGeometry):
 
         # Update model in GUI
         self.update()
-        self.cloudCalculated.emit()
+        self.cloudCalculated.emit(QVector3D(*cad.centroid))
 
     def sort_sampled_vertices(self, cad, scan, samples, match_thresh, min, max):
         colors = np.zeros((samples, 4), dtype='float32')

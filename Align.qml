@@ -9,22 +9,6 @@ import DepthMap
 
 // Page for running the 3D alignment/comparison algorithms
 Item {
-    // Reset all Node properties to their "default", NOT including source
-    function resetNode(mesh) {
-        mesh.scale = Qt.vector3d(5, 5, 5)
-        mesh.eulerRotation = Qt.vector3d(0, 0, 0)
-        mesh.position = Qt.vector3d(0, 0, 0)
-        mesh.visible = true
-        mesh.dimensions = mesh.init_dims
-    }
-
-    // Initialize Node properties upon loading from external file
-    function setNodeProperties(mesh, fname, centroid, dim) {
-        mesh.source = "backend_resources/_converted_mesh/" + fname + ".glb"
-        mesh.pivot = centroid
-        mesh.dimensions = mesh.init_dims = dim
-    }
-
     // Toggle mouse controls between camera, CAD or scan 
     function switchControls(node, label) {
         mouseButton.text = label
@@ -42,11 +26,11 @@ Item {
         function onConvertedMesh(pageName, scanFlag, centroid, dim) {
             if (pageName == "Align") {
                 if (scanFlag) {
-                    resetNode(scan)
-                    setNodeProperties(scan, "scan_align", centroid, dim)
+                    scan.resetNode()
+                    scan.setNodeProperties("scan_align", centroid, dim)
                 } else {
-                    resetNode(cad)
-                    setNodeProperties(cad, "cad_align", centroid, dim)
+                    cad.resetNode()
+                    cad.setNodeProperties("cad_align", centroid, dim)
                 }
                 loadingScreen.on = false
                 cloud.visible = false
@@ -54,11 +38,29 @@ Item {
         }
 
         // Display results of the alignment algorithm to user
-        function onDisplayAligned(translation, scale, rotation, cost) {
-            // Set scan's aligned transformation
-            scan.scale = scan.scale.times(scale)
-            scan.rotation = scan.rotation.times(rotation)
-            scan.position = scan.position.plus(translation)
+        function onDisplayAligned(centroid, dim, cost) {
+            /* FIXME:
+             // function onDisplayAligned(translation, scale, rotation, cost) {
+                https://bugreports.qt.io/browse/QTBUG-105961
+                - Alignment outputs a 4x4 transformation matrix.
+                - No proper method to write a transform matrix to Node
+                    at time of development.
+                - Replace temp file code w/ output matrix applied to scan's Node
+
+                Failed attempt to decompose the transforms (sometimes works)
+                scan.scale = scan.scale.times(scale)
+                scan.rotation = scan.rotation.times(rotation)
+                scan.position = scan.position.plus(translation)
+            */
+
+            // Load aligned file after resetting node properties
+            scan.resetNode()
+            scan.source = "backend_resources/_converted_mesh/scan_align.glb"
+            // Scan moved to origin, so reset cad's translation
+            scan.pivot = centroid
+            scan.dimensions = dim
+            cad.position = Qt.vector3d(0, 0, 0)
+
             // Modify display
             loadingScreen.on = false
             cloud.visible = false
@@ -74,16 +76,14 @@ Item {
         camera: OrthographicCamera {
             id: camera
             clipNear: -9999
-            pivot: cad.pivot
             eulerRotation: Qt.vector3d(-20.4556, 52.6713, 0)
+            horizontalMagnification: 5
+            verticalMagnification: 5
         }
 
-        // CAD model's node
-        RuntimeLoader {
-            id: cad
-            property vector3d dimensions: Qt.vector3d(0,0,0)
-            property vector3d init_dims: Qt.vector3d(0,0,0)
-        }
+        // Nodes (holds loaded models)
+        DynamicNode { id: cad }
+        DynamicNode { id: scan }
 
         // CAD's lighting (color)
         DirectionalLight{
@@ -91,13 +91,6 @@ Item {
             color: cadControl.sliderColor
             brightness: 4
             eulerRotation: camera.eulerRotation
-        }
-
-        // 3D Scan's node
-        RuntimeLoader {
-            id: scan
-            property vector3d dimensions: Qt.vector3d(0,0,0)
-            property vector3d init_dims: Qt.vector3d(0,0,0)
         }
 
         // Scan's lighting (color)
@@ -114,7 +107,10 @@ Item {
             // Custom geometry from _depth_map.py
             geometry: PointCloud {
                 id: cloudClass
-                onCloudCalculated: loadingScreen.on = false
+                onCloudCalculated: function(centroid) {
+                    loadingScreen.on = false
+                    cloud.pivot = centroid
+                }
             } 
             materials: [
                 DefaultMaterial {
@@ -141,6 +137,7 @@ Item {
             id: axes
             enableAxisLines: true
             gridColor: root.secondaryText
+            scale: Qt.vector3d(1/5, 1/5, 1/5)
         }
 
         environment: SceneEnvironment {

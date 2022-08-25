@@ -17,13 +17,12 @@ Rectangle {
         colorContainer.visible = false
         rotateContainer.visible = false
         scaleContainer.visible = false
-        // Invert prev state, return
         return !prev_state
     }
     
     color: root.menuColor
     implicitHeight: 48
-    width: textRow.width + title.width + dropButton.width + 75
+    width: Math.max(textRow.width + title.width + dropButton.width + 75, 260)
 
     RowLayout {
         id: textRow
@@ -150,7 +149,7 @@ Rectangle {
                 tipText: "Reset to default"
                 icon { source: "backend_resources/icons/eraser-solid.svg";
                         width: 24; height: 24 }
-                onClicked: resetNode(target)
+                onClicked: target.resetNode()
             }
         }
 

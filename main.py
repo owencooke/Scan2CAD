@@ -36,9 +36,10 @@ class Backend(QObject):
     iterateContour = Signal(int, float)
     contourResult = Signal(float, float)
 
-    displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
-    #displayAligned = Signal(QVector3D, QVector3D, QVector3D, float)
-    fixRot = Signal(QVector3D, QVector3D)
+    displayAligned = Signal(QVector3D, QVector3D, float) # centroid, dim, cost
+    #displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
+    #displayAligned = Signal(QVector3D, QVector3D, QVector3D, float) # for Euler angles
+
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
     # The backend functions ran after clicking buttons, etc.
@@ -47,16 +48,6 @@ class Backend(QObject):
     @Slot()
     def clear_cache(self):
         self.engine.clearComponentCache()
-
-    @Slot(QMatrix4x4)
-    def test(self, mat):
-        mat = qmatrix4x4_to_np(mat)
-        scale, rotation, translation = split_t_matrix(mat)
-        rotation = QQuaternion(*rotation)
-        print(rotation.toEulerAngles())
-        # print('scale', scale)
-        # print('rotation', rotation)
-        # print('translation', translation)
 
     # Load model into the 3D viewer or Align page of GUI
     @Slot(str, str, bool)

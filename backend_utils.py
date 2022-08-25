@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QRunnable
 from PySide6.QtGui import QVector4D, QMatrix4x4
-from trimesh.transformations import quaternion_from_matrix, decompose_matrix, euler_from_matrix
+from trimesh.transformations import quaternion_from_matrix # decompose_matrix
 
 ''' For functions in the Backend class that can have a long
 run time. This class runs functions in a separate Python thread than the one
@@ -15,6 +15,9 @@ class Thread(QRunnable):
 
     def run(self):
         self.function(*self.args, **self.kwargs)
+
+''' END OF THREAD CLASS'''
+
 
 # Get rid of QML's "file:///" prefix for urls
 def check_url(file):
@@ -35,7 +38,7 @@ def np_to_qmatrix4x4(np_mat):
         q_mat.setRow(i, row)
     return q_mat
 
-# Converts rotation matrix into its euler angles
+# Converts rotation matrix into its ZXY euler angles
 def euler_from_rotation(r):
     ''' Pseudo code obtained from:
     David Eberly, Geometric Tools, Redmond WA 98052
@@ -57,16 +60,18 @@ def euler_from_rotation(r):
     
     return (np.array([e_x, e_y, e_z])) * 180 / np.pi
 
+# Decompose a 4x4 transformation matrix into its scale
+def scale_from_matrix(mat):
+    scale = []
+    for i in range(3):
+        scale.append(np.linalg.norm(mat[:3, i]))
+    return np.array(scale)
+
 # Decompose a 4x4 transformation matrix into scale, translation, rotation
 def split_t_matrix(mat):
-    # print(mat)
     # Extract translation vector
     translation = mat[:3, 3].copy()
     mat[:3, 3] = 0
-    # print(translation, mat)
-    # # Get 3x3 rotation matrix from total transform
-    # rot_mat = mat[:3, :3].copy()
-    # rot_mat = np.transpose(rot_mat)
 
     # Scale vector is the normal of first 3 columns
     scale = []
@@ -74,11 +79,8 @@ def split_t_matrix(mat):
         scale.append(np.linalg.norm(mat[:3, i]))
         # Normalize columns to eliminate scale from rotation
         mat[:, i] = np.divide(mat[:, i], scale[i])
-    # print(scale, mat)
-    #print(mat[:3, :3])
+
     # Get rotation quaternion
     rotation = quaternion_from_matrix(mat, isprecise=True)
-    #print(rotation)
-    my_rotation = euler_from_rotation(mat)
-    #print('my euler', my_rotation)
-    return np.array(scale), rotation, translation
+
+    return scale, rotation, translation

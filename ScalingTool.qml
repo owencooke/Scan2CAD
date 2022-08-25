@@ -71,7 +71,7 @@ RowLayout {
         Layout.minimumWidth: 70
         Layout.alignment: Qt.AlignHCenter
         color: root.textColor
-        text: "100"
+        text: roundDecimal(row.value * 100 / initial_dim, 2)
         horizontalAlignment: TextInput.AlignRight
         font.family: regFont.font.family
         font.pointSize: 12
