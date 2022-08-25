@@ -116,8 +116,8 @@ ColumnLayout {
         
         onClicked: {
             // Hide meshes, display cloud and depth scale
-            cad.opacity = scan.opacity = 0
-            cloud.opacity = 1
+            cad.visible = scan.visible = false
+            cloud.visible = true
             depthScale.visible = true
             scaleToggle.checked = true
             // Set mouse controls back to camera

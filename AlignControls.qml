@@ -114,9 +114,9 @@ Rectangle {
                 onClicked: {
                     toggle = !toggle 
                     if (scanFlag) {
-                        scan.opacity = toggle
+                        scan.visible = toggle
                     } else {
-                        cad.opacity = toggle
+                        cad.visible = toggle
                     }
                 }
             }

@@ -89,7 +89,7 @@ ColumnLayout {
                 // Display running indicator
                 loadingScreen.text = "Aligning Meshes..."
                 loadingScreen.on = true
-                cad.opacity = scan.opacity = 0
+                cad.visible = scan.visible = false
                 // Set mouse controls back to camera
                 switchControls(camera, "CAMERA")
                 // Calculate alignment
