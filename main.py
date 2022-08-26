@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import sys
+import tempfile
 # Pyside6 Imports for Qt
 from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D, QQuaternion
 from PySide6.QtWidgets import QApplication
@@ -10,6 +10,7 @@ from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan
 from _depth_map import PointCloud
+from _test_mesh import Mesh
 from backend_utils import Thread, split_t_matrix, qmatrix4x4_to_np
 
 
@@ -48,6 +49,10 @@ class Backend(QObject):
     @Slot()
     def clear_cache(self):
         self.engine.clearComponentCache()
+
+    @Slot(result=str)
+    def get_basedir(self):
+        return self.basedir
 
     # Load model into the 3D viewer or Align page of GUI
     @Slot(str, str, bool)
@@ -119,7 +124,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("backend", backend)
 
     # Load main QML file and begin event loop
-    engine.load(os.fspath(Path(__file__).resolve().parent / "main.qml"))
+    engine.load(os.path.join(basedir, 'main.qml'))
     if not engine.rootObjects():
         sys.exit(-1)
     app.exec()

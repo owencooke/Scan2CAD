@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick3D
 import QtQuick3D.Helpers
-import QtQuick3D.AssetUtils
 
 View3D {
     id: view3D
@@ -16,7 +15,7 @@ View3D {
         axes.enableXYGrid = false
         axes.enableAxisLines = false
         light.color = root.textColor
-        var dir = "backend_resources/_captured_imgs/"
+        var dir = backend.get_basedir() + "/backend_resources/_captured_imgs/"
         
         // Front
         view3D.grabToImage(function(result) {
