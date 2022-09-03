@@ -8,7 +8,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
 # Import backend method bodies and Classes
 from _compare2D import crop_faces, match_contours
-from _align3D import load3D, align_scan
+from _align3D import load3D, align_scan, repair_mesh
 from _depth_map import PointCloud
 from _test_mesh import Mesh
 from backend_utils import Thread, split_t_matrix, qmatrix4x4_to_np
@@ -64,6 +64,11 @@ class Backend(QObject):
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
     def align_meshes(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
         thread = Thread(align_scan, self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
+        self.threadpool.start(thread)
+
+    @Slot(str, str, QMatrix4x4, QMatrix4x4)
+    def repair(self, cad_file, scan_file, cad_mat, scan_mat):
+        thread = Thread(repair_mesh, self, cad_file, scan_file, cad_mat, scan_mat)
         self.threadpool.start(thread)
 
     # Automatic image capture and display of the 6 sides of 3D model

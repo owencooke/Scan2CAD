@@ -168,6 +168,12 @@ Item {
 
             DropDownLabel { id: depth; text: "Depth Map"; open: false}
             DepthMenu { id: depthMenu;  visible: depth.open}
+
+            Button {
+                text: 'testing'
+                onClicked: backend.repair(cad.source, scan.source,
+                                            cad.sceneTransform, scan.sceneTransform)
+            }
         }
     }
 

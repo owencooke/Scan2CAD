@@ -88,3 +88,39 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # rotation = QQuaternion(*rotation)
     # #rotation = QVector3D(*rotation) # for Euler angles
     # self.displayAligned.emit(translation, scale, rotation, cost)
+
+def repair_mesh(self, cad_file, scan_file, cad_mat, scan_mat):
+    cad = trimesh.load(check_url(cad_file), force='mesh')
+    scan = trimesh.load(check_url(scan_file), force='mesh')
+
+    cad_mat = qmatrix4x4_to_np(cad_mat)
+    scan_mat = qmatrix4x4_to_np(scan_mat)
+    cad.apply_transform(cad_mat)
+    scan.apply_transform(scan_mat)
+
+    # Repair algorithm
+    closest_cad, unsign_dists, _ = trimesh.proximity.closest_point(cad, scan.vertices)
+    repair_vertices = np.zeros(scan.vertices.shape)
+    repair_normals = np.zeros(scan.vertices.shape)
+    repairs = 0
+    for idx, d in enumerate(unsign_dists):
+        if d > 1: #1mm
+            # Find unit direction vector from scan vertex to closest CAD point
+            direction = closest_cad[idx] - scan.vertices[idx]
+            # Double for new repair correction
+            direction *= 2
+            # Store new corrected vertex
+            repair_vertices[repairs] = scan.vertices[idx] + direction
+        else: 
+            repair_vertices[repairs] = scan.vertices[idx]
+
+        repair_normals[repairs] = scan.vertex_normals[idx]
+        repairs += 1
+
+    # Concatenate old CAD vertices with new repairs
+    result = np.concatenate((cad.vertices, repair_vertices[:repairs]))
+    result_normals = np.concatenate((cad.vertex_normals, repair_normals[:repairs]))
+    # cloud = trimesh.points.PointCloud(result)
+    cloud = trimesh.base.Trimesh(vertices=result, vertex_normals=result_normals)
+    # trimesh.exchange.export.export_mesh(cloud, 'test.stl', file_type="stl", resolver=None)
+    trimesh.Scene([cloud]).show()
