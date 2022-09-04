@@ -68,7 +68,7 @@ class Backend(QObject):
 
     @Slot(str, str, QMatrix4x4, QMatrix4x4)
     def repair(self, cad_file, scan_file, cad_mat, scan_mat):
-        thread = Thread(repair_mesh, self, cad_file, scan_file, cad_mat, scan_mat)
+        thread = Thread(repair_mesh, cad_file, scan_file, cad_mat, scan_mat)
         self.threadpool.start(thread)
 
     # Automatic image capture and display of the 6 sides of 3D model

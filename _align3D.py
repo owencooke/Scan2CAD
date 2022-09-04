@@ -1,8 +1,9 @@
 import os
 import time
 import trimesh
+import csv
 import numpy as np
-from PySide6.QtGui import QVector3D #, QQuaternion
+from PySide6.QtGui import QVector3D, QMatrix4x4 #, QQuaternion
 from backend_utils import check_url, qmatrix4x4_to_np, scale_from_matrix #, split_t_matrix
 
 # Determine output file type/destination
@@ -89,7 +90,7 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # #rotation = QVector3D(*rotation) # for Euler angles
     # self.displayAligned.emit(translation, scale, rotation, cost)
 
-def repair_mesh(self, cad_file, scan_file, cad_mat, scan_mat):
+def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=10000, thresh=1):
     cad = trimesh.load(check_url(cad_file), force='mesh')
     scan = trimesh.load(check_url(scan_file), force='mesh')
 
@@ -98,29 +99,40 @@ def repair_mesh(self, cad_file, scan_file, cad_mat, scan_mat):
     cad.apply_transform(cad_mat)
     scan.apply_transform(scan_mat)
 
+    # Sample points
+    sample_points, face_idx = scan.sample(samples, return_index=True)
     # Repair algorithm
-    closest_cad, unsign_dists, _ = trimesh.proximity.closest_point(cad, scan.vertices)
-    repair_vertices = np.zeros(scan.vertices.shape)
-    repair_normals = np.zeros(scan.vertices.shape)
-    repairs = 0
-    for idx, d in enumerate(unsign_dists):
-        if d > 1: #1mm
+    closest_cad, _, _ = trimesh.proximity.closest_point(cad, sample_points)
+    dists = cad.nearest.signed_distance(sample_points) * -1
+    repair_direction = np.zeros((samples,3))
+    for idx, d in enumerate(dists):
+        if abs(d) > thresh:
             # Find unit direction vector from scan vertex to closest CAD point
-            direction = closest_cad[idx] - scan.vertices[idx]
-            # Double for new repair correction
-            direction *= 2
-            # Store new corrected vertex
-            repair_vertices[repairs] = scan.vertices[idx] + direction
-        else: 
-            repair_vertices[repairs] = scan.vertices[idx]
+            direction = closest_cad[idx] - sample_points[idx]
+            repair_direction[idx] = np.divide(direction, np.linalg.norm(direction))
 
-        repair_normals[repairs] = scan.vertex_normals[idx]
-        repairs += 1
+    # Output results to file (toolpath?)
+    headers = ['Coordinate', 'Repair Direction', 'Distance (mm)']
+    add_file = open('test/additive_repair.csv', 'w')
+    add_writer = csv.writer(add_file)
+    add_writer.writerow(headers)
 
-    # Concatenate old CAD vertices with new repairs
-    result = np.concatenate((cad.vertices, repair_vertices[:repairs]))
-    result_normals = np.concatenate((cad.vertex_normals, repair_normals[:repairs]))
-    # cloud = trimesh.points.PointCloud(result)
-    cloud = trimesh.base.Trimesh(vertices=result, vertex_normals=result_normals)
-    # trimesh.exchange.export.export_mesh(cloud, 'test.stl', file_type="stl", resolver=None)
-    trimesh.Scene([cloud]).show()
+    sub_file = open('test/subtractive_repair.csv', 'w')
+    sub_writer = csv.writer(sub_file)
+    sub_writer.writerow(headers)
+    for i in range (samples):
+        if not np.array_equal(repair_direction[i], np.zeros((1,3))[0]):
+            if dists[i] > 0: 
+                # Requires additive repair
+                add_writer.writerow([sample_points[i], repair_direction[i], dists[i]])
+            else:
+                # Requires subtractive repair
+                sub_writer.writerow([sample_points[i], repair_direction[i], dists[i] * -1])
+
+    add_file.close()
+    sub_file.close()
+
+if __name__ == "__main__":
+    q = QMatrix4x4()
+    repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
+                    "C:/Users/owenc/Documents/LIMDA/models/cube.stl", q, q)
