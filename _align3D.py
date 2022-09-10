@@ -5,6 +5,7 @@ import csv
 import numpy as np
 from PySide6.QtGui import QVector3D, QMatrix4x4 #, QQuaternion
 from backend_utils import check_url, qmatrix4x4_to_np, scale_from_matrix #, split_t_matrix
+from trimesh.util import type_named, append_faces
 
 # Determine output file type/destination
 def outFilename(page, scan):
@@ -90,7 +91,101 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # #rotation = QVector3D(*rotation) # for Euler angles
     # self.displayAligned.emit(translation, scale, rotation, cost)
 
-def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=10000, thresh=1):
+def submesh(mesh,
+            faces_sequence,
+            repair=True,
+            only_watertight=False,
+            min_faces=None,
+            append=False):
+    """
+    Return a subset of a mesh.
+    Parameters
+    ------------
+    mesh : Trimesh
+        Source mesh to take geometry from
+    faces_sequence : sequence (p,) int
+        Indexes of mesh.faces
+    repair : bool
+        Try to make submeshes watertight
+    only_watertight : bool
+        Only return submeshes which are watertight
+    append : bool
+        Return a single mesh which has the faces appended,
+        if this flag is set, only_watertight is ignored
+    Returns
+    ---------
+    if append : Trimesh object
+    else        list of Trimesh objects
+    """
+    # evaluate generators so we can escape early
+    faces_sequence = list(faces_sequence)
+
+    if len(faces_sequence) == 0:
+        return []
+
+    # avoid nuking the cache on the original mesh
+    original_faces = mesh.faces.view(np.ndarray)
+    original_vertices = mesh.vertices.view(np.ndarray)
+
+    faces = []
+    vertices = []
+    normals = []
+    visuals = []
+
+    # for reindexing faces
+    mask = np.arange(len(original_vertices))
+
+    for index in faces_sequence:
+        # sanitize indices in case they are coming in as a set or tuple
+        index = np.asanyarray(index)
+        # if len(index) == 0:
+        #     # regardless of type empty arrays are useless
+        #     continue
+        if index.dtype.kind == 'b':
+            # if passed a bool with no true continue
+            if not index.any():
+                continue
+            # if fewer faces than minimum
+            if min_faces is not None and index.sum() < min_faces:
+                continue
+        elif min_faces is not None and len(index) < min_faces:
+            continue
+
+        current = original_faces[index]
+        unique = np.unique(current.reshape(-1))
+
+        # redefine face indices from zero
+        mask[unique] = np.arange(len(unique))
+        normals.append(mesh.face_normals[index])
+        faces.append(mask[current])
+        vertices.append(original_vertices[unique])
+        visuals.append(mesh.visual.face_subset(index))
+
+    if len(vertices) == 0:
+        return np.array([])
+
+    # we use type(mesh) rather than importing Trimesh from base
+    # to avoid a circular import
+    trimesh_type = type_named(mesh, 'Trimesh')
+    if append:
+        visual = None
+        try:
+            visuals = np.array(visuals)
+            visual = visuals[0].concatenate(visuals[1:])
+        except BaseException:
+            pass
+        # re-index faces and stack
+        vertices, faces = append_faces(vertices, faces)
+        appended = trimesh_type(
+            vertices=vertices,
+            faces=faces,
+            face_normals=np.vstack(normals),
+            visual=visual,
+            process=False)
+        return appended
+
+
+def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=100000, thresh=0.8):
     cad = trimesh.load(check_url(cad_file), force='mesh')
     scan = trimesh.load(check_url(scan_file), force='mesh')
 
@@ -99,40 +194,40 @@ def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=10000, thresh=1)
     cad.apply_transform(cad_mat)
     scan.apply_transform(scan_mat)
 
+    #scan.visual.vertex_colors = trimesh.visual.random_color()
+    # trimesh.Scene([cad, scan]).show()
     # Sample points
     sample_points, face_idx = scan.sample(samples, return_index=True)
     # Repair algorithm
     closest_cad, _, _ = trimesh.proximity.closest_point(cad, sample_points)
     dists = cad.nearest.signed_distance(sample_points) * -1
     repair_direction = np.zeros((samples,3))
+    over_faces = []
+    under_faces = []
     for idx, d in enumerate(dists):
-        if abs(d) > thresh:
+        if d > thresh:
+            # Over extruded
             # Find unit direction vector from scan vertex to closest CAD point
             direction = closest_cad[idx] - sample_points[idx]
             repair_direction[idx] = np.divide(direction, np.linalg.norm(direction))
+            over_faces.append(face_idx[idx])
+        elif d < -thresh: 
+            # Under extruded
+            under_faces.append(face_idx[idx])
 
-    # Output results to file (toolpath?)
-    headers = ['Coordinate', 'Repair Direction', 'Distance (mm)']
-    add_file = open('test/additive_repair.csv', 'w')
-    add_writer = csv.writer(add_file)
-    add_writer.writerow(headers)
-
-    sub_file = open('test/subtractive_repair.csv', 'w')
-    sub_writer = csv.writer(sub_file)
-    sub_writer.writerow(headers)
-    for i in range (samples):
-        if not np.array_equal(repair_direction[i], np.zeros((1,3))[0]):
-            if dists[i] > 0: 
-                # Requires additive repair
-                add_writer.writerow([sample_points[i], repair_direction[i], dists[i]])
-            else:
-                # Requires subtractive repair
-                sub_writer.writerow([sample_points[i], repair_direction[i], dists[i] * -1])
-
-    add_file.close()
-    sub_file.close()
+    over = submesh(scan, over_faces, append=True)
+    under = submesh(scan, under_faces, append=True)
+    over.visual.vertex_colors = np.array((255, 13, 13, 255))
+    under.visual.vertex_colors = np.array((30, 38, 145, 255))
+    trimesh.Scene([scan, over, under]).show()
+    # over.fill_holes()
+    # under.fill_holes()
+    # trimesh.Scene([over, under]).show()
+    #trimesh.exchange.export.export_mesh(result, "test/test.glb", file_type="glb")
 
 if __name__ == "__main__":
-    q = QMatrix4x4()
+    # q = QMatrix4x4()
+    cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
+    scan = QMatrix4x4(1, 0, 0, 0.20463739335536957, 0, 1, 0, 0.19485022127628326, 0, 0, 1, -11.439616203308105, 0, 0, 0, 1)
     repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
-                    "C:/Users/owenc/Documents/LIMDA/models/cube.stl", q, q)
+                    "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan, thresh=1.35, samples=100000)
