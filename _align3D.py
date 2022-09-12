@@ -80,7 +80,8 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     centroid = QVector3D(*scanned.centroid)
     self.displayAligned.emit(centroid, QVector3D(*dim), cost)
     ####
-
+    trimesh.exchange.export.export_mesh(model, "bunny_CADalign.stl", file_type="stl")
+    trimesh.exchange.export.export_mesh(scanned, "bunny_SCANalign.stl", file_type="stl")
     # # Decompose matrix into singular transforms for GUI
     # scale, rotation, translation = split_t_matrix(t_matrix)
    
@@ -184,8 +185,32 @@ def submesh(mesh,
             process=False)
         return appended
 
+def check_connected_faces(idx, faces, cc_hash, thresh, cad, scan):
+    # Base condition
+    _, dist, _ = trimesh.proximity.closest_point(cad, scan.triangles_center[idx])
+    if dist[0] <= thresh:
+        return faces
+    else: 
+        # Nearest face not within threshold, add to list
+        faces.append(idx)
+        # Search all of its connected components not already in list
+        for f in cc_hash[idx]:
+            if f not in faces:
+                faces = check_connected_faces(f, faces, cc_hash, thresh, cad, scan)
+            return faces
 
-def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=100000, thresh=0.8):
+def mesh_from_faces(faces, cc_hash, thresh, cad, scan):
+    # Recursively find connected components out of thresh range
+    for f in faces:
+        if f not in faces:
+            faces = check_connected_faces(f, faces, cc_hash, thresh, cad, scan)
+    # Create output mesh
+    out = submesh(scan, faces, append=True)
+    out.fill_holes()
+    out.fix_normals()
+    return out
+
+def repair_mesh(cad_file, scan_file, cad_mat=QMatrix4x4(), scan_mat=QMatrix4x4(), samples=100000, thresh=0.5):
     cad = trimesh.load(check_url(cad_file), force='mesh')
     scan = trimesh.load(check_url(scan_file), force='mesh')
 
@@ -194,40 +219,47 @@ def repair_mesh(cad_file, scan_file, cad_mat, scan_mat, samples=100000, thresh=0
     cad.apply_transform(cad_mat)
     scan.apply_transform(scan_mat)
 
-    #scan.visual.vertex_colors = trimesh.visual.random_color()
-    # trimesh.Scene([cad, scan]).show()
     # Sample points
-    sample_points, face_idx = scan.sample(samples, return_index=True)
-    # Repair algorithm
-    closest_cad, _, _ = trimesh.proximity.closest_point(cad, sample_points)
-    dists = cad.nearest.signed_distance(sample_points) * -1
-    repair_direction = np.zeros((samples,3))
+    sample_points, faces = scan.sample(samples, return_index=True)
+
+    # Determine which faces on scan are "errors"
+    dists = cad.nearest.signed_distance(sample_points)
     over_faces = []
     under_faces = []
     for idx, d in enumerate(dists):
         if d > thresh:
-            # Over extruded
-            # Find unit direction vector from scan vertex to closest CAD point
-            direction = closest_cad[idx] - sample_points[idx]
-            repair_direction[idx] = np.divide(direction, np.linalg.norm(direction))
-            over_faces.append(face_idx[idx])
-        elif d < -thresh: 
             # Under extruded
-            under_faces.append(face_idx[idx])
+            under_faces.append(faces[idx])
+        elif d < -thresh: 
+            # Over extruded
+            over_faces.append(faces[idx])
+    
+    # Create hash map for connected faces on scan
+    cc_hash = {}
+    for key, shared in trimesh.graph.face_adjacency(mesh=scan):
+        if key in cc_hash:
+            cc_hash[key].append(shared)
+        else:
+            cc_hash[key] = [shared]
+    
+    # Create additive/subtractive repair meshes
+    under = mesh_from_faces(under_faces, cc_hash, thresh, cad, scan)
+    over = mesh_from_faces(over_faces, cc_hash, thresh, cad, scan)
 
-    over = submesh(scan, over_faces, append=True)
-    under = submesh(scan, under_faces, append=True)
     over.visual.vertex_colors = np.array((255, 13, 13, 255))
     under.visual.vertex_colors = np.array((30, 38, 145, 255))
-    trimesh.Scene([scan, over, under]).show()
-    # over.fill_holes()
-    # under.fill_holes()
-    # trimesh.Scene([over, under]).show()
-    #trimesh.exchange.export.export_mesh(result, "test/test.glb", file_type="glb")
+    
+    trimesh.Scene([over, under]).show()
+    print('exporting')
+    trimesh.exchange.export.export_mesh(over.copy(), "test/over.glb", file_type="glb")
+    trimesh.exchange.export.export_mesh(under.copy(), "test/under.glb", file_type="glb")
+    print('done')
 
 if __name__ == "__main__":
     # q = QMatrix4x4()
-    cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
-    scan = QMatrix4x4(1, 0, 0, 0.20463739335536957, 0, 1, 0, 0.19485022127628326, 0, 0, 1, -11.439616203308105, 0, 0, 0, 1)
-    repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
-                    "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan, thresh=1.35, samples=100000)
+    # cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
+    # scan = QMatrix4x4(1, 0, 0, 0.20166169106960297, 0, 1, 0, 0.19201700389385223, 0, 0, 1, -12.594476699829102, 0, 0, 0, 1)
+    # repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
+    #                 "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)#, thresh=0.5, samples=100000)
+    repair_mesh("C:/Users/owenc/Documents/LIMDA/models/bunny_CADalign.stl",
+                       "C:/Users/owenc/Documents/LIMDA/models/bunny_SCANalign.stl")#, thresh=0.5, samples=100000)
