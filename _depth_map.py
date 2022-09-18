@@ -1,10 +1,9 @@
 import numpy as np
-import trimesh
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
 from PySide6.QtGui import QMatrix4x4, QVector3D
 from PySide6.QtCore import Property, Signal, Slot, QThreadPool
-from backend_utils import Thread, check_url, qmatrix4x4_to_np
+from backend_utils import Thread, trimesh_from_url
 
 QML_IMPORT_NAME = "DepthMap"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -57,8 +56,8 @@ class PointCloud(QQuick3DGeometry):
     @Slot(str, QMatrix4x4, str, QMatrix4x4, int, float, float, float)
     def calc_depth(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
         # Run in thread due to potential for long runtime
-        thread = Thread(self.get_points, check_url(cad_file), cad_mat,
-                            check_url(scan_file), scan_mat, samples, mtch, min, max)
+        thread = Thread(self.get_points, cad_file, cad_mat,
+                            scan_file, scan_mat, samples, mtch, min, max)
         self.threadpool.start(thread)
 
     def get_points(self, cad_file, cad_mat, scan_file, scan_mat, samples, mtch, min, max):
@@ -67,16 +66,8 @@ class PointCloud(QQuick3DGeometry):
         self.update()
 
         # Load new data from user input
-        cad = trimesh.load(cad_file, force='mesh')
-        scan = trimesh.load(scan_file, force='mesh')
-
-        # Apply transformation matrices from GUI 
-        # trimesh.Scene([cad, scan]).show()
-        cad_mat = qmatrix4x4_to_np(cad_mat)
-        scan_mat = qmatrix4x4_to_np(scan_mat)
-        cad.apply_transform(cad_mat)
-        scan.apply_transform(scan_mat)
-        # trimesh.Scene([cad, scan]).show()
+        cad = trimesh_from_url(cad_file, cad_mat)
+        scan = trimesh_from_url(scan_file, scan_mat)
 
         # Run vertex comparison algorithm
         pts, colors = self.sort_sampled_vertices(cad, scan, samples, mtch, min, max)

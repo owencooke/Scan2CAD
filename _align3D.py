@@ -1,11 +1,12 @@
 import os
 import time
 import trimesh
-import csv
 import numpy as np
 from PySide6.QtGui import QVector3D, QMatrix4x4 #, QQuaternion
-from backend_utils import check_url, qmatrix4x4_to_np, scale_from_matrix #, split_t_matrix
+from backend_utils import scale_from_matrix, trimesh_from_url, qmatrix4x4_to_np #, split_t_matrix
 from trimesh.util import type_named, append_faces
+from _repair_volume import RepairExtractor
+
 
 # Determine output file type/destination
 def outFilename(page, scan):
@@ -29,7 +30,8 @@ def tidyUpMesh(mesh, min_len=5000):
 
 # Load 3D model into GUI and calculate its dimensional attributes
 def load3D(self, QMLpage, selectedFile, scanFlag):
-    loaded = trimesh.load(check_url(selectedFile), force='mesh')
+    # Load mesh
+    loaded = trimesh_from_url(selectedFile)
 
     # Export model for loading in QML (only .glb or .gltf)
     out = os.path.join(self.basedir, "backend_resources/_converted_mesh/" 
@@ -45,17 +47,10 @@ def load3D(self, QMLpage, selectedFile, scanFlag):
     self.convertedMesh.emit(QMLpage, scanFlag, centroid, dim)
 
 # Run ICP alignment algorithm between two meshes, output to GUI
-def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
+def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters):
     # Load each file into trimesh
-    model = trimesh.load(check_url(cad), force='mesh')
-    scanned = trimesh.load(check_url(scan), force='mesh')
-    init_dim = scanned.extents
-
-    # Apply intial transformation matrices from GUI
-    cad_mat = qmatrix4x4_to_np(cad_mat)
-    scan_mat = qmatrix4x4_to_np(scan_mat)
-    model.apply_transform(cad_mat)
-    scanned.apply_transform(scan_mat)
+    cad = trimesh_from_url(cad_url, cad_mat)
+    scan, init_dim = trimesh_from_url(scan_url, scan_mat, True)
 
     # Check inputs for errors, assign default if error
     if samples <= 0:
@@ -64,7 +59,7 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
         iters = 50
         
     # Align scan mesh relative to the model mesh
-    t_matrix, cost = trimesh.registration.mesh_other(scanned, model, samples, scale, icp_final=iters)
+    t_matrix, cost = trimesh.registration.mesh_other(scan, cad, samples, scale, icp_final=iters)
 
     # # DEBUG: show result in Trimesh viewer to verify with GUI result
     # scanned.apply_transform(t_matrix)
@@ -72,16 +67,15 @@ def align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
     # trimesh.Scene([model, scanned]).show()
 
     # FIXME: remove this block when t_matrix can be applied to GUI properly
-    scanned.apply_transform(t_matrix)
-    scan_file = os.path.join(self.basedir,"backend_resources/_converted_mesh/scan_align.glb")
-    trimesh.exchange.export.export_mesh(scanned, scan_file, file_type="glb")
+    scan.apply_transform(t_matrix)
+    scan_url = os.path.join(self.basedir,"backend_resources/_converted_mesh/scan_align.glb")
+    trimesh.exchange.export.export_mesh(scan, scan_url, file_type="glb")
     # Scale to get new dimensions for text output
-    dim = init_dim * scale_from_matrix(scan_mat) * scale_from_matrix(t_matrix)
-    centroid = QVector3D(*scanned.centroid)
+    dim = init_dim * scale_from_matrix(qmatrix4x4_to_np(scan_mat)) * scale_from_matrix(t_matrix)
+    centroid = QVector3D(*scan.centroid)
     self.displayAligned.emit(centroid, QVector3D(*dim), cost)
     ####
-    trimesh.exchange.export.export_mesh(model, "bunny_CADalign.stl", file_type="stl")
-    trimesh.exchange.export.export_mesh(scanned, "bunny_SCANalign.stl", file_type="stl")
+
     # # Decompose matrix into singular transforms for GUI
     # scale, rotation, translation = split_t_matrix(t_matrix)
    
@@ -211,40 +205,11 @@ def mesh_from_faces(faces, cc_hash, thresh, cad, scan):
     return out
 
 def repair_mesh(cad_file, scan_file, cad_mat=QMatrix4x4(), scan_mat=QMatrix4x4(), samples=100000, thresh=0.5):
-    cad = trimesh.load(check_url(cad_file), force='mesh')
-    scan = trimesh.load(check_url(scan_file), force='mesh')
+    cad = trimesh_from_url(cad_file, cad_mat)
+    scan = trimesh_from_url(scan_file, scan_mat)
 
-    cad_mat = qmatrix4x4_to_np(cad_mat)
-    scan_mat = qmatrix4x4_to_np(scan_mat)
-    cad.apply_transform(cad_mat)
-    scan.apply_transform(scan_mat)
-
-    # Sample points
-    sample_points, faces = scan.sample(samples, return_index=True)
-
-    # Determine which faces on scan are "errors"
-    dists = cad.nearest.signed_distance(sample_points)
-    over_faces = []
-    under_faces = []
-    for idx, d in enumerate(dists):
-        if d > thresh:
-            # Under extruded
-            under_faces.append(faces[idx])
-        elif d < -thresh: 
-            # Over extruded
-            over_faces.append(faces[idx])
-    
-    # Create hash map for connected faces on scan
-    cc_hash = {}
-    for key, shared in trimesh.graph.face_adjacency(mesh=scan):
-        if key in cc_hash:
-            cc_hash[key].append(shared)
-        else:
-            cc_hash[key] = [shared]
-    
-    # Create additive/subtractive repair meshes
-    under = mesh_from_faces(under_faces, cc_hash, thresh, cad, scan)
-    over = mesh_from_faces(over_faces, cc_hash, thresh, cad, scan)
+    driver = RepairExtractor(cad, scan, samples, thresh)
+    over, under = driver.extract_repairs()
 
     over.visual.vertex_colors = np.array((255, 13, 13, 255))
     under.visual.vertex_colors = np.array((30, 38, 145, 255))
@@ -256,10 +221,9 @@ def repair_mesh(cad_file, scan_file, cad_mat=QMatrix4x4(), scan_mat=QMatrix4x4()
     print('done')
 
 if __name__ == "__main__":
-    # q = QMatrix4x4()
-    # cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
-    # scan = QMatrix4x4(1, 0, 0, 0.20166169106960297, 0, 1, 0, 0.19201700389385223, 0, 0, 1, -12.594476699829102, 0, 0, 0, 1)
+    cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
+    scan = QMatrix4x4(1, 0, 0, 0.20166169106960297, 0, 1, 0, 0.19201700389385223, 0, 0, 1, -12.594476699829102, 0, 0, 0, 1)
     # repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
     #                 "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)#, thresh=0.5, samples=100000)
     repair_mesh("C:/Users/owenc/Documents/LIMDA/models/bunny_CADalign.stl",
-                       "C:/Users/owenc/Documents/LIMDA/models/bunny_SCANalign.stl")#, thresh=0.5, samples=100000)
+                       "C:/Users/owenc/Documents/LIMDA/models/bunny_scan_decimated.stl")#, thresh=0.5, samples=100000)

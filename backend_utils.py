@@ -2,6 +2,7 @@ import numpy as np
 from PySide6.QtCore import QRunnable
 from PySide6.QtGui import QVector4D, QMatrix4x4
 from trimesh.transformations import quaternion_from_matrix # decompose_matrix
+from trimesh import load
 
 ''' For functions in the Backend class that can have a long
 run time. This class runs functions in a separate Python thread than the one
@@ -82,5 +83,21 @@ def split_t_matrix(mat):
 
     # Get rotation quaternion
     rotation = quaternion_from_matrix(mat, isprecise=True)
-
     return scale, rotation, translation
+
+def trimesh_from_url(fname, t_matrix=None, ret_dims=False):
+    # Get rid of QML's "file:///" prefix for urls
+    fname = check_url(fname)
+    # Load mesh using trimesh.load
+    mesh = load(fname, force='mesh')
+    # Store dimensions BEFORE matrix applied
+    init_dims = mesh.extents
+    # Convert matrix and apply to mesh, if given
+    if t_matrix is not None:
+        t_matrix = qmatrix4x4_to_np(t_matrix)
+        mesh.apply_transform(t_matrix)
+    # Return mesh (and dimensions if specified)
+    if ret_dims:
+        return mesh, init_dims
+    else: 
+        return mesh
