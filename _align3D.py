@@ -86,124 +86,6 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # #rotation = QVector3D(*rotation) # for Euler angles
     # self.displayAligned.emit(translation, scale, rotation, cost)
 
-def submesh(mesh,
-            faces_sequence,
-            repair=True,
-            only_watertight=False,
-            min_faces=None,
-            append=False):
-    """
-    Return a subset of a mesh.
-    Parameters
-    ------------
-    mesh : Trimesh
-        Source mesh to take geometry from
-    faces_sequence : sequence (p,) int
-        Indexes of mesh.faces
-    repair : bool
-        Try to make submeshes watertight
-    only_watertight : bool
-        Only return submeshes which are watertight
-    append : bool
-        Return a single mesh which has the faces appended,
-        if this flag is set, only_watertight is ignored
-    Returns
-    ---------
-    if append : Trimesh object
-    else        list of Trimesh objects
-    """
-    # evaluate generators so we can escape early
-    faces_sequence = list(faces_sequence)
-
-    if len(faces_sequence) == 0:
-        return []
-
-    # avoid nuking the cache on the original mesh
-    original_faces = mesh.faces.view(np.ndarray)
-    original_vertices = mesh.vertices.view(np.ndarray)
-
-    faces = []
-    vertices = []
-    normals = []
-    visuals = []
-
-    # for reindexing faces
-    mask = np.arange(len(original_vertices))
-
-    for index in faces_sequence:
-        # sanitize indices in case they are coming in as a set or tuple
-        index = np.asanyarray(index)
-        # if len(index) == 0:
-        #     # regardless of type empty arrays are useless
-        #     continue
-        if index.dtype.kind == 'b':
-            # if passed a bool with no true continue
-            if not index.any():
-                continue
-            # if fewer faces than minimum
-            if min_faces is not None and index.sum() < min_faces:
-                continue
-        elif min_faces is not None and len(index) < min_faces:
-            continue
-
-        current = original_faces[index]
-        unique = np.unique(current.reshape(-1))
-
-        # redefine face indices from zero
-        mask[unique] = np.arange(len(unique))
-        normals.append(mesh.face_normals[index])
-        faces.append(mask[current])
-        vertices.append(original_vertices[unique])
-        visuals.append(mesh.visual.face_subset(index))
-
-    if len(vertices) == 0:
-        return np.array([])
-
-    # we use type(mesh) rather than importing Trimesh from base
-    # to avoid a circular import
-    trimesh_type = type_named(mesh, 'Trimesh')
-    if append:
-        visual = None
-        try:
-            visuals = np.array(visuals)
-            visual = visuals[0].concatenate(visuals[1:])
-        except BaseException:
-            pass
-        # re-index faces and stack
-        vertices, faces = append_faces(vertices, faces)
-        appended = trimesh_type(
-            vertices=vertices,
-            faces=faces,
-            face_normals=np.vstack(normals),
-            visual=visual,
-            process=False)
-        return appended
-
-def check_connected_faces(idx, faces, cc_hash, thresh, cad, scan):
-    # Base condition
-    _, dist, _ = trimesh.proximity.closest_point(cad, scan.triangles_center[idx])
-    if dist[0] <= thresh:
-        return faces
-    else: 
-        # Nearest face not within threshold, add to list
-        faces.append(idx)
-        # Search all of its connected components not already in list
-        for f in cc_hash[idx]:
-            if f not in faces:
-                faces = check_connected_faces(f, faces, cc_hash, thresh, cad, scan)
-            return faces
-
-def mesh_from_faces(faces, cc_hash, thresh, cad, scan):
-    # Recursively find connected components out of thresh range
-    for f in faces:
-        if f not in faces:
-            faces = check_connected_faces(f, faces, cc_hash, thresh, cad, scan)
-    # Create output mesh
-    out = submesh(scan, faces, append=True)
-    out.fill_holes()
-    out.fix_normals()
-    return out
-
 def repair_mesh(cad_file, scan_file, cad_mat=QMatrix4x4(), scan_mat=QMatrix4x4(), samples=100000, thresh=0.5):
     cad = trimesh_from_url(cad_file, cad_mat)
     scan = trimesh_from_url(scan_file, scan_mat)
@@ -224,6 +106,6 @@ if __name__ == "__main__":
     cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
     scan = QMatrix4x4(1, 0, 0, 0.20166169106960297, 0, 1, 0, 0.19201700389385223, 0, 0, 1, -12.594476699829102, 0, 0, 0, 1)
     # repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
-    #                 "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)#, thresh=0.5, samples=100000)
+                    # "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)#, thresh=0.5, samples=100000)
     repair_mesh("C:/Users/owenc/Documents/LIMDA/models/bunny_CADalign.stl",
                        "C:/Users/owenc/Documents/LIMDA/models/bunny_scan_decimated.stl")#, thresh=0.5, samples=100000)

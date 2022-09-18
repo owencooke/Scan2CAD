@@ -1,6 +1,22 @@
 import trimesh
 import numpy as np
 from trimesh.util import type_named, append_faces
+from _triangles_intersect import faces_intersect
+
+# class ErrorSubsets():
+#     def __init__(self):
+#         self.scan_groups = {}
+#         self.cad_groups = {}
+
+#     def add_subset(self, scan_faces, cad_faces):
+#         if len(self.scan_groups) == 0:
+#             self.scan_groups[0] = scan_faces
+#             self.cad_groups[0] = cad_faces
+#         else:
+
+
+
+
 
 class RepairExtractor():
     def __init__(self, cad, scan, samples, thresh):
@@ -41,38 +57,58 @@ class RepairExtractor():
         over = self.mesh_faces(over_faces)
         return over, under
 
-    def mesh_faces(self, faces):
+    def mesh_faces(self, init_faces):
         # Recurse thru all faces connected to detected errors
         cad_crossed = []
-        for f in faces:
-            faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
+        faces = []
+        for f in init_faces:
+            if f not in faces:
+                faces, cad_subset = self.model_intersect(f, faces, cad_crossed)
         
         # find CAD faces that enclose the scan repair volume
-        
-        # Create output mesh
-        out = self.submesh(self.scan, faces, append=True)
+        print(cad_crossed)
+        if not cad_crossed:
+            # List empty, can't submesh
+            out = self.submesh(self.scan, faces, append=True)
+        else: 
+            # Concatenate both submeshes
+            scan_sub = self.submesh(self.scan, faces, append=True)
+            cad_sub = self.submesh(self.cad, cad_crossed, append=True)
+            out = trimesh.util.concatenate([cad_sub, scan_sub])
         out.fill_holes()
         out.fix_normals()
-        # out = self.submesh(self.cad, cad_crossed, append=True)
         return out
 
     def model_intersect(self, idx, faces, cad_crossed):
-        _, dist, cad_face = trimesh.proximity.closest_point(self.cad, 
-                                        np.array([self.scan.triangles_center[idx],]))
-        # Base condition, find approx CAD intersection
-        faces.append(idx)
-        if dist[0] <= 1:
-            cad_crossed.append(cad_face)
-            return faces, cad_crossed
-        else: 
-            # Search all of its connected components not already in list
-            try: 
-                for f in self.scan_connected[idx]:
-                    if f not in faces:
-                        faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
-                    return faces, cad_crossed
-            except KeyError:
+        if idx not in faces:
+            faces.append(idx)
+        # _, dist, cad_face = trimesh.proximity.closest_point(self.cad, 
+        #                                 np.array([self.scan.triangles_center[idx],]))
+        close_faces = trimesh.proximity.nearby_faces(self.cad, 
+                                            np.array([self.scan.triangles_center[idx],]))[0]
+        for f in close_faces:
+            cad_vertices = self.cad.vertices[self.cad.faces[f], :]
+            scan_vertices = self.scan.vertices[self.scan.faces[idx], :]
+            if faces_intersect(cad_vertices, scan_vertices):
+                # Faces intersect, store CAD
+                if f not in cad_crossed:
+                    cad_crossed.append(f)
                 return faces, cad_crossed
+        # # Base condition, find approx CAD intersection
+        # if dist[0] <= 1e-2:
+        #     if cad_face[0] not in cad_crossed:
+        #         cad_crossed.append(cad_face[0])
+        #     return faces, cad_crossed
+        # else: 
+            # Search all of its connected components not already in list
+        try: 
+            for f in self.scan_connected[idx]:
+                if f not in faces:
+                    faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
+                return faces, cad_crossed
+        except KeyError:
+            return faces, cad_crossed
+
     # Modified from 
     # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/base.py#L2676
     def submesh(self, mesh,
