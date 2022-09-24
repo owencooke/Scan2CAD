@@ -1,21 +1,34 @@
 import trimesh
 import numpy as np
+import os
 from trimesh.util import type_named, append_faces
 from _triangles_intersect import faces_intersect
 
-# class ErrorSubsets():
-#     def __init__(self):
-#         self.scan_groups = {}
-#         self.cad_groups = {}
+class ErrorSubsets():
+    def __init__(self):
+        self.scan_set = []
+        self.cad_set = []
+        self.scan_last = 0
+        self.cad_last = 0
 
-#     def add_subset(self, scan_faces, cad_faces):
-#         if len(self.scan_groups) == 0:
-#             self.scan_groups[0] = scan_faces
-#             self.cad_groups[0] = cad_faces
-#         else:
+    def __iter__(self):
+        return zip(self.scan_set, self.cad_set)
 
-
-
+    def add_subset(self, scan_faces, cad_faces):
+        if len(self.scan_set) == 0:
+            # Add face lists
+            self.scan_set.append(scan_faces)
+            self.cad_set.append(cad_faces)
+            # Keep track of length 
+            self.scan_last = len(scan_faces)
+            self.cad_last = len(cad_faces)
+        else:
+            # New scan subset
+            sub = scan_faces[self.scan_last:]
+            self.scan_set.append(sub)
+            self.scan_last += len(sub)
+            # New cad subset
+            self.cad_set.append(cad_faces)
 
 
 class RepairExtractor():
@@ -30,11 +43,17 @@ class RepairExtractor():
     # Create connected face hash maps
     def hash_connected_faces(self, mesh):
         cc_hash = {}
-        for key, shared in trimesh.graph.face_adjacency(mesh=mesh):
-            if key in cc_hash:
-                cc_hash[key].append(shared)
+        # Iterate through (n,2) array of adjacent faces
+        for i, j in trimesh.graph.face_adjacency(mesh=mesh):
+            # Add both faces to the others' list
+            if i in cc_hash:
+                cc_hash[i].append(j)
             else:
-                cc_hash[key] = [shared]
+                cc_hash[i] = [j]
+            if j in cc_hash:
+                cc_hash[j].append(i)
+            else:
+                cc_hash[j] = [i]
         return cc_hash
 
     def extract_repairs(self):
@@ -53,37 +72,40 @@ class RepairExtractor():
                 over_faces.append(faces[idx])
 
         # Create additive/subtractive repair meshes
-        under = self.mesh_faces(under_faces)
-        over = self.mesh_faces(over_faces)
-        return over, under
-
+        self.under_meshes = self.mesh_faces(under_faces)
+        self.over_meshes = self.mesh_faces(over_faces)
+        
     def mesh_faces(self, init_faces):
         # Recurse thru all faces connected to detected errors
-        cad_crossed = []
         faces = []
+        volume = ErrorSubsets()
         for f in init_faces:
             if f not in faces:
-                faces, cad_subset = self.model_intersect(f, faces, cad_crossed)
-        
+                faces, cad_crossed = self.model_intersect(f, faces, [])
+                volume.add_subset(faces, cad_crossed)
+    
         # find CAD faces that enclose the scan repair volume
         print(cad_crossed)
-        if not cad_crossed:
-            # List empty, can't submesh
-            out = self.submesh(self.scan, faces, append=True)
-        else: 
-            # Concatenate both submeshes
-            scan_sub = self.submesh(self.scan, faces, append=True)
-            cad_sub = self.submesh(self.cad, cad_crossed, append=True)
-            out = trimesh.util.concatenate([cad_sub, scan_sub])
-        out.fill_holes()
-        out.fix_normals()
-        return out
+
+        # Iterate through each volume subset
+        meshes = []
+        for s, c in volume:
+            if not c:
+                # No CAD faces, can't submesh CAD model
+                out = self.submesh(self.scan, faces, append=True)
+            else: 
+                # Concatenate both submeshes
+                scan_sub = self.submesh(self.scan, s, append=True)
+                cad_sub = self.submesh(self.cad, c, append=True)
+                out = trimesh.util.concatenate([cad_sub, scan_sub])
+            #out.fill_holes()
+            out.fix_normals()
+            meshes.append(out)
+        return meshes
 
     def model_intersect(self, idx, faces, cad_crossed):
         if idx not in faces:
             faces.append(idx)
-        # _, dist, cad_face = trimesh.proximity.closest_point(self.cad, 
-        #                                 np.array([self.scan.triangles_center[idx],]))
         close_faces = trimesh.proximity.nearby_faces(self.cad, 
                                             np.array([self.scan.triangles_center[idx],]))[0]
         for f in close_faces:
@@ -94,20 +116,27 @@ class RepairExtractor():
                 if f not in cad_crossed:
                     cad_crossed.append(f)
                 return faces, cad_crossed
-        # # Base condition, find approx CAD intersection
-        # if dist[0] <= 1e-2:
-        #     if cad_face[0] not in cad_crossed:
-        #         cad_crossed.append(cad_face[0])
-        #     return faces, cad_crossed
-        # else: 
-            # Search all of its connected components not already in list
-        try: 
-            for f in self.scan_connected[idx]:
-                if f not in faces:
-                    faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
-                return faces, cad_crossed
-        except KeyError:
-            return faces, cad_crossed
+        
+        for f in self.scan_connected[idx]:
+            if f not in faces:
+                faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
+        
+        return faces, cad_crossed
+    
+    def export_volumes(self, dest_folder):
+        # Export under-extruded volumes to dest folder
+        for idx, under in enumerate(self.under_meshes):
+            under.visual.vertex_colors = np.array((30, 38, 145, 255))
+            out = os.path.join(dest_folder, 'under' + str(idx) + '.glb')
+            trimesh.exchange.export.export_mesh(under, out, file_type="glb")
+        # Export over-extruded volumes to dest folder
+        for idx, over in enumerate(self.over_meshes):
+            over.visual.vertex_colors = np.array((255, 13, 13, 255))
+            out = os.path.join(dest_folder, 'over' + str(idx) + '.glb')
+            trimesh.exchange.export.export_mesh(over, out, file_type="glb")
+
+        # Debugging instant display
+        trimesh.Scene(self.under_meshes + self.over_meshes).show()
 
     # Modified from 
     # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/base.py#L2676
