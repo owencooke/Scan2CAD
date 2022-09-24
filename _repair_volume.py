@@ -8,27 +8,15 @@ class ErrorSubsets():
     def __init__(self):
         self.scan_set = []
         self.cad_set = []
-        self.scan_last = 0
-        self.cad_last = 0
+        self.faces = []
 
     def __iter__(self):
         return zip(self.scan_set, self.cad_set)
 
     def add_subset(self, scan_faces, cad_faces):
-        if len(self.scan_set) == 0:
-            # Add face lists
-            self.scan_set.append(scan_faces)
-            self.cad_set.append(cad_faces)
-            # Keep track of length 
-            self.scan_last = len(scan_faces)
-            self.cad_last = len(cad_faces)
-        else:
-            # New scan subset
-            sub = scan_faces[self.scan_last:]
-            self.scan_set.append(sub)
-            self.scan_last += len(sub)
-            # New cad subset
-            self.cad_set.append(cad_faces)
+        self.scan_set.append(scan_faces)
+        self.cad_set.append(cad_faces)
+        self.faces += scan_faces
 
 
 class RepairExtractor():
@@ -77,11 +65,10 @@ class RepairExtractor():
         
     def mesh_faces(self, init_faces):
         # Recurse thru all faces connected to detected errors
-        faces = []
         volume = ErrorSubsets()
         for f in init_faces:
-            if f not in faces:
-                faces, cad_crossed = self.model_intersect(f, faces, [])
+            if f not in volume.faces:
+                faces, cad_crossed = self.model_intersect(f)
                 volume.add_subset(faces, cad_crossed)
     
         # find CAD faces that enclose the scan repair volume
@@ -92,7 +79,7 @@ class RepairExtractor():
         for s, c in volume:
             if not c:
                 # No CAD faces, can't submesh CAD model
-                out = self.submesh(self.scan, faces, append=True)
+                out = self.submesh(self.scan, s, append=True)
             else: 
                 # Concatenate both submeshes
                 scan_sub = self.submesh(self.scan, s, append=True)
@@ -103,24 +90,37 @@ class RepairExtractor():
             meshes.append(out)
         return meshes
 
-    def model_intersect(self, idx, faces, cad_crossed):
-        if idx not in faces:
-            faces.append(idx)
-        close_faces = trimesh.proximity.nearby_faces(self.cad, 
-                                            np.array([self.scan.triangles_center[idx],]))[0]
-        for f in close_faces:
-            cad_vertices = self.cad.vertices[self.cad.faces[f], :]
-            scan_vertices = self.scan.vertices[self.scan.faces[idx], :]
-            if faces_intersect(cad_vertices, scan_vertices):
-                # Faces intersect, store CAD
-                if f not in cad_crossed:
-                    cad_crossed.append(f)
-                return faces, cad_crossed
-        
-        for f in self.scan_connected[idx]:
-            if f not in faces:
-                faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
-        
+    # New while loop method, goes past CAD boundary/too many scan faces included
+    def model_intersect(self, f):
+        # Initialize lists
+        faces = []
+        cad_crossed = []
+        stack = [f]
+        while stack:
+            f = stack.pop(0)
+            # Ignore if it is a face already analyzed
+            if f in faces:
+                continue
+            # Otherwise, add current face to completed list
+            faces.append(f)
+            # Check if face intersects CAD model
+            close_faces = trimesh.proximity.nearby_faces(self.cad, 
+                                             np.array([self.scan.triangles_center[f],]))[0]
+            crosses = len(cad_crossed)
+            for cad_face in close_faces:
+                cad_vertices = self.cad.vertices[self.cad.faces[cad_face], :]
+                scan_vertices = self.scan.vertices[self.scan.faces[f], :]
+                if faces_intersect(cad_vertices, scan_vertices):
+                    # Faces intersect, store CAD
+                    if cad_face not in cad_crossed:
+                        cad_crossed.append(cad_face)
+                
+            # Add connected faces to stack if CAD not crossed
+            if crosses == len(cad_crossed):
+                for connected in self.scan_connected[f]:
+                    if connected not in faces:
+                        stack.append(connected)
+        # Return connected scan faces and crossed CAD faces                
         return faces, cad_crossed
     
     def export_volumes(self, dest_folder):
@@ -137,6 +137,27 @@ class RepairExtractor():
 
         # Debugging instant display
         trimesh.Scene(self.under_meshes + self.over_meshes).show()
+
+    ## Old recursive method (works, but some scan connecteds may be missing)
+    # def model_intersect(self, idx, faces, cad_crossed):
+    #     if idx not in faces:
+    #         faces.append(idx)
+    #     close_faces = trimesh.proximity.nearby_faces(self.cad, 
+    #                                         np.array([self.scan.triangles_center[idx],]))[0]
+    #     for f in close_faces:
+    #         cad_vertices = self.cad.vertices[self.cad.faces[f], :]
+    #         scan_vertices = self.scan.vertices[self.scan.faces[idx], :]
+    #         if faces_intersect(cad_vertices, scan_vertices):
+    #             # Faces intersect, store CAD
+    #             if f not in cad_crossed:
+    #                 cad_crossed.append(f)
+    #             return faces, cad_crossed
+        
+    #     for f in self.scan_connected[idx]:
+    #         if f not in faces:
+    #             faces, cad_crossed = self.model_intersect(f, faces, cad_crossed)
+        
+    #     return faces, cad_crossed
 
     # Modified from 
     # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/base.py#L2676
