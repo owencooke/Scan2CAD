@@ -100,13 +100,14 @@ class RepairExtractor():
             f = stack.pop(0)
             # Ignore if it is a face already analyzed
             if f in faces:
+                print('oops')
                 continue
-            # Otherwise, add current face to completed list
-            faces.append(f)
+            # # Otherwise, add current face to completed list
+            # faces.append(f)
             # Check if face intersects CAD model
             close_faces = trimesh.proximity.nearby_faces(self.cad, 
                                              np.array([self.scan.triangles_center[f],]))[0]
-            crosses = len(cad_crossed)
+            intersected = False
             for cad_face in close_faces:
                 cad_vertices = self.cad.vertices[self.cad.faces[cad_face], :]
                 scan_vertices = self.scan.vertices[self.scan.faces[f], :]
@@ -114,12 +115,30 @@ class RepairExtractor():
                     # Faces intersect, store CAD
                     if cad_face not in cad_crossed:
                         cad_crossed.append(cad_face)
+                        intersected = True
                 
             # Add connected faces to stack if CAD not crossed
-            if crosses == len(cad_crossed):
+            if not intersected:
+                faces.append(f)
+                # # Debug
+                # test = self.submesh(self.scan, faces, append=True)
+                # test.visual.vertex_colors = np.array((159, 255, 60, 255))
+                # trimesh.Scene([self.scan, test]).show()
+                # print(f)
+                # print('old stack', stack)
                 for connected in self.scan_connected[f]:
-                    if connected not in faces:
+                    if connected not in faces and connected not in stack:
                         stack.append(connected)
+                # print('new stack', stack)
+            # else:
+            #     #DEBUG
+            #     if faces and cad_crossed:
+            #         test = self.submesh(self.scan, faces, append=True)
+            #         xcad = self.submesh(self.cad, cad_crossed, append=True)
+            #         test.visual.vertex_colors = np.array((159, 255, 60, 255))
+            #         xcad.visual.vertex_colors = np.array((0, 0, 139, 255))
+            #         print(cad_crossed)
+            #         trimesh.Scene([xcad, test]).show()
         # Return connected scan faces and crossed CAD faces                
         return faces, cad_crossed
     
