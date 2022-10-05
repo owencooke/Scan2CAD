@@ -20,6 +20,11 @@ Item {
         }
     }
 
+    // Timer {
+    //     running: true; repeat: true; interval: 1000
+    //     onTriggered: console.log(cad.sceneTransform, scan.sceneTransform)
+    // }
+
     Connections {
         target: backend
         // Load converted 3D model and set its calculated centroids, dimensions
@@ -65,6 +70,10 @@ Item {
             loadingScreen.on = false
             cloud.visible = false
             cad.visible = scan.visible = true
+        }
+
+        function onVolumes() {
+            loadingScreen.on = false
         }
     }
 
@@ -167,13 +176,10 @@ Item {
             AlignMenu { id: alignMenu; visible: alignment.open }
 
             DropDownLabel { id: depth; text: "Depth Map"; open: false}
-            DepthMenu { id: depthMenu;  visible: depth.open}
+            DepthMenu { id: depthMenu; visible: depth.open}
 
-            Button {
-                text: 'testing'
-                onClicked: backend.repair(cad.source, scan.source,
-                                            cad.sceneTransform, scan.sceneTransform)
-            }
+            DropDownLabel { id: extract; text: "Extract Volumes"; open: false}
+            ExtractMenu { id: extractMenu; visible: extract.open}
         }
     }
 

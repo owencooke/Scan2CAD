@@ -41,6 +41,7 @@ class Backend(QObject):
     #displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
     #displayAligned = Signal(QVector3D, QVector3D, QVector3D, float) # for Euler angles
 
+    volumes = Signal()
     # ------------------------------------------------------------------#
     # Slots: (from QML to Python)
     # The backend functions ran after clicking buttons, etc.
@@ -66,9 +67,9 @@ class Backend(QObject):
         thread = Thread(align_scan, self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
         self.threadpool.start(thread)
 
-    @Slot(str, str, QMatrix4x4, QMatrix4x4)
-    def repair(self, cad_file, scan_file, cad_mat, scan_mat):
-        thread = Thread(repair_mesh, cad_file, scan_file, cad_mat, scan_mat)
+    @Slot(str, str, QMatrix4x4, QMatrix4x4, int, float)
+    def repair(self, cad_file, scan_file, cad_mat, scan_mat, samples, thresh):
+        thread = Thread(repair_mesh, self, cad_file, scan_file, cad_mat, scan_mat, samples, thresh)
         self.threadpool.start(thread)
 
     # Automatic image capture and display of the 6 sides of 3D model

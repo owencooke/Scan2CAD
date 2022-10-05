@@ -96,6 +96,7 @@ class RepairExtractor():
         boundaries = []
         cad_crossed = []
         stack = [f]
+        count = 0
         # Check connected faces until stack empty
         while stack:
             f = stack.pop(0)
@@ -122,24 +123,52 @@ class RepairExtractor():
                     # Add face to stack if not already searched/searching
                     if connected not in faces and connected not in stack:
                         stack.append(connected)
+                # ##DEBUG
+                # if faces and count % 10000 == 0:
+                #     test = self.submesh(self.scan, faces, append=True)
+                #     # xcad = self.submesh(self.cad, cad_crossed, append=True)
+                #     test.visual.vertex_colors = np.array((159, 255, 60, 255))
+                #     # xcad.visual.vertex_colors = np.array((0, 0, 139, 255))
+                #     trimesh.Scene([test]).show()
+            count += 1
+            print(count)
         # Finally, add all boundary faces that intersect CAD
         faces += boundaries       
         return faces, cad_crossed
     
-    def export_volumes(self, dest_folder):
-        # Export under-extruded volumes to dest folder
-        for idx, under in enumerate(self.under_meshes):
-            under.visual.vertex_colors = np.array((30, 38, 145, 255))
-            out = os.path.join(dest_folder, 'under' + str(idx) + '.glb')
-            trimesh.exchange.export.export_mesh(under, out, file_type="glb")
-        # Export over-extruded volumes to dest folder
-        for idx, over in enumerate(self.over_meshes):
+    def export_volumes(self, dest_folder, combine):
+        if combine:
+            # Combine seperate errors
+            over = trimesh.util.concatenate(self.over_meshes)
+            under = trimesh.util.concatenate(self.under_meshes)
             over.visual.vertex_colors = np.array((255, 13, 13, 255))
-            out = os.path.join(dest_folder, 'over' + str(idx) + '.glb')
+            under.visual.vertex_colors = np.array((30, 38, 145, 255))
+            # Export over-extrusion
+            out = os.path.join(dest_folder, 'over' + '.glb')
             trimesh.exchange.export.export_mesh(over, out, file_type="glb")
+            # Fix inverted normals and export under-extrusion
+            trimesh.repair.fix_inversion(under)
+            out = os.path.join(dest_folder, 'under' + '.glb')
+            trimesh.exchange.export.export_mesh(under, out, file_type="glb")
 
-        # Debugging instant display
-        trimesh.Scene(self.under_meshes + self.over_meshes).show()
+            # Debugging instant display
+            trimesh.Scene([over, under]).show()
+
+        else:
+            # Export seperated under-extruded volumes to dest folder
+            for idx, under in enumerate(self.under_meshes):
+                trimesh.repair.fix_inversion(under)
+                under.visual.vertex_colors = np.array((30, 38, 145, 255))
+                out = os.path.join(dest_folder, 'under' + str(idx) + '.glb')
+                trimesh.exchange.export.export_mesh(under, out, file_type="glb")
+            # Export over-extruded volumes to dest folder
+            for idx, over in enumerate(self.over_meshes):
+                over.visual.vertex_colors = np.array((255, 13, 13, 255))
+                out = os.path.join(dest_folder, 'over' + str(idx) + '.glb')
+                trimesh.exchange.export.export_mesh(over, out, file_type="glb")
+        
+            # Debugging instant display
+            trimesh.Scene(self.under_meshes + self.over_meshes).show()
 
     # Modified from 
     # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/base.py#L2676

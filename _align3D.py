@@ -86,27 +86,26 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # #rotation = QVector3D(*rotation) # for Euler angles
     # self.displayAligned.emit(translation, scale, rotation, cost)
 
-def repair_mesh(cad_file, scan_file, cad_mat=QMatrix4x4(), scan_mat=QMatrix4x4(), samples=100000, thresh=0.5):
+def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
+                    scan_mat=QMatrix4x4(), samples=100000, thresh=0.5, combine=True):
+    # Load files into Trimesh objects
     cad = trimesh_from_url(cad_file, cad_mat)
     scan = trimesh_from_url(scan_file, scan_mat)
-
-    # result = trimesh.boolean.difference([cad, scan], engine='scad')
-    # trimesh.Scene([result]).show()
-    # result = trimesh.boolean.difference([scan, cad], engine='scad')
-    # trimesh.Scene([result]).show()
-
+    # Extract repair volumes to folder
     driver = RepairExtractor(cad, scan, samples, thresh)
     driver.extract_repairs()
-    driver.export_volumes("test")
+    driver.export_volumes("test", combine)
+    if self != None:
+        self.volumes.emit()
 
 if __name__ == "__main__":
     # cad = QMatrix4x4(1, 0, 0, -12.5, 0, 1, 0, -12.710657119750977, 0, 0, 1, 12.730606079101562, 0, 0, 0, 1)
     # scan = QMatrix4x4(1, 0, 0, 0.20166169106960297, 0, 1, 0, 0.19201700389385223, 0, 0, 1, -12.594476699829102, 0, 0, 0, 1)
     # repair_mesh("C:/Users/owenc/Documents/LIMDA/models/cube.stl",
-    #                 "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)#, thresh=0.5, samples=100000)
+                    # "C:/Users/owenc/Documents/LIMDA/models/cube-modified.stl", cad, scan)
     # repair_mesh("C:/Users/owenc/Documents/LIMDA/models/bunny_CADalign.stl",
-                    #    "C:/Users/owenc/Documents/LIMDA/models/bunny_scan_decimated.stl")#, thresh=0.5, samples=100000)
-    cad = QMatrix4x4(1, 0, 0, -75, 0, 1, 0, -24, 0, 0, 1, -25, 0, 0, 0, 1)
-    scan = QMatrix4x4(1, 0, 0, -74.86064147949219, 0, 1, 0, -23.787559509277344, 0, 0, 1, -24.99203872680664, 0, 0, 0, 1)
-    repair_mesh("C:/Users/owenc/Documents/LIMDA/models/lego_smooth.stl",
-                    "C:/Users/owenc/Documents/LIMDA/models/lego.stl", cad, scan)
+                    #    "C:/Users/owenc/Documents/LIMDA/models/bunny_scan_decimated.stl")
+    cad = QMatrix4x4(1, 0, 0, 58.42201232910156, 0, 5.960464477539063e-08, -0.9999999403953552, 13.124993324279785, 0, 0.9999999403953552, 5.960464477539063e-08, -97.63247680664062, 0, 0, 0, 1)
+    scan = QMatrix4x4(1, 0, 0, 7.769808121338428e-07, 0, 5.960464477539063e-08, 0.9999999403953552, -13.564067840576172, 0, -0.9999999403953552, 5.960464477539063e-08, 4.024147983727744e-06, 0, 0, 0, 1)
+    repair_mesh(None, "C:/Users/owenc/Documents/LIMDA/models/brickv3.stl",
+                     "C:/Users/owenc/Documents/LIMDA/models/extruded_brickv3.stl", cad, scan)
