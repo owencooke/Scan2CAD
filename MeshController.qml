@@ -43,6 +43,6 @@ MouseArea {
         controlledObject: target
         xInvert: true
         yInvert: false
-        speed: 0.2
+        speed: 0.05
     }
 }
