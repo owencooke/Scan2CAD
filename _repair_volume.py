@@ -72,12 +72,12 @@ class RepairExtractor():
                 faces, cad_crossed = self.model_intersect(f)
                 volume.add_subset(faces, cad_crossed)
     
-        # find CAD faces that enclose the scan repair volume
+        # FIXME: incorporate the CAD faces for closing the volume automatically
 
         # Iterate through each volume subset
         meshes = []
         for s, c in volume:
-            if True: #not c:
+            if not c:
                 # No CAD faces, can't submesh CAD model
                 out = self.submesh(self.scan, s, append=True)
             else: 
@@ -89,11 +89,10 @@ class RepairExtractor():
             meshes.append(out)
         return meshes
 
-    # New while loop method, goes past CAD boundary/too many scan faces included
+    # Feature extraction algorithm 
     def model_intersect(self, f):
-        # Initialize lists
-        faces = []
-        boundaries = []
+        # Initialize feature set and queue
+        feature = []
         cad_crossed = []
         queue = [f]
         # Check connected faces until queue empty
@@ -102,32 +101,28 @@ class RepairExtractor():
             # Find nearby CAD faces to scan face
             close_faces = trimesh.proximity.nearby_faces(self.cad, 
                                              np.array([self.scan.triangles_center[f],]))[0]
-            # Check if scan face intersects CAD model
+            # Check if scan face intersects nearby CAD faces
             intersected = False
             scan_vertices = self.scan.vertices[self.scan.faces[f], :]
             for cad_face in close_faces:
                 cad_vertices = self.cad.vertices[self.cad.faces[cad_face], :]
                 if faces_intersect(cad_vertices, scan_vertices):
                     intersected = True
+                    # FIXME: incorporate the CAD faces for closing the volume automatically
                     # Faces intersect, store intersecting CAD face
-                    if cad_face not in cad_crossed:
-                        cad_crossed.append(cad_face)
-                    # Add scan face to list of boundary faces
-                    if f not in boundaries:
-                        boundaries.append(f)
+                    # if cad_face not in cad_crossed:
+                    #     cad_crossed.append(cad_face)
                     break
-                
-            # Add connected faces to queue if CAD not crossed
+            # Only search connected faces if CAD not intersected
             if not intersected:
-                faces.append(f)
                 for connected in self.scan_connected[f]:
                     # Add face to queue if not already searched/searching
-                    if connected not in faces and connected not in queue:
+                    if connected not in feature and connected not in queue:
                         queue.append(connected)
+            # Add face to feature
+            feature.append(f)
 
-        # Finally, add all boundary faces that intersect CAD
-        faces += boundaries       
-        return faces, cad_crossed
+        return feature, cad_crossed
     
     def export_volumes(self, dest_folder, combine, file_ext):
         if combine:
@@ -145,7 +140,7 @@ class RepairExtractor():
             trimesh.exchange.export.export_mesh(under, out, file_type=file_ext)
 
             # Debugging instant display
-            #trimesh.Scene([over, under]).show()
+            trimesh.Scene([over, under]).show()
 
         else:
             # Export seperated under-extruded volumes to dest folder
