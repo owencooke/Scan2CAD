@@ -102,19 +102,19 @@ class RepairExtractor():
             close_faces = trimesh.proximity.nearby_faces(self.cad, 
                                              np.array([self.scan.triangles_center[f],]))[0]
             # Check if scan face intersects nearby CAD faces
-            intersected = False
             scan_vertices = self.scan.vertices[self.scan.faces[f], :]
             for cad_face in close_faces:
                 cad_vertices = self.cad.vertices[self.cad.faces[cad_face], :]
-                if faces_intersect(cad_vertices, scan_vertices):
-                    intersected = True
+                # Compute intersection
+                intersection = faces_intersect(cad_vertices, scan_vertices)
+                if intersection:
                     # FIXME: incorporate the CAD faces for closing the volume automatically
                     # Faces intersect, store intersecting CAD face
                     # if cad_face not in cad_crossed:
                     #     cad_crossed.append(cad_face)
                     break
             # Only search connected faces if CAD not intersected
-            if not intersected:
+            if not intersection:
                 for connected in self.scan_connected[f]:
                     # Add face to queue if not already searched/searching
                     if connected not in feature and connected not in queue:
@@ -159,7 +159,7 @@ class RepairExtractor():
             #trimesh.Scene(self.under_meshes + self.over_meshes).show()
 
     # Modified from 
-    # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/base.py#L2676
+    # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/util.py#L1526
     def submesh(self, mesh,
                 faces_sequence,
                 repair=True,
