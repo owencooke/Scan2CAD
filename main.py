@@ -1,8 +1,7 @@
 import os
 import sys
-import tempfile
 # Pyside6 Imports for Qt
-from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D, QQuaternion
+from PySide6.QtGui import QIcon, QMatrix4x4, QVector3D
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
@@ -10,8 +9,8 @@ from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
 from _compare2D import crop_faces, match_contours
 from _align3D import load3D, align_scan, repair_mesh
 from _depth_map import PointCloud
-from _test_mesh import Mesh
-from backend_utils import Thread, split_t_matrix, qmatrix4x4_to_np
+from _mesh import Mesh
+from backend_utils import Thread
 
 
 ''' Class containing all of the Python backend functions for the GUI.

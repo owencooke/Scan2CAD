@@ -49,10 +49,10 @@ Rectangle {
                 title: "Select a 3D model file"
                 nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
                 onAccepted: {
+                    // Update name display
                     fileLabel.text = getFilename(selectedFile.toString())
-                    // Reset source and load new model
-                    target.source = " "
-                    backend.load_mesh("Model3D", selectedFile, scan)
+                    // Load new model
+                    target.load(selectedFile)
                     controls.loading = true
                 }
             }

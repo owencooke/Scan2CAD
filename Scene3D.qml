@@ -14,7 +14,7 @@ View3D {
         // Disable gridlines and adjust color for high image contrast
         axes.enableXYGrid = false
         axes.enableAxisLines = false
-        light.color = root.textColor
+        mesh.color = root.textColor
         var dir = backend.get_basedir() + "/backend_resources/_captured_imgs/"
         
         // Front
@@ -44,7 +44,7 @@ View3D {
                                 // Give gridline/color control back to user
                                 axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
                                 axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
-                                light.color = Qt.binding(function() { return nodeColor })
+                                mesh.color = Qt.binding(function() { return nodeColor })
                                 mesh.eulerRotation.y -= 270
                                 // Call backend function to crop the images
                                 if (fname == "cad") {
@@ -67,15 +67,12 @@ View3D {
         verticalMagnification: 5
     }
 
-    DirectionalLight{
-        id: light
-        color: nodeColor
-        brightness: 4
-    }
+    DirectionalLight{}
 
     // Node storing model loaded by user
     DynamicNode {
         id: mesh
+        color: nodeColor
         eulerRotation: meshRotation
     }
 
