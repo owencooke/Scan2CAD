@@ -132,8 +132,8 @@ ColumnLayout {
                 max = parseFloat(maxField.text)
             }
             // Run depth cloud calculation
-            cloudClass.calc_depth(cad.source, cad.sceneTransform, scan.source, 
-                                scan.sceneTransform, parseInt(sampled.text),
+            cloudClass.calc_depth(cad.source, cad.getTransform(), scan.source, 
+                                scan.getTransform(), parseInt(sampled.text),
                                 parseFloat(matchThresh.text), min, max)
         }
     }

@@ -76,8 +76,8 @@ ColumnLayout {
 
         onClicked: {
             // Calculate alignment
-            backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
-                                    scan.sceneTransform, toggleScale.checked, 
+            backend.align_meshes(cad.source, scan.source, cad.getTransform(), 
+                                    scan.getTransform(), toggleScale.checked, 
                                     parseInt(samples.text), parseInt(iterations.text))
             // Set mouse controls back to camera to avoid accidental movement
             switchControls(camera, "CAMERA")

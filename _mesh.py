@@ -32,16 +32,16 @@ class Mesh(QQuick3DGeometry):
 
     @Slot(QMatrix4x4)
     def transform(self,t_mat):
-        points = np.column_stack((self.ord_verts, np.full(len(self.ord_verts), 1))) 
-        self.ord_verts = np.dot(qmatrix4x4_to_np(t_mat), points.T).T[:,:3]
+        points = np.column_stack((self.vertices, np.full(len(self.vertices), 1))) 
+        self.vertices = np.dot(qmatrix4x4_to_np(t_mat), points.T).T[:,:3]
         self.update_data()
 
     def update_data(self):
-        # Correct data type
-        data = self.ord_verts.astype(np.float32)
+        # Get all face-vertex combos
+        ord_verts = self.vertices[self.faces]
 
-        # Pass flat vertex data to byte stream
-        self.setVertexData(data.flatten().tobytes())
+        # Pass vertex data to byte stream
+        self.setVertexData(ord_verts.astype(np.float32).tobytes())
 
         # Add attribute descriptors for data
         self.addAttribute(
@@ -54,18 +54,14 @@ class Mesh(QQuick3DGeometry):
 
     def load_data(self, file):
         self.clear()
+        self.update()
 
         # Load new data from user input
         mesh = trimesh.load(file, force='mesh')
-
-        # Find triangles extending from each vertex
-        ord_verts = np.zeros((len(mesh.faces)*3, 3))
-        for face_count, face in enumerate(mesh.faces):
-            for vert_count, vert_idx in enumerate(face):
-                ord_verts[face_count*3 + vert_count] = mesh.vertices[vert_idx]
+        self.vertices = mesh.vertices
+        self.faces = mesh.faces
 
         # Update the vertex data
-        self.ord_verts = ord_verts
         self.update_data()
         
         self.loaded.emit(QVector3D(*mesh.centroid),

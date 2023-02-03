@@ -55,8 +55,9 @@ class Backend(QObject):
     # Run the ICP alignment algorithm for aligning Scan to CAD
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
     def align_meshes(self, cad, scan, cad_mat, scan_mat, scale, samples, iters):
-        thread = Thread(align_scan, self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
-        self.threadpool.start(thread)
+        align_scan(self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
+        # thread = Thread(align_scan, self, cad, scan, cad_mat, scan_mat, scale, samples, iters)
+        # self.threadpool.start(thread)
 
     @Slot(str, str, QMatrix4x4, QMatrix4x4, int, float)
     def repair(self, cad_file, scan_file, cad_mat, scan_mat, samples, thresh):

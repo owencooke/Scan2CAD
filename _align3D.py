@@ -41,10 +41,10 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # Align scan mesh relative to the model mesh
     t_matrix, cost = trimesh.registration.mesh_other(scan, cad, samples, scale, icp_final=iters)
 
-    # # DEBUG: show result in Trimesh viewer to verify with GUI result
-    # scanned.apply_transform(t_matrix)
-    # scanned.visual.vertex_colors = trimesh.visual.random_color()
-    # trimesh.Scene([model, scanned]).show()
+    # DEBUG: show result in Trimesh viewer to verify with GUI result
+    scan.apply_transform(t_matrix)
+    scan.visual.vertex_colors = trimesh.visual.random_color()
+    trimesh.Scene([cad, scan]).show()
     
     self.aligned.emit(np_to_qmatrix4x4(t_matrix))
 

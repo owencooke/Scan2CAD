@@ -12,8 +12,18 @@ Item {
     Connections {
         target: backend
         // Display results of the alignment algorithm to user
-        function onAligned(t_matrix) { scan.transform(t_matrix) }
+        function onAligned(t_matrix) { 
+            // Store and apply transform
+            scan.initTransform = t_matrix
+            scan.transform(t_matrix)
+        }
+
         function onVolumes() { loadingScreen.on = false }
+    }
+
+    Timer {
+        running: true; repeat: true; interval: 1000
+        onTriggered: console.log(scan.sceneTransform)
     }
 
     // Toggle mouse controls between camera, CAD or scan 
