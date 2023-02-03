@@ -9,6 +9,13 @@ import DepthMap
 
 // Page for running the 3D alignment/comparison algorithms
 Item {
+    Connections {
+        target: backend
+        // Display results of the alignment algorithm to user
+        function onAligned(t_matrix) { scan.transform(t_matrix) }
+        function onVolumes() { loadingScreen.on = false }
+    }
+
     // Toggle mouse controls between camera, CAD or scan 
     function switchControls(node, label) {
         mouseButton.text = label
@@ -17,63 +24,6 @@ Item {
             userControl.keysEnabled = false
         } else {
             userControl.keysEnabled = true
-        }
-    }
-
-    // Timer {
-    //     running: true; repeat: true; interval: 1000
-    //     onTriggered: console.log(cad.sceneTransform, scan.sceneTransform)
-    // }
-
-    Connections {
-        target: backend
-        // Load converted 3D model and set its calculated centroids, dimensions
-        function onConvertedMesh(pageName, scanFlag, centroid, dim) {
-            if (pageName == "Align") {
-                if (scanFlag) {
-                    scan.resetNode()
-                    scan.setNodeProperties("scan_align", centroid, dim)
-                } else {
-                    cad.resetNode()
-                    cad.setNodeProperties("cad_align", centroid, dim)
-                }
-                loadingScreen.on = false
-                cloud.visible = false
-            }
-        }
-
-        // Display results of the alignment algorithm to user
-        function onDisplayAligned(centroid, dim, cost) {
-            /* FIXME:
-             // function onDisplayAligned(translation, scale, rotation, cost) {
-                https://bugreports.qt.io/browse/QTBUG-105961
-                - Alignment outputs a 4x4 transformation matrix.
-                - No proper method to write a transform matrix to Node
-                    at time of development.
-                - Replace temp file code w/ output matrix applied to scan's Node
-
-                Failed attempt to decompose the transforms (sometimes works)
-                scan.scale = scan.scale.times(scale)
-                scan.rotation = scan.rotation.times(rotation)
-                scan.position = scan.position.plus(translation)
-            */
-
-            // Load aligned file after resetting node properties
-            scan.resetNode()
-            scan.source = "backend_resources/_converted_mesh/scan_align.glb"
-            // Scan moved to origin, so reset cad's translation
-            scan.pivot = centroid
-            scan.dimensions = dim
-            cad.position = Qt.vector3d(0, 0, 0)
-
-            // Modify display
-            loadingScreen.on = false
-            cloud.visible = false
-            cad.visible = scan.visible = true
-        }
-
-        function onVolumes() {
-            loadingScreen.on = false
         }
     }
 
@@ -90,24 +40,17 @@ Item {
             verticalMagnification: 5
         }
 
-        // Nodes (holds loaded models)
-        DynamicNode { id: cad }
-        DynamicNode { id: scan }
+        DirectionalLight{ eulerRotation: camera.eulerRotation }
 
-        // CAD's lighting (color)
-        DirectionalLight{
-            scope: cad
+        // Nodes (holds loaded models)
+        DynamicNode {
+            id: cad
             color: cadControl.sliderColor
-            brightness: 4
-            eulerRotation: camera.eulerRotation
         }
 
-        // Scan's lighting (color)
-        DirectionalLight{
-            scope: scan
+        DynamicNode {
+            id: scan
             color: scanControl.sliderColor
-            brightness: 4
-            eulerRotation: camera.eulerRotation
         }
 
         // Model for storing the calculated Depth Cloud

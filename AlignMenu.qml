@@ -75,30 +75,15 @@ ColumnLayout {
         background: Rectangle { color: root.textColor; radius: height/6 }
 
         onClicked: {
-            var error = false
-            // Check if 3D files have been selected
-            if (cad.status != RuntimeLoader.Success) {
-                scanControl.fileColor = "red"
-                error = true
-            } if (scan.status != RuntimeLoader.Success) {
-                cadControl.fileColor = "red"
-                error = true
-
-            // Reset loader sources and run alignment from backend
-            } if (!error) {
-                // Display running indicator
-                loadingScreen.text = "Aligning Meshes..."
-                loadingScreen.on = true
-                cad.visible = scan.visible = false
-                // Set mouse controls back to camera
-                switchControls(camera, "CAMERA")
-                // Calculate alignment
-                backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
-                                        scan.sceneTransform, toggleScale.checked, 
-                                        parseInt(samples.text), parseInt(iterations.text))
-                // FIXME: remove when align matrix properly applied
-                scan.source = ''
-            }
+            // Calculate alignment
+            backend.align_meshes(cad.source, scan.source, cad.sceneTransform, 
+                                    scan.sceneTransform, toggleScale.checked, 
+                                    parseInt(samples.text), parseInt(iterations.text))
+            // Set mouse controls back to camera to avoid accidental movement
+            switchControls(camera, "CAMERA")
+            // Display running indicator
+            loadingScreen.text = "Aligning Meshes..."
+            loadingScreen.on = true
         }
     }
 }

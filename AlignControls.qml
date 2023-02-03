@@ -49,18 +49,17 @@ Rectangle {
                 title: "Select a 3D model file"
                 nameFilters: ["3D files (*.stl *.obj *.ply *.gltf *.glb)"]
                 onAccepted: {
-                    if (scanFlag) {
-                        scan.source = ""
-                    } else {
-                        cad.source = ""
-                    }
+                    let mesh = cad
+                    if (scanFlag) { mesh = scan }
+                    // Load mesh file
+                    mesh.source = selectedFile
+                    mesh.load(selectedFile)
                     // Set filename as new label
                     fileLabel.text = getFilename(selectedFile.toString())
                     fileLabel.color = Qt.binding(function() { return root.secondaryText })
                     // Start busy indicator for loading
-                    loadingScreen.text = "Loading 3D File..."
-                    loadingScreen.on = true
-                    backend.load_mesh("Align", selectedFile, scanFlag)
+                    // loadingScreen.text = "Loading 3D File..."
+                    // loadingScreen.on = true
                 }
             }
         }

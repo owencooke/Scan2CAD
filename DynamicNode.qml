@@ -6,9 +6,11 @@ Model {
     property vector3d init_dims: Qt.vector3d(0,0,0)
     property vector3d dimensions: Qt.vector3d(0,0,0)
     property color color: "red"
+    property string source
 
     // Bind backend load function for easy use outside module
     property var load: try {geometry.load_file} catch(TypeError) {null}
+    property var transform: try {geometry.transform} catch(TypeError) {null}
 
     // Custom geometry from _depth_map.py
     geometry: Mesh {

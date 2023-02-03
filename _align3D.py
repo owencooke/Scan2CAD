@@ -1,9 +1,8 @@
-import os
 import time
 import trimesh
 import numpy as np
-from PySide6.QtGui import QVector3D, QMatrix4x4 #, QQuaternion
-from backend_utils import scale_from_matrix, trimesh_from_url, qmatrix4x4_to_np #, split_t_matrix
+from PySide6.QtGui import QMatrix4x4
+from backend_utils import trimesh_from_url, np_to_qmatrix4x4
 from _repair_volume import RepairExtractor
 
 
@@ -27,24 +26,6 @@ def tidyUpMesh(mesh, min_len=5000):
         pass
     return mesh
 
-# Load 3D model into GUI and calculate its dimensional attributes
-def load3D(self, QMLpage, selectedFile, scanFlag):
-    # Load mesh
-    loaded = trimesh_from_url(selectedFile)
-
-    # Export model for loading in QML (only .glb or .gltf)
-    out = os.path.join(self.basedir, "backend_resources/_converted_mesh/" 
-                        + outFilename(QMLpage, scanFlag) + ".glb")
-    trimesh.exchange.export.export_mesh(loaded, out, file_type="glb")
-
-    # Obtain dimensional parameters and centroid
-    dim = QVector3D(*loaded.extents)
-    centroid = QVector3D(*loaded.centroid)
-
-    # Output results to QML
-    time.sleep(0.01)
-    self.convertedMesh.emit(QMLpage, scanFlag, centroid, dim)
-
 # Run ICP alignment algorithm between two meshes, output to GUI
 def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters):
     # Load each file into trimesh
@@ -64,26 +45,8 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # scanned.apply_transform(t_matrix)
     # scanned.visual.vertex_colors = trimesh.visual.random_color()
     # trimesh.Scene([model, scanned]).show()
-
-    # FIXME: remove this block when t_matrix can be applied to GUI properly
-    scan.apply_transform(t_matrix)
-    scan_url = os.path.join(self.basedir,"backend_resources/_converted_mesh/scan_align.glb")
-    trimesh.exchange.export.export_mesh(scan, scan_url, file_type="glb")
-    # Scale to get new dimensions for text output
-    dim = init_dim * scale_from_matrix(qmatrix4x4_to_np(scan_mat)) * scale_from_matrix(t_matrix)
-    centroid = QVector3D(*scan.centroid)
-    self.displayAligned.emit(centroid, QVector3D(*dim), cost)
-    ####
-
-    # # Decompose matrix into singular transforms for GUI
-    # scale, rotation, translation = split_t_matrix(t_matrix)
-   
-    # # Convert to Qt data types and output to GUI via signal
-    # scale = QVector3D(*scale)
-    # translation = QVector3D(*translation)
-    # rotation = QQuaternion(*rotation)
-    # #rotation = QVector3D(*rotation) # for Euler angles
-    # self.displayAligned.emit(translation, scale, rotation, cost)
+    
+    self.aligned.emit(np_to_qmatrix4x4(t_matrix))
 
 def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
                     scan_mat=QMatrix4x4(), samples=100000, thresh=0.5, combine=True):

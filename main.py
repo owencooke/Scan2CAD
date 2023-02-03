@@ -7,7 +7,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
 # Import backend method bodies and Classes
 from _compare2D import crop_faces, match_contours
-from _align3D import load3D, align_scan, repair_mesh
+from _align3D import align_scan, repair_mesh
 from _depth_map import PointCloud
 from _mesh import Mesh
 from backend_utils import Thread
@@ -36,9 +36,7 @@ class Backend(QObject):
     iterateContour = Signal(int, float)
     contourResult = Signal(float, float)
 
-    displayAligned = Signal(QVector3D, QVector3D, float) # centroid, dim, cost
-    #displayAligned = Signal(QVector3D, QVector3D, QQuaternion, float)
-    #displayAligned = Signal(QVector3D, QVector3D, QVector3D, float) # for Euler angles
+    aligned = Signal(QMatrix4x4)
 
     volumes = Signal()
     # ------------------------------------------------------------------#
@@ -53,12 +51,6 @@ class Backend(QObject):
     @Slot(result=str)
     def get_basedir(self):
         return self.basedir
-
-    # Load model into the 3D viewer or Align page of GUI
-    @Slot(str, str, bool)
-    def load_mesh(self, QMLpage, file, scanFlag):
-        thread = Thread(load3D, self, QMLpage, file, scanFlag)
-        self.threadpool.start(thread)
 
     # Run the ICP alignment algorithm for aligning Scan to CAD
     @Slot(str, str, QMatrix4x4, QMatrix4x4, bool, int, int)
