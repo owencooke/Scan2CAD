@@ -3,6 +3,7 @@
 packenv
 test
 Test.qml
+test.py
 _test_mesh.py
 *~
 *.autosave

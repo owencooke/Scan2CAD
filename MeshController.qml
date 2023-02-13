@@ -5,9 +5,12 @@ import QtQuick3D.Helpers
 MouseArea {
     id: mouseArea
     property Node target
+    property Node targetMove
+    property Node targetRot
     property Camera camera
     property View3D scene
-    property alias keysEnabled: wasd.keysEnabled
+    // property alias keysEnabled: wasd.keysEnabled
+    property bool keysEnabled
     
     hoverEnabled: true
     preventStealing: true
@@ -37,12 +40,25 @@ MouseArea {
         }
     }
 
-    // Mouse rotation and WASDRF movement
+    // Mouse rotation
+    // WasdController {
+    //     id: wasd
+    //     controlledObject: targetRot
+    //     xInvert: true
+    //     yInvert: false
+    //     speed: 0.05
+    //     mouseEnabled: true
+    //     keysEnabled: false
+    // }
+
+    // Key translation
     WasdController {
-        id: wasd
-        controlledObject: target
+        id: wasdMove
+        controlledObject: targetMove
         xInvert: true
         yInvert: false
         speed: 0.05
+        mouseEnabled: false
+        keysEnabled: true
     }
 }

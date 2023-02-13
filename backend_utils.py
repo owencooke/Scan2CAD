@@ -82,7 +82,9 @@ def split_t_matrix(mat):
         mat[:, i] = np.divide(mat[:, i], scale[i])
 
     # Get rotation quaternion
-    rotation = quaternion_from_matrix(mat, isprecise=True)
+    # rotation = quaternion_from_matrix(mat, isprecise=True)
+    from transforms3d import quaternions
+    rotation = quaternions.mat2quat(mat[:3,:3])
     return scale, rotation, translation
 
 def trimesh_from_url(fname, t_matrix=None, ret_dims=False):

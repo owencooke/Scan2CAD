@@ -32,9 +32,15 @@ class Mesh(QQuick3DGeometry):
 
     @Slot(QMatrix4x4)
     def transform(self,t_mat):
+        t_mat = qmatrix4x4_to_np(t_mat)
         points = np.column_stack((self.vertices, np.full(len(self.vertices), 1))) 
-        self.vertices = np.dot(qmatrix4x4_to_np(t_mat), points.T).T[:,:3]
+        self.vertices = np.dot(t_mat, points.T).T[:,:3]
         self.update_data()
+
+        self.centroid = np.dot(t_mat, np.array(list(self.centroid) + [1]))[:3]
+        self.loaded.emit(QVector3D(*self.centroid),
+                        QVector3D(*self.extents)
+        )
 
     def update_data(self):
         # Get all face-vertex combos
@@ -64,6 +70,9 @@ class Mesh(QQuick3DGeometry):
         # Update the vertex data
         self.update_data()
         
+        self.centroid = mesh.centroid
+        self.extents = mesh.extents
+
         self.loaded.emit(QVector3D(*mesh.centroid),
                         QVector3D(*mesh.extents)
         )

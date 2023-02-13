@@ -20,17 +20,27 @@ Model {
         mesh.position = Qt.vector3d(0, 0, 0)
         mesh.visible = true
         mesh.dimensions = mesh.init_dims
+        mesh.pivot = Qt.vector3d(0,0,0)
     }
 
     function getTransform() {
-        return initTransform.times(sceneTransform)
+        // return sceneTransform
+        return Qt.matrix4x4()
+        // return initTransform.times(sceneTransform)
+        // let mat = Qt.matrix4x4(
+        //     1,0,0,0,
+        //     1,0,0,0,
+        //     1,0,0,0,
+        //     1,0,0,0
+        // )
+        // return mat
     }
 
     // Custom geometry from _depth_map.py
     geometry: Mesh {
         id: meshClass
         onLoaded: function(centroid, dims) {
-            // mesh.pivot = centroid
+            mesh.pivot = centroid
             mesh.dimensions = mesh.init_dims = dims
         }
     } 
