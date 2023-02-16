@@ -13,28 +13,21 @@ Item {
         target: backend
         // Display results of the alignment algorithm to user
         function onAligned(t_matrix) { 
-            // Store and apply transform
-            scan.initTransform = t_matrix
-            scan.transform(t_matrix)
+            scan.transform(scan.sceneTransform, t_matrix)
             scan.resetNode()
-            scanPosition.position = Qt.vector3d(0,0,0)
-        }
-
-        function onDisplayAligned(trans, scale, rot_quat, centroid) {
-            scanPosition.position = trans
-            // scan.pivot = centroid
-            scan.scale = scale
-            scan.rotation = rot_quat
-            print(scan.sceneTransform)
+            loadingScreen.on = false
         }
 
         function onVolumes() { loadingScreen.on = false }
     }
 
-    Timer {
-        running: true; repeat: true; interval: 1000
-        onTriggered: console.log(scan.position)
-    }
+    // Timer {
+    //     running: true; repeat: true; interval: 2000
+    //     onTriggered: {
+    //         console.log(scan.sceneTransform)
+    //         console.log()
+    //     }
+    // }
 
     // Toggle mouse controls between camera, CAD or scan 
     function switchControls(node, label) {
@@ -68,14 +61,9 @@ Item {
             color: cadControl.sliderColor
         }
         
-        Node {
-            id: scanPosition
-        
-            DynamicNode {
-                id: scan
-                parent: scanPosition
-                color: scanControl.sliderColor
-            }
+        DynamicNode {
+            id: scan
+            color: scanControl.sliderColor
         }
 
         // Model for storing the calculated Depth Cloud
@@ -105,9 +93,7 @@ Item {
             anchors.fill: parent
             scene: view3D
             camera: camera
-            targetRot: scan
-            targetMove: scanPosition
-            // keysEnabled: false
+            target: camera
         }
 
         // Gridlines

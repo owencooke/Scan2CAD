@@ -31,13 +31,7 @@ def qmatrix4x4_to_np(q_mat):
 
 # Convert numpy array to GUI's QMatrix4x4 type
 def np_to_qmatrix4x4(np_mat):
-    q_mat = QMatrix4x4()
-    for i in range(4):
-        # Unpack numpy row into a 4D vector
-        row = QVector4D(*np_mat[i])
-        # Set 4D vector to QMatrix row
-        q_mat.setRow(i, row)
-    return q_mat
+    return QMatrix4x4(*np_mat.flatten())
 
 # Converts rotation matrix into its ZXY euler angles
 def euler_from_rotation(r):
@@ -87,19 +81,14 @@ def split_t_matrix(mat):
     rotation = quaternions.mat2quat(mat[:3,:3])
     return scale, rotation, translation
 
-def trimesh_from_url(fname, t_matrix=None, ret_dims=False):
+def trimesh_from_url(fname, t_matrix=None):
     # Get rid of QML's "file:///" prefix for urls
     fname = check_url(fname)
     # Load mesh using trimesh.load
     mesh = load(fname, force='mesh')
-    # Store dimensions BEFORE matrix applied
-    init_dims = mesh.extents
     # Convert matrix and apply to mesh, if given
     if t_matrix is not None:
         t_matrix = qmatrix4x4_to_np(t_matrix)
         mesh.apply_transform(t_matrix)
     # Return mesh (and dimensions if specified)
-    if ret_dims:
-        return mesh, init_dims
-    else: 
-        return mesh
+    return mesh

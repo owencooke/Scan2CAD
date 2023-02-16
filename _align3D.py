@@ -2,7 +2,7 @@ import time
 import trimesh
 import numpy as np
 from PySide6.QtGui import QMatrix4x4
-from backend_utils import trimesh_from_url, np_to_qmatrix4x4
+from backend_utils import qmatrix4x4_to_np, trimesh_from_url, np_to_qmatrix4x4
 from _repair_volume import RepairExtractor
 
 
@@ -28,33 +28,13 @@ def tidyUpMesh(mesh, min_len=5000):
 
 # Run ICP alignment algorithm between two meshes, output to GUI
 def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters):
-# def align_scan(self, cad_url, scan_url, cad_mat, scan_rot, scan_trans, scale, samples, iters):
     # Load each file into trimesh
     cad = trimesh_from_url(cad_url, cad_mat)
-    scan, init_dim = trimesh_from_url(scan_url, scan_mat, True)
+    scan = trimesh_from_url(scan_url, scan_mat)
 
-    # # DEBUG
-    scan.visual.vertex_colors = trimesh.visual.random_color()
-    trimesh.Scene([cad, scan]).show()
-    # scan = trimesh_from_url(scan_url)
-    # from transforms3d import quaternions
-    # rot = np.empty(4)
-    # scan_rot = scan_rot.toVector4D()
-    # rot[0] = scan_rot.w()
-    # rot[1] = scan_rot.x()
-    # rot[2] = scan_rot.y()
-    # rot[3] = scan_rot.z()
-    # rot = quaternions.quat2mat(rot)
-    # trans = np.empty(3)
-    # trans[0] = scan_trans.x()
-    # trans[1] = scan_trans.y()
-    # trans[2] = scan_trans.z()
-    
-    # mat = np.zeros((4,4))
-    # mat[:3,:3] = rot
-    # mat[:3,3] = trans
-    # mat[3,3] = 1
-    # scan.apply_transform(mat)
+    # # # DEBUG
+    # scan.visual.vertex_colors = trimesh.visual.random_color()
+    # trimesh.Scene([cad, scan]).show()
 
     # Check inputs for errors, assign default if error
     if samples <= 0:
@@ -65,23 +45,12 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # Align scan mesh relative to the model mesh
     t_matrix, cost = trimesh.registration.mesh_other(scan, cad, samples, scale, icp_final=iters)
 
-    # DEBUG: show result in Trimesh viewer to verify with GUI result
-    scan.apply_transform(t_matrix)
-    scan.visual.vertex_colors = trimesh.visual.random_color()
-    trimesh.Scene([cad, scan]).show()
+    # # DEBUG: show result in Trimesh viewer to verify with GUI result
+    # scan.apply_transform(t_matrix)
+    # scan.visual.vertex_colors = trimesh.visual.random_color()
+    # trimesh.Scene([cad, scan]).show()
     
     self.aligned.emit(np_to_qmatrix4x4(t_matrix))
-    # print(t_matrix)
-    # # Decompose matrix into singular transforms for GUI
-    # from PySide6.QtGui import QVector3D, QQuaternion
-    # from backend_utils import split_t_matrix
-    # scale, rotation, translation = split_t_matrix(t_matrix)
-    # # Convert to Qt data types and output to GUI via signal
-    # scale = QVector3D(*scale)
-    # translation = QVector3D(*translation)
-    # rotation = QQuaternion(*rotation)
-    # #rotation = QVector3D(*rotation) # for Euler angles
-    # self.displayAligned.emit(translation, scale, rotation, QVector3D(*scan.centroid))
 
 def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
                     scan_mat=QMatrix4x4(), samples=100000, thresh=0.5, combine=True):
