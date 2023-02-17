@@ -33,8 +33,14 @@ class Mesh(QQuick3DGeometry):
 
     @Slot(QMatrix4x4)
     def transform(self, t_mat):
+        # self.centroid = np.dot(qmatrix4x4_to_np(t_mat), np.array([np.append(self.centroid,1)]).T).T[:,:3][0]
+        # self.loaded.emit(QVector3D(*self.centroid),
+        #                 QVector3D(*self.extents)
+        # )
         stack = np.column_stack((self.vertices, np.ones(self.vertices.shape[0])))
-        self.vertices = np.dot(qmatrix4x4_to_np(t_mat), stack.T).T[:,:3]
+        t_mat = qmatrix4x4_to_np(t_mat)
+        # t_mat[:3, 3] += self.centroid
+        self.vertices = np.dot(t_mat, stack.T).T[:,:3]
         self.update_data()
 
     def update_data(self):

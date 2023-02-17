@@ -53,6 +53,7 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # Return transform matrix needed to align ORIGINAL FILE
     t_matrix = np.matmul(t_matrix, qmatrix4x4_to_np(scan_mat))
     self.aligned.emit(np_to_qmatrix4x4(t_matrix))
+    self.threadComplete.emit()
 
 def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
                     scan_mat=QMatrix4x4(), samples=100000, thresh=0.5, combine=True):
@@ -65,7 +66,7 @@ def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(),
     driver.extract_repairs()
     driver.export_volumes("test", combine, "stl")
     if self != None:
-        self.volumes.emit()
+        self.threadComplete.emit()
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

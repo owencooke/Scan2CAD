@@ -7,6 +7,7 @@ Model {
     property vector3d dimensions: Qt.vector3d(0,0,0)
     property color color: "red"
     property string source
+    property matrix4x4 pastSourceTransform: Qt.matrix4x4()
 
     // Bind backend load function for easy use outside module
     property var load: try {geometry.load_file} catch(TypeError) {null}
@@ -21,10 +22,15 @@ Model {
         mesh.dimensions = mesh.init_dims
     }
 
+    function getTransform() {
+        return mesh.sceneTransform.times(pastSourceTransform)
+    }
+
     // Custom geometry from _depth_map.py
     geometry: Mesh {
         id: meshClass
         onLoaded: function(centroid, dims) {
+            status.running = false
             mesh.pivot = centroid
             mesh.dimensions = mesh.init_dims = dims
         }

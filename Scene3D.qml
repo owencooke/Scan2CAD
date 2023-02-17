@@ -9,57 +9,6 @@ View3D {
     property bool activateGrid
     property vector3d meshRotation
 
-    // Rotate mesh to each orthographic view and capture image of the scene
-    function capture2D(fname) {
-        // Disable gridlines and adjust color for high image contrast
-        axes.enableXYGrid = false
-        axes.enableAxisLines = false
-        mesh.color = root.textColor
-        var dir = backend.get_basedir() + "/backend_resources/_captured_imgs/"
-        
-        // Front
-        view3D.grabToImage(function(result) {
-            result.saveToFile(dir + fname + "_front.png")
-            // Top
-            mesh.eulerRotation.x += 90
-            view3D.grabToImage(function(result) {
-                result.saveToFile(dir + fname + "_top.png")
-                // Bottom 
-                mesh.eulerRotation.x += 180
-                view3D.grabToImage(function(result) {
-                    result.saveToFile(dir + fname + "_bottom.png")
-                    // Left
-                    mesh.eulerRotation.x -= 270
-                    mesh.eulerRotation.y += 90
-                    view3D.grabToImage(function(result) {
-                        result.saveToFile(dir + fname + "_left.png")
-                        // Rear
-                        mesh.eulerRotation.y += 90
-                        view3D.grabToImage(function(result) {
-                            result.saveToFile(dir + fname + "_rear.png")
-                            // Right
-                            mesh.eulerRotation.y += 90
-                            view3D.grabToImage(function(result) {
-                                result.saveToFile(dir + fname + "_right.png")
-                                // Give gridline/color control back to user
-                                axes.enableXYGrid = Qt.binding(function() { return !activateGrid })
-                                axes.enableAxisLines = Qt.binding(function() { return !activateGrid })
-                                mesh.color = Qt.binding(function() { return nodeColor })
-                                mesh.eulerRotation.y -= 270
-                                // Call backend function to crop the images
-                                if (fname == "cad") {
-                                    backend.crop2D(root.theme, true, false)
-                                } else {
-                                    backend.crop2D(root.theme, false, true)
-                                }
-                            })
-                        })
-                    })
-                })
-            })
-        })
-    }
-
     camera: OrthographicCamera {
         id: camera
         clipNear: -9999

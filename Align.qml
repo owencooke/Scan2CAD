@@ -15,10 +15,8 @@ Item {
         function onAligned(t_matrix) { 
             scan.transform(t_matrix)
             scan.resetNode()
-            loadingScreen.on = false
+            scan.pastSourceTransform = t_matrix
         }
-
-        function onVolumes() { loadingScreen.on = false }
     }
 
     // Timer {
@@ -73,7 +71,7 @@ Item {
             geometry: PointCloud {
                 id: cloudClass
                 onCloudCalculated: function(centroid) {
-                    loadingScreen.on = false
+                    status.running = false
                     cloud.pivot = centroid
                 }
             } 
@@ -246,13 +244,5 @@ Item {
                     verticalCenter: mouseMenu.verticalCenter }
         target: scan
         scanFlag: true
-    }
-
-    // Loading indicator
-    BusyText {
-        id: loadingScreen
-        anchors.centerIn: view3D
-        width: 200
-        height: 150
     }
 }

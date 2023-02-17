@@ -62,8 +62,7 @@ ColumnLayout {
         background: Rectangle { color: root.textColor; radius: height/6 }
 
         onClicked: {
-            loadingScreen.text = "Extracting volumes..."
-            loadingScreen.on = true
+            showStatus("Extracting volumes...")
             backend.repair(cad.source, scan.source, cad.sceneTransform, 
                                     scan.sceneTransform, parseInt(samples.text),
                                     parseFloat(thresh.text))

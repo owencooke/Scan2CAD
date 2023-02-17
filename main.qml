@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 ApplicationWindow {
     id: root
@@ -52,10 +53,7 @@ ApplicationWindow {
         // QML pages (index=0,1,2...)
         HomePage {}
         Model3D {}
-        CompareImages2D { id: compare2D } 
-        //LiveEdit {}
         Align {}
-        // Always leave settings as last index (bottom icon)
         Settings {}
     }
 
@@ -77,9 +75,7 @@ ApplicationWindow {
                             iconURL: "backend_resources/icons/house.svg" }
             MenuButton { tipText: "3D Viewer"; pageIndex: 1; 
                             iconURL: "backend_resources/icons/cube-solid.svg" }
-            MenuButton { tipText: "2D Projection Comparison"; pageIndex: 2; 
-                            iconURL: "backend_resources/icons/camera-retro-solid.svg" }
-            MenuButton { tipText: "3D Comparison"; pageIndex: 3;
+            MenuButton { tipText: "3D Comparison"; pageIndex: 2;
                             iconURL: "backend_resources/icons/cubes-solid.svg" }
         }
         // Settings button placed at bottom
@@ -131,8 +127,7 @@ ApplicationWindow {
                 // Customized button defined in MenuButton.qml: assign text, page index (0,1,2...), and icon source below
                 MenuButton { text: "Homepage"; pageIndex: 0; iconURL: "backend_resources/icons/house.svg"}
                 MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
-                MenuButton { text: "2D Projection Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/camera-retro-solid.svg" }
-                MenuButton { text: "3D Comparison"; pageIndex: 3; iconURL: "backend_resources/icons/cubes-solid.svg" }
+                MenuButton { text: "3D Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/cubes-solid.svg" }
                 // For demo-ing scrollable menu
                 Repeater {
                     model: 15
@@ -140,5 +135,61 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // Status bar
+    function showStatus(message) {
+        status.text = message
+        status.running = true
+    }
+
+    Connections {
+        target: backend
+        function onThreadComplete() {
+            status.running = false
+        }
+    }
+
+    RowLayout {
+        id: status
+        property bool running: false
+        property alias text: statusLabel.text
+        anchors { bottom: parent.bottom; right: parent.right; margins: 8 }
+        spacing: 0
+
+        // Loading progress wheel
+        BusyIndicator {
+            id: busy
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+            Layout.preferredHeight: 60
+            Layout.preferredWidth: 80
+            running: status.running
+            Material.accent: root.textColor
+        }
+
+        // Descriptive text
+        Label {
+            id: statusLabel
+            Layout.alignment: Qt.AlignCenter
+            text: "Loading..."
+            color: root.textColor
+            font.family: titleFont.font.family
+            font.pointSize: 12
+            visible: status.running
+        }
+
+        // // Cancel button
+        // Button {
+        //     Layout.alignment: Qt.AlignCenter
+        //     Layout.fillWidth: true
+        //     text: "Cancel"
+        //     palette.buttonText: root.textColor
+        //     font.family: titleFont.font.family
+        //     font.pointSize: 10
+        //     visible: on
+        //     onClicked: {
+        //         // FIXME: add cancel function to abort current task
+        //     }
+        // }
     }
 }

@@ -51,15 +51,14 @@ Rectangle {
                 onAccepted: {
                     let mesh = cad
                     if (scanFlag) { mesh = scan }
-                    // Load mesh file
+
+                    showStatus("Loading 3D File...")
                     mesh.source = selectedFile
                     mesh.load(selectedFile)
+
                     // Set filename as new label
                     fileLabel.text = getFilename(selectedFile.toString())
                     fileLabel.color = Qt.binding(function() { return root.secondaryText })
-                    // Start busy indicator for loading
-                    // loadingScreen.text = "Loading 3D File..."
-                    // loadingScreen.on = true
                 }
             }
         }

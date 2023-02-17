@@ -10,7 +10,6 @@ Rectangle {
     property string targetColor: Qt.hsla(colorSlider.value, 1, 0.5, 1)
     property bool gridChecked: gridToggle.toggle
     property bool scan
-    property bool loading: false
 
     color: root.bgColor
 
@@ -53,7 +52,7 @@ Rectangle {
                     fileLabel.text = getFilename(selectedFile.toString())
                     // Load new model
                     target.load(selectedFile)
-                    controls.loading = true
+                    showStatus("Loading 3D file...")
                 }
             }
         }

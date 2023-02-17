@@ -84,8 +84,7 @@ ColumnLayout {
             switchControls(camera, "CAMERA")
             
             // Display running indicator
-            loadingScreen.text = "Aligning Meshes..."
-            loadingScreen.on = true
+            showStatus("Aligning Meshes...")
         }
     }
 }

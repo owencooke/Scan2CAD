@@ -120,11 +120,8 @@ ColumnLayout {
             cloud.visible = true
             depthScale.visible = true
             scaleToggle.checked = true
-            // Set mouse controls back to camera
             switchControls(camera, "CAMERA")
-            // Display busy indicator
-            loadingScreen.text = "Calculating Depth Map..."
-            loadingScreen.on = true
+            showStatus("Calculating Depth Map...")
             // Check whether to use custom max/min values
             var min, max
             if (customRange.checked) {
