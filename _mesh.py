@@ -31,12 +31,10 @@ class Mesh(QQuick3DGeometry):
         thread = Thread(self.load_data, check_url(file))
         self.threadpool.start(thread)
 
-    @Slot(QMatrix4x4, QMatrix4x4)
-    def transform(self,init_mat, t_mat):
-        self.mesh.apply_transform(qmatrix4x4_to_np(init_mat))
-        self.mesh.apply_transform(qmatrix4x4_to_np(t_mat))
-       
-        self.vertices = self.mesh.vertices
+    @Slot(QMatrix4x4)
+    def transform(self, t_mat):
+        stack = np.column_stack((self.vertices, np.ones(self.vertices.shape[0])))
+        self.vertices = np.dot(qmatrix4x4_to_np(t_mat), stack.T).T[:,:3]
         self.update_data()
 
     def update_data(self):
@@ -73,5 +71,3 @@ class Mesh(QQuick3DGeometry):
         self.loaded.emit(QVector3D(*mesh.centroid),
                         QVector3D(*mesh.extents)
         )
-
-        self.mesh = mesh

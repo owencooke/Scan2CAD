@@ -13,7 +13,7 @@ Item {
         target: backend
         // Display results of the alignment algorithm to user
         function onAligned(t_matrix) { 
-            scan.transform(scan.sceneTransform, t_matrix)
+            scan.transform(t_matrix)
             scan.resetNode()
             loadingScreen.on = false
         }

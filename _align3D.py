@@ -50,6 +50,8 @@ def align_scan(self, cad_url, scan_url, cad_mat, scan_mat, scale, samples, iters
     # scan.visual.vertex_colors = trimesh.visual.random_color()
     # trimesh.Scene([cad, scan]).show()
     
+    # Return transform matrix needed to align ORIGINAL FILE
+    t_matrix = np.matmul(t_matrix, qmatrix4x4_to_np(scan_mat))
     self.aligned.emit(np_to_qmatrix4x4(t_matrix))
 
 def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
