@@ -35,7 +35,7 @@ Item {
         target: backend
         // Display detected contours to user for comparison
         function onIterateContour(idx, percent) {
-            var img = "backend_resources/_contours/mask" + idx + ".png"
+            var img = "assets/_contours/mask" + idx + ".png"
             contour.source = img
             console.log(percent+"%")
         }
@@ -92,13 +92,13 @@ Item {
     // Arrows for flipping through images
     IconButton {
         anchors { left: frame.left; verticalCenter: viewLabel.verticalCenter }
-        icon.source: "backend_resources/icons/square-caret-left-solid.svg"
+        icon.source: "assets/icons/square-caret-left-solid.svg"
         onClicked: decrement()
     }
 
     IconButton {
         anchors { right: frame.right; verticalCenter: viewLabel.verticalCenter }
-        iconURL: "backend_resources/icons/square-caret-right-solid.svg"
+        iconURL: "assets/icons/square-caret-right-solid.svg"
         onClicked: increment()
     }
 
@@ -112,7 +112,7 @@ Item {
         IconButton {
             text: "GET FROM 3D VIEWER"
             tipText: "Get from 3D viewer"
-            iconURL: "backend_resources/icons/cube-solid.svg"
+            iconURL: "assets/icons/cube-solid.svg"
             display: (frame.width > 350) ? AbstractButton.TextBesideIcon : AbstractButton.IconOnly
 
             onClicked: {
@@ -126,7 +126,7 @@ Item {
             id: uploadButton
             text: "UPLOAD MANUALLY"
             tipText: "Upload manually"
-            iconURL: "backend_resources/icons/upload-solid.svg"
+            iconURL: "assets/icons/upload-solid.svg"
             display: (frame.width > 350) ? AbstractButton.TextBesideIcon : AbstractButton.IconOnly
 
             onClicked: dialog.open()

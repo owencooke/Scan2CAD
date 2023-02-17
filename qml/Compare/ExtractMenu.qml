@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "../Controls" as Controls
+
 ColumnLayout {
     spacing: 8
 
@@ -19,7 +21,7 @@ ColumnLayout {
             font.pointSize: 9
         }
 
-        TextBox {
+        Controls.TextBox {
             id: samples
             Layout.alignment: Qt.AlignRight
             tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
@@ -38,7 +40,7 @@ ColumnLayout {
             font.pointSize: 9
         }
         
-        TextBox {
+        Controls.TextBox {
             id: thresh
             Layout.alignment: Qt.AlignRight
             Layout.fillWidth: true

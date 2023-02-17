@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "../Controls" as Controls
+
 ColumnLayout {
     property alias pointSize: pointSlider.value
 
@@ -22,7 +24,7 @@ ColumnLayout {
             font.pointSize: 9
         }
 
-        TextBox {
+        Controls.TextBox {
             id: sampled
             Layout.alignment: Qt.AlignRight
             tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
@@ -42,7 +44,7 @@ ColumnLayout {
             font.pointSize: 9
         }
 
-        TextBox {
+        Controls.TextBox {
             id: matchThresh
             Layout.alignment: Qt.AlignRight
             tipText: "Defines the guaranteed range within which points are\nconsidered to match with extremely high similarity."
@@ -73,7 +75,7 @@ ColumnLayout {
             font.pointSize: 9
         }
 
-        TextBox {
+        Controls.TextBox {
             id: maxField
             Layout.alignment: Qt.AlignRight
             tipText: "Set the maximum distance to be considered for over-extrusion."
@@ -92,7 +94,7 @@ ColumnLayout {
             font.pointSize: 9
         }
 
-        TextBox {
+        Controls.TextBox {
             id: minField
             Layout.alignment: Qt.AlignRight
             tipText: "Set the minimum distance to be considered for under-extrusion."

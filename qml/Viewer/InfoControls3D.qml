@@ -4,6 +4,8 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick3D
 
+import "../Controls" as Controls
+
 Rectangle {
     id: controls
     property Node target
@@ -38,9 +40,9 @@ Rectangle {
         }
 
         // Upload Button
-        IconButton {
+        Controls.IconButton {
             id: uploadButton
-            iconURL: "backend_resources/icons/upload-solid.svg"
+            iconURL: icons.upload
             onClicked: dialog.open()
 
             FileDialog {
@@ -59,24 +61,24 @@ Rectangle {
     }
 
     // Gridline button
-    IconButton {
+    Controls.IconButton {
         id: gridToggle
         property bool toggle: false
         anchors { top: parent.top; right: parent.right; margins: 16 }
-        iconURL: toggle ? "backend_resources/icons/border-all-solid.svg" 
-                        : "backend_resources/icons/border-none-solid.svg"
+        iconURL: toggle ? icons.border_all 
+                        : icons.border_none
         onClicked: toggle = !toggle
     }
 
     // Toggle for color slider
-    IconButton { 
+    Controls.IconButton { 
         id: colorToggle
         anchors { top: gridToggle.top; right: gridToggle.left; rightMargin: 5 }
-        iconURL: "backend_resources/icons/fill-solid.svg"
+        iconURL: icons.fill
         onClicked: colorSlider.visible = !colorSlider.visible
     }
 
-    ColorSlider {
+    Controls.ColorSlider {
         id: colorSlider
         anchors { verticalCenter: colorToggle.verticalCenter; 
                 right: colorToggle.left; rightMargin: 5 }
@@ -149,7 +151,7 @@ Rectangle {
                 font.pointSize: 12.5
             }
 
-            RotationTool {
+            Controls.RotationTool {
                 id: xRot
                 title: "X"
                 handleColour: "red"
@@ -160,7 +162,7 @@ Rectangle {
                 }
             }
 
-            RotationTool {
+            Controls.RotationTool {
                 id: yRot
                 title: "Y"
                 handleColour: "green"
@@ -171,7 +173,7 @@ Rectangle {
                 }
             }
 
-            RotationTool {
+            Controls.RotationTool {
                 id: zRot
                 title: "Z"
                 handleColour: "blue"
@@ -190,7 +192,7 @@ Rectangle {
                 font.pointSize: 12.5
             }
 
-            ScalingTool {
+            Controls.ScalingTool {
                 title: " L "
                 value: roundDecimal(target.dimensions.x, 3)
                 initial_dim: target.init_dims.x
@@ -202,7 +204,7 @@ Rectangle {
                 }
             }
 
-            ScalingTool {
+            Controls.ScalingTool {
                 title: "W"
                 value: roundDecimal(target.dimensions.y, 3)
                 initial_dim: target.init_dims.y
@@ -214,7 +216,7 @@ Rectangle {
                 }
             }
 
-            ScalingTool {
+            Controls.ScalingTool {
                 title: " H "
                 value: roundDecimal(target.dimensions.z, 3)
                 initial_dim: target.init_dims.z

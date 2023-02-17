@@ -11,7 +11,7 @@ Rectangle {
         // Display cropped orthographic images to user
         function onDisplayCrop(cad, scan) {
             root.index = 2
-            var d = "backend_resources/_cropped/"
+            var d = "assets/_cropped/"
             if (cad) {
                 cadFrame.urls = [d+"cad_front.png", d+"cad_top.png", d+"cad_left.png", 
                                 d+"cad_rear.png", d+"cad_bottom.png", d+"cad_right.png"]

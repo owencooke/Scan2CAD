@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick3D
 import QtQuick3D.Helpers
 
+import "../3DControls" as Controls3D
+
 View3D {
     id: view3D
     property Node target: mesh
@@ -19,7 +21,7 @@ View3D {
     DirectionalLight{}
 
     // Node storing model loaded by user
-    DynamicNode {
+    Controls3D.DynamicNode {
         id: mesh
         color: nodeColor
         eulerRotation: meshRotation
@@ -35,7 +37,7 @@ View3D {
     }
 
     // Mouse control tool
-    MeshController {
+    Controls3D.MeshController {
         id: mouse
         scene: view3D
         camera: camera

@@ -4,7 +4,7 @@ from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
 from PySide6.QtGui import QVector3D, QMatrix4x4
 from PySide6.QtCore import Property, Signal, Slot, QThreadPool
-from backend_utils import Thread, check_url, qmatrix4x4_to_np
+from src.utils import Thread, check_url, qmatrix4x4_to_np
 
 QML_IMPORT_NAME = "Mesh"
 QML_IMPORT_MAJOR_VERSION = 1

@@ -54,7 +54,7 @@ Item {
             RuntimeLoader {
                 id: logo3D
                 property double scaleToWindow: pageHome.width/650
-                source: "backend_resources/icons/limda_logo.glb"
+                source: "file:assets/icons/limda_logo.glb"
                 scale:  Qt.vector3d(scaleToWindow, scaleToWindow, scaleToWindow)
                 pivot: Qt.vector3d(200,0,0) // "Origin", effectively
                 rotation: Quaternion.fromAxisAndAngle(Qt.vector3d(1, 0, 0), 90)

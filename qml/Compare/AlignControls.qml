@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import QtQuick3D
 
+import "../Controls" as Controls
+
 Rectangle { 
     property Node target
     property bool scanFlag
@@ -39,8 +41,8 @@ Rectangle {
         }
 
         // File upload button
-        IconButton {
-            icon { source: "backend_resources/icons/upload-solid.svg"; 
+        Controls.IconButton {
+            icon { source: icons.upload; 
                     width: 24; height: 24 }
             onClicked: dialog.open()
 
@@ -75,12 +77,12 @@ Rectangle {
     }
 
     // Dropdown menu button
-    IconButton {
+    Controls.IconButton {
         id: dropButton
         property bool toggle: false
         anchors { left: parent.left; margins: 16; verticalCenter: parent.verticalCenter }
-        icon.source: (toggle) ? "backend_resources/icons/angle-down-solid.svg" :
-                        "backend_resources/icons/angle-right-solid.svg"
+        icon.source: (toggle) ? icons.angle_down :
+                        icons.angle_right
         icon.width: (toggle) ? 24 : 16; icon.height: 24
         
         onClicked: toggle = !toggle
@@ -100,13 +102,13 @@ Rectangle {
             anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter}
 
             // Toggle mesh visibility 
-            IconButton {
+            Controls.IconButton {
                 tipText: "Visibility"
                 property bool toggle: true
                 icon { 
                     width: 28; height: 24;
-                    source: (toggle) ? "backend_resources/icons/eye-solid.svg"
-                                : "backend_resources/icons/eye-slash-solid.svg" 
+                    source: (toggle) ? icons.eye
+                                : icons.eye_slash 
                 }
                 onClicked: {
                     toggle = !toggle 
@@ -119,33 +121,33 @@ Rectangle {
             }
 
             // Color dropdown
-            IconButton {
+            Controls.IconButton {
                 tipText: "Color"
-                icon { source: "backend_resources/icons/fill-solid.svg";
+                icon { source: icons.fill;
                         width: 24; height: 24 }
                 onClicked: colorContainer.visible = closeTools(colorContainer.visible)
             }
 
             // Rotate dropdown
-            IconButton {
+            Controls.IconButton {
                 tipText: "Rotate"
-                icon { source: "backend_resources/icons/rotate-solid.svg";
+                icon { source: icons.rotate;
                         width: 24; height: 24 }
                 onClicked: rotateContainer.visible = closeTools(rotateContainer.visible)
             }
 
             // Scale dropdown
-            IconButton {
+            Controls.IconButton {
                 tipText: "Scale"
-                icon { source: "backend_resources/icons/maximize-solid.svg";
+                icon { source: icons.maximize;
                         width: 24; height: 24 }
                 onClicked: scaleContainer.visible = closeTools(scaleContainer.visible)
             }
             
             // Reset button
-            IconButton {
+            Controls.IconButton {
                 tipText: "Reset to default"
-                icon { source: "backend_resources/icons/eraser-solid.svg";
+                icon { source: icons.eraser;
                         width: 24; height: 24 }
                 onClicked: target.resetNode()
             }
@@ -161,7 +163,7 @@ Rectangle {
             width: parent.width
             visible: false
         
-            ColorSlider {
+            Controls.ColorSlider {
                 id: colorSlider
                 anchors.centerIn: parent
                 height: parent.height * 0.5
@@ -186,7 +188,7 @@ Rectangle {
                             rightMargin: 16; verticalCenter: parent.verticalCenter }
                 spacing: 4
 
-                RotationTool {
+                Controls.RotationTool {
                     id: xRot
                     title: "X"
                     handleColour: "red"
@@ -196,7 +198,7 @@ Rectangle {
                     }
                 }
 
-                RotationTool {
+                Controls.RotationTool {
                     id: yRot
                     title: "Y"
                     handleColour: "green"
@@ -206,7 +208,7 @@ Rectangle {
                     }
                 }
 
-                RotationTool {
+                Controls.RotationTool {
                     id: zRot
                     title: "Z"
                     handleColour: "blue"
@@ -233,7 +235,7 @@ Rectangle {
                             rightMargin: 16; verticalCenter: parent.verticalCenter }
                 spacing: 4
 
-                ScalingTool {
+                Controls.ScalingTool {
                     title: " L "
                     value: roundDecimal(target.dimensions.x, 3)
                     initial_dim: target.init_dims.x
@@ -245,7 +247,7 @@ Rectangle {
                     }
                 }
 
-                ScalingTool {
+                Controls.ScalingTool {
                     title: "W"
                     value: roundDecimal(target.dimensions.y, 3)
                     initial_dim: target.init_dims.y
@@ -257,7 +259,7 @@ Rectangle {
                     }
                 }
 
-                ScalingTool {
+                Controls.ScalingTool {
                     title: " H "
                     value: roundDecimal(target.dimensions.z, 3)
                     initial_dim: target.init_dims.z

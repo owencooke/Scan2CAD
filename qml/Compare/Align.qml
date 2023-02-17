@@ -6,6 +6,8 @@ import QtQuick3D.Helpers
 import QtQuick3D.AssetUtils
 
 import DepthMap
+import "../3DControls" as Controls3D
+import "../Controls" as Controls
 
 // Page for running the 3D alignment/comparison algorithms
 Item {
@@ -54,12 +56,12 @@ Item {
         DirectionalLight{ eulerRotation: camera.eulerRotation }
 
         // Nodes (holds loaded models)
-        DynamicNode {
+        Controls3D.DynamicNode {
             id: cad
             color: cadControl.sliderColor
         }
         
-        DynamicNode {
+        Controls3D.DynamicNode {
             id: scan
             color: scanControl.sliderColor
         }
@@ -86,7 +88,7 @@ Item {
         }
 
         // Mouse controls for zooming/rotation
-        MeshController {
+        Controls3D.MeshController {
             id: userControl
             anchors.fill: parent
             scene: view3D
@@ -213,15 +215,15 @@ Item {
             anchors.centerIn: parent
             spacing: 0
 
-            IconButton {
-                icon { source: "backend_resources/icons/chart-line-solid.svg";
+            Controls.IconButton {
+                icon { source: icons.chart_line;
                         height: 20; width: 20 }
                 onClicked: axes.enableAxisLines = !axes.enableAxisLines 
             }
 
-            IconButton {
-                icon { source: !axes.enableXZGrid ? "backend_resources/icons/border-all-solid.svg" 
-                        : "backend_resources/icons/border-none-solid.svg";
+            Controls.IconButton {
+                icon { source: !axes.enableXZGrid ? icons.border_all 
+                        : icons.border_none;
                         height: 20; width: 20 }
                 onClicked: axes.enableXZGrid = !axes.enableXZGrid 
             }

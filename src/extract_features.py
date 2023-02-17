@@ -2,7 +2,7 @@ import trimesh
 import numpy as np
 import os
 from trimesh.util import type_named, append_faces
-from _triangles_intersect import faces_intersect
+from src.intersect import faces_intersect
 
 class ErrorSubsets():
     def __init__(self):
@@ -252,3 +252,31 @@ class RepairExtractor():
                 visual=visual,
                 process=False)
             return appended
+
+
+# Pre-aligned test (no GUI needed) using the case study from the ICRAI paper
+if __name__ == "__main__":
+    import time
+    from PySide6.QtGui import QMatrix4x4
+    from utils import trimesh_from_url
+    
+    # Matrixes to align the two models
+    cad_mat = QMatrix4x4(1, 0, 0, -1.9073486328125e-06, 0, 5.960464477539063e-08, 0.9999999403953552, -13.12500286102295, 0, -0.9999999403953552, 5.960464477539063e-08, -7.823111900506774e-07, 0, 0, 0, 1) 
+    scan_mat = QMatrix4x4(-0.9998733997344971, -0.00261781201697886, 0.015707235783338547, -0.4721300005912781, -0.0026181351859122515, 0.999996542930603, 0, 3.654583692550659, -0.01570718362927437, -4.112366514164023e-05, -0.999876856803894, 0.9400255084037781, 0, 0, 0, 1)
+    cad_file = "C:/Users/owenc/Documents/LIMDA/ICRAI_results/ideal.stl"
+    scan_file = "C:/Users/owenc/Documents/LIMDA/ICRAI_results/scan.stl"
+
+    samples = 300
+    thresh = 0.5
+    combine = True
+
+    # Load files into Trimesh objects
+    start_time = time.time()
+    cad = trimesh_from_url(cad_file, cad_mat)
+    scan = trimesh_from_url(scan_file, scan_mat)
+    
+    # Extract repair volumes to folder
+    driver = RepairExtractor(cad, scan, samples, thresh)
+    driver.extract_repairs()
+    driver.export_volumes("repair_tests", combine, "stl")
+    print("--- %s seconds ---" % (time.time() - start_time))

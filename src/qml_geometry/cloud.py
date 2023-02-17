@@ -3,7 +3,7 @@ from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
 from PySide6.QtGui import QMatrix4x4, QVector3D
 from PySide6.QtCore import Property, Signal, Slot, QThreadPool
-from backend_utils import Thread, trimesh_from_url
+from src.utils import Thread, trimesh_from_url
 
 QML_IMPORT_NAME = "DepthMap"
 QML_IMPORT_MAJOR_VERSION = 1

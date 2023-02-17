@@ -3,6 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
+import "qml"
+import "qml/Viewer" as Viewer
+import "qml/Compare" as Compare
+import "qml/Controls" as Controls
+
 ApplicationWindow {
     id: root
     property alias index: stack.currentIndex
@@ -15,8 +20,31 @@ ApplicationWindow {
     property string bgColor: "#252525"
 
     // Fonts
-    FontLoader { id: regFont; source: "backend_resources/fonts/Inter-Regular.otf" }
-    FontLoader { id: titleFont; source: "backend_resources/fonts/Inter-Black.otf" }
+    FontLoader { id: regFont; source: "file:assets/fonts/Inter-Regular.otf" }
+    FontLoader { id: titleFont; source: "file:assets/fonts/Inter-Black.otf" }
+
+    // Icons
+    QtObject {
+        id: icons
+            readonly property string angle_down: "file:assets/icons/angle-down-solid.svg"
+            readonly property string angle_right: "file:assets/icons/angle-right-solid.svg"
+            readonly property string bars: "file:assets/icons/bars.svg"
+            readonly property string border_all: "file:assets/icons/border-all-solid.svg"
+            readonly property string border_none: "file:assets/icons/border-none-solid.svg"     
+            readonly property string chart_line: "file:assets/icons/chart-line-solid.svg"
+            readonly property string cube: "file:assets/icons/cube-solid.svg"
+            readonly property string cubes: "file:assets/icons/cubes-solid.svg"
+            readonly property string diagram_project: "file:assets/icons/diagram-project-solid.svg"
+            readonly property string eraser: "file:assets/icons/eraser-solid.svg"
+            readonly property string eye_slash: "file:assets/icons/eye-slash-solid.svg"
+            readonly property string eye: "file:assets/icons/eye-solid.svg"
+            readonly property string fill: "file:assets/icons/fill-solid.svg"
+            readonly property string gear: "file:assets/icons/gear-solid.svg"
+            readonly property string house: "file:assets/icons/house.svg"
+            readonly property string maximize: "file:assets/icons/maximize-solid.svg"
+            readonly property string rotate: "file:assets/icons/rotate-solid.svg"
+            readonly property string upload: "file:assets/icons/upload-solid.svg"
+    }
 
     // Takes a filepath from FileDialog as input; returns just the file name and ext
     function getFilename(filepath) {
@@ -52,8 +80,8 @@ ApplicationWindow {
 
         // QML pages (index=0,1,2...)
         HomePage {}
-        Model3D {}
-        Align {}
+        Viewer.Model3D {}
+        Compare.Align {}
         Settings {}
     }
 
@@ -68,22 +96,22 @@ ApplicationWindow {
             spacing: 0
 
             // Navigation menu button
-            MenuButton { iconURL: "backend_resources/icons/bars.svg"; icon.height: 32; 
+            Controls.MenuButton { iconURL: icons.bars; icon.height: 32; 
                                 icon.width: 32; pageIndex: -1; onClicked: menuNav.open() }
             // Customized menu icons: assign text, page index (0,1,2...), and icon source below
-            MenuButton { tipText: "Homepage"; pageIndex: 0;
-                            iconURL: "backend_resources/icons/house.svg" }
-            MenuButton { tipText: "3D Viewer"; pageIndex: 1; 
-                            iconURL: "backend_resources/icons/cube-solid.svg" }
-            MenuButton { tipText: "3D Comparison"; pageIndex: 2;
-                            iconURL: "backend_resources/icons/cubes-solid.svg" }
+            Controls.MenuButton { tipText: "Homepage"; pageIndex: 0;
+                            iconURL: icons.house }
+            Controls.MenuButton { tipText: "3D Viewer"; pageIndex: 1; 
+                            iconURL: icons.cube }
+            Controls.MenuButton { tipText: "3D Comparison"; pageIndex: 2;
+                            iconURL: icons.cubes }
         }
         // Settings button placed at bottom
-        MenuButton {
+        Controls.MenuButton {
             anchors.bottom: parent.bottom
             tipText: "Settings"
             pageIndex: stack.count - 1
-            iconURL: "backend_resources/icons/gear-solid.svg"
+            iconURL: icons.gear
         }
     }
 
@@ -117,21 +145,21 @@ ApplicationWindow {
                 spacing: 0
 
                 // Navigation menu button
-                MenuButton { 
+                Controls.MenuButton { 
                     text: root.title
                     font.family: titleFont.font.family
-                    icon { height: 32; width: 32; source: "backend_resources/icons/bars.svg" }
+                    icon { height: 32; width: 32; source: "file:assets/icons/bars.svg" }
                     pageIndex: -1; 
                     onClicked: menuNav.close() 
                 }
-                // Customized button defined in MenuButton.qml: assign text, page index (0,1,2...), and icon source below
-                MenuButton { text: "Homepage"; pageIndex: 0; iconURL: "backend_resources/icons/house.svg"}
-                MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: "backend_resources/icons/cube-solid.svg" }
-                MenuButton { text: "3D Comparison"; pageIndex: 2; iconURL: "backend_resources/icons/cubes-solid.svg" }
+                // Customized button defined in Controls.MenuButton.qml: assign text, page index (0,1,2...), and icon source below
+                Controls.MenuButton { text: "Homepage"; pageIndex: 0; iconURL: icons.house}
+                Controls.MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: icons.cube }
+                Controls.MenuButton { text: "3D Comparison"; pageIndex: 2; iconURL: icons.cubes }
                 // For demo-ing scrollable menu
                 Repeater {
                     model: 15
-                    MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: "backend_resources/icons/diagram-project-solid.svg" }
+                    Controls.MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: icons.diagram_project }
                 }
             }
         }

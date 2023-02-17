@@ -1,5 +1,6 @@
 import QtQuick
 
+// USED FOR HOT RELOADING QML PAGES (TO LIVE EDIT GUI FEATURES LIKE COLOR, ETC)
 Item {
     id: reloader
 

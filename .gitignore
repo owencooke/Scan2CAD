@@ -1,10 +1,7 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
 packenv
-test
-Test.qml
-test.py
-_test_mesh.py
+repair_tests
 *~
 *.autosave
 *.a

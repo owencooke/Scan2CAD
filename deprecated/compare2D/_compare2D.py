@@ -2,7 +2,7 @@ import os
 import time
 import cv2
 import numpy as np
-from backend_utils import check_url
+from src.utils import check_url
 
 # Crop auto-captured images from 3D viewer and display
 def crop_faces(self, theme, cad, scan, images):
@@ -29,7 +29,7 @@ def crop_faces(self, theme, cad, scan, images):
         # Crop image and export
         x,y,w,h = cv2.boundingRect(largest)
         crop = img[y-round(h/10):y+h+round(h/10),x-round(h/10):x+w+round(h/10)]
-        cv2.imwrite(os.path.join(self.basedir,'backend_resources/_cropped/'+ filename + '.png'), crop)
+        cv2.imwrite(os.path.join(self.basedir,'assets/_cropped/'+ filename + '.png'), crop)
 
     self.displayCrop.emit(cad, scan)
 
@@ -68,7 +68,7 @@ def match_contours(self, cad_img, scan_img):
     # Lowest distance from matchShapes() indicates highest similarity
     matches = {}
     m_index = 0
-    d = os.path.join(self.basedir,'backend_resources/_contours/')
+    d = os.path.join(self.basedir,'assets/_contours/')
     for m in model_contour:
         opdist = 100
         match_idx = 1e10
