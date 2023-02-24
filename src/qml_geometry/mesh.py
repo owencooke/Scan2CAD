@@ -18,8 +18,8 @@ class Mesh(QQuick3DGeometry):
 
     def __init__(self):
         QQuick3DGeometry.__init__(self)
-        FLOAT_SIZE = 4
-        stride = 3
+        FLOAT_SIZE = 4 # bytes --> float32
+        stride = 3 # 3 pieces of information (x,y,z)
         self.setStride(stride * FLOAT_SIZE)
 
         self.threadpool = QThreadPool()

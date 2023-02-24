@@ -1,8 +1,9 @@
 import trimesh
 import numpy as np
 import os
-from trimesh.util import type_named, append_faces
 from src.intersect import faces_intersect
+from collections import deque
+from src.utils import submesh
 
 class ErrorSubsets():
     def __init__(self):
@@ -61,8 +62,8 @@ class RepairExtractor():
                 over_faces.append(faces[idx])
 
         # Create additive/subtractive repair meshes
-        self.under_meshes = self.mesh_faces(under_faces)
-        self.over_meshes = self.mesh_faces(over_faces)
+        self.under_meshes, self.under_volume = self.mesh_faces(under_faces)
+        self.over_meshes, self.over_volume = self.mesh_faces(over_faces)
         
     def mesh_faces(self, init_faces):
         # Recurse thru all faces connected to detected errors
@@ -79,25 +80,25 @@ class RepairExtractor():
         for s, c in volume:
             if not c:
                 # No CAD faces, can't submesh CAD model
-                out = self.submesh(self.scan, s, append=True)
+                out = submesh(self.scan, s, append=True)
             else: 
                 # Concatenate both submeshes
-                scan_sub = self.submesh(self.scan, s, append=True)
-                cad_sub = self.submesh(self.cad, c, append=True)
+                scan_sub = submesh(self.scan, s, append=True)
+                cad_sub = submesh(self.cad, c, append=True)
                 out = trimesh.util.concatenate(cad_sub, scan_sub)
             out.fix_normals()
             meshes.append(out)
-        return meshes
+        return meshes, volume
 
     # Feature extraction algorithm 
     def model_intersect(self, f):
         # Initialize feature set and queue
         feature = []
         cad_crossed = []
-        queue = [f]
+        queue = deque([f])
         # Check connected faces until queue empty
         while queue:
-            f = queue.pop(0)
+            f = queue.popleft()
             # Find nearby CAD faces to scan face
             close_faces = trimesh.proximity.nearby_faces(self.cad, 
                                              np.array([self.scan.triangles_center[f],]))[0]
@@ -158,101 +159,6 @@ class RepairExtractor():
             # Debugging instant display
             #trimesh.Scene(self.under_meshes + self.over_meshes).show()
 
-    # Modified from 
-    # https://github.com/mikedh/trimesh/blob/b9ef0a8a2434f89f41cca714a7100e78dcf1caeb/trimesh/util.py#L1526
-    def submesh(self, mesh,
-                faces_sequence,
-                repair=True,
-                only_watertight=False,
-                min_faces=None,
-                append=False):
-        """
-        Return a subset of a mesh.
-        Parameters
-        ------------
-        mesh : Trimesh
-            Source mesh to take geometry from
-        faces_sequence : sequence (p,) int
-            Indexes of mesh.faces
-        repair : bool
-            Try to make submeshes watertight
-        only_watertight : bool
-            Only return submeshes which are watertight
-        append : bool
-            Return a single mesh which has the faces appended,
-            if this flag is set, only_watertight is ignored
-        Returns
-        ---------
-        if append : Trimesh object
-        else        list of Trimesh objects
-        """
-        # evaluate generators so we can escape early
-        faces_sequence = list(faces_sequence)
-
-        if len(faces_sequence) == 0:
-            return []
-
-        # avoid nuking the cache on the original mesh
-        original_faces = mesh.faces.view(np.ndarray)
-        original_vertices = mesh.vertices.view(np.ndarray)
-
-        faces = []
-        vertices = []
-        normals = []
-        visuals = []
-
-        # for reindexing faces
-        mask = np.arange(len(original_vertices))
-
-        for index in faces_sequence:
-            # sanitize indices in case they are coming in as a set or tuple
-            index = np.asanyarray(index)
-            # if len(index) == 0:
-            #     # regardless of type empty arrays are useless
-            #     continue
-            if index.dtype.kind == 'b':
-                # if passed a bool with no true continue
-                if not index.any():
-                    continue
-                # if fewer faces than minimum
-                if min_faces is not None and index.sum() < min_faces:
-                    continue
-            elif min_faces is not None and len(index) < min_faces:
-                continue
-
-            current = original_faces[index]
-            unique = np.unique(current.reshape(-1))
-
-            # redefine face indices from zero
-            mask[unique] = np.arange(len(unique))
-            normals.append(mesh.face_normals[index])
-            faces.append(mask[current])
-            vertices.append(original_vertices[unique])
-            visuals.append(mesh.visual.face_subset(index))
-
-        if len(vertices) == 0:
-            return np.array([])
-
-        # we use type(mesh) rather than importing Trimesh from base
-        # to avoid a circular import
-        trimesh_type = type_named(mesh, 'Trimesh')
-        if append:
-            visual = None
-            try:
-                visuals = np.array(visuals)
-                visual = visuals[0].concatenate(visuals[1:])
-            except BaseException:
-                pass
-            # re-index faces and stack
-            vertices, faces = append_faces(vertices, faces)
-            appended = trimesh_type(
-                vertices=vertices,
-                faces=faces,
-                face_normals=np.vstack(normals),
-                visual=visual,
-                process=False)
-            return appended
-
 
 # Pre-aligned test (no GUI needed) using the case study from the ICRAI paper
 if __name__ == "__main__":
@@ -278,5 +184,5 @@ if __name__ == "__main__":
     # Extract repair volumes to folder
     driver = RepairExtractor(cad, scan, samples, thresh)
     driver.extract_repairs()
-    driver.export_volumes("repair_tests", combine, "stl")
     print("--- %s seconds ---" % (time.time() - start_time))
+    driver.export_volumes("repair_tests", combine, "stl")

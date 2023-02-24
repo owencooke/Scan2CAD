@@ -1,7 +1,6 @@
 # External Python dependencies
 import os
 import sys
-import time
 import numpy as np
 from trimesh.registration import mesh_other
 
@@ -9,7 +8,7 @@ from trimesh.registration import mesh_other
 from PySide6.QtGui import QIcon, QMatrix4x4
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Signal, Slot, QThreadPool
+from PySide6.QtCore import QObject, Signal, Slot, QThreadPool, QIntList
 
 # Comparison/extraction imports
 from src.extract_features import RepairExtractor
@@ -19,6 +18,7 @@ from src.utils import Thread, np_to_qmatrix4x4, qmatrix4x4_to_np, trimesh_from_u
 # NOTE: not used directly here, but must be imported for use in QML files
 from src.qml_geometry.cloud import PointCloud
 from src.qml_geometry.mesh import Mesh
+from src.qml_geometry.extracted import Extracted
 
 
 ''' Class containing all of the Python backend functions for the GUI.
@@ -38,6 +38,7 @@ class Backend(QObject):
     # after "on" is capitalized where "signalname" is the same as vars below
     aligned = Signal(QMatrix4x4)
     threadComplete = Signal()
+    extracted = Signal(QIntList, QIntList)
 
     # -----------------------------------------------------------------------#
 
@@ -99,18 +100,27 @@ class Backend(QObject):
         self.threadComplete.emit()
 
     def repair_mesh(self, cad_file, scan_file, cad_mat=QMatrix4x4(), 
-                        scan_mat=QMatrix4x4(), samples=300, thresh=0.5, combine=True):
+                        scan_mat=QMatrix4x4(), samples=300, thresh=0.5):  
         # Load files into Trimesh objects
-        start_time = time.time()
         cad = trimesh_from_url(cad_file, cad_mat)
         scan = trimesh_from_url(scan_file, scan_mat)
-        # Extract repair volumes to folder
+
+        # Extract repair volumes
         driver = RepairExtractor(cad, scan, samples, thresh)
         driver.extract_repairs()
-        driver.export_volumes("repair_tests", combine, "stl")
-        if self != None:
-            self.threadComplete.emit()
-        print("--- %s seconds ---" % (time.time() - start_time))
+
+        # Display to GUI
+        over_faces = QIntList()
+        under_faces = QIntList()
+        for face_arr, _ in driver.over_volume:
+            for f in face_arr:
+                over_faces.append(int(f))
+        for face_arr, _ in driver.under_volume:
+            for f in face_arr:
+                under_faces.append(int(f))
+        
+        self.extracted.emit(over_faces, under_faces)
+        self.threadComplete.emit()
 
 
 if __name__ == "__main__":

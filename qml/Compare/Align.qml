@@ -6,6 +6,7 @@ import QtQuick3D.Helpers
 import QtQuick3D.AssetUtils
 
 import DepthMap
+import Extracted
 import "../3DControls" as Controls3D
 import "../Controls" as Controls
 
@@ -18,6 +19,10 @@ Item {
             scan.transform(t_matrix)
             scan.resetNode()
             scan.pastSourceTransform = t_matrix
+        }
+
+        function onExtracted(over, under) {
+            extracted.load_data(scan.source, over, under)
         }
     }
 
@@ -66,10 +71,17 @@ Item {
             color: scanControl.sliderColor
         }
 
+        Model {
+            pivot: scan.pivot
+            geometry: Extracted { id: extracted } 
+            materials: [
+                DefaultMaterial {}
+            ]
+        }
+
         // Model for storing the calculated Depth Cloud
         Model {
             id: cloud
-            // Custom geometry from _depth_map.py
             geometry: PointCloud {
                 id: cloudClass
                 onCloudCalculated: function(centroid) {

@@ -25,7 +25,7 @@ ColumnLayout {
             id: samples
             Layout.alignment: Qt.AlignRight
             tipText: "Number of points randomly sampled from the\nsurface/vertices of the loaded meshes."
-            text: "100000"
+            text: "300"
             fontSize: 10 
             validator: IntValidator {
                 bottom: 1
@@ -65,8 +65,8 @@ ColumnLayout {
 
         onClicked: {
             showStatus("Extracting volumes...")
-            backend.repair(cad.source, scan.source, cad.sceneTransform, 
-                                    scan.sceneTransform, parseInt(samples.text),
+            backend.repair(cad.source, scan.source, cad.getTransform(), 
+                                    scan.getTransform(), parseInt(samples.text),
                                     parseFloat(thresh.text))
         }
     }
