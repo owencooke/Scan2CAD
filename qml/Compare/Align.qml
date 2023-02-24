@@ -58,43 +58,59 @@ Item {
             verticalMagnification: 5
         }
 
-        DirectionalLight{ eulerRotation: camera.eulerRotation }
+        DirectionalLight{ scope: mainScene; eulerRotation: camera.eulerRotation }
 
-        // Nodes (holds loaded models)
-        Controls3D.DynamicNode {
-            id: cad
-            color: cadControl.sliderColor
-        }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 0  }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 90 }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 180 }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 270  }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.y: 90 }
+        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.y: 270 }
+
+        Node {
+            id: mainScene
         
-        Controls3D.DynamicNode {
-            id: scan
-            color: scanControl.sliderColor
+            // Nodes (holds loaded models)
+            Controls3D.DynamicNode {
+                id: cad
+                color: cadControl.sliderColor
+            }
+            
+            Controls3D.DynamicNode {
+                id: scan
+                color: scanControl.sliderColor
+            }
+
+            // Model for storing the calculated Depth Cloud
+            Model {
+                id: cloud
+                geometry: PointCloud {
+                    id: cloudClass
+                    onCloudCalculated: function(centroid) {
+                        status.running = false
+                        cloud.pivot = centroid
+                    }
+                } 
+                materials: [
+                    DefaultMaterial {
+                        lighting: DefaultMaterial.NoLighting
+                        vertexColorsEnabled: true
+                        // Point size controlled by slider
+                        pointSize: depthMenu.pointSize
+                    }
+                ]
+            }
         }
 
         Model {
+            id: ex
             pivot: scan.pivot
             geometry: Extracted { id: extracted } 
             materials: [
-                DefaultMaterial {}
-            ]
-        }
-
-        // Model for storing the calculated Depth Cloud
-        Model {
-            id: cloud
-            geometry: PointCloud {
-                id: cloudClass
-                onCloudCalculated: function(centroid) {
-                    status.running = false
-                    cloud.pivot = centroid
-                }
-            } 
-            materials: [
                 DefaultMaterial {
-                    lighting: DefaultMaterial.NoLighting
+                    // cullMode: Material.NoCulling
+                    // lighting: PrincipledMaterial.NoLighting
                     vertexColorsEnabled: true
-                    // Point size controlled by slider
-                    pointSize: depthMenu.pointSize
                 }
             ]
         }
@@ -258,5 +274,11 @@ Item {
                     verticalCenter: mouseMenu.verticalCenter }
         target: scan
         scanFlag: true
+    }
+
+    Slider {
+        id: testSlider
+        from: 0
+        to: 1
     }
 }
