@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick3D
 import QtQuick3D.Helpers
 import QtQuick3D.AssetUtils
+import QtQuick.Dialogs
 
 import DepthMap
 import Extracted
@@ -22,7 +23,8 @@ Item {
         }
 
         function onExtracted(over, under) {
-            extracted.load_data(scan.source, over, under)
+            additive.load_data(scan.source, under)
+            subtractive.load_data(scan.source, over)
         }
     }
 
@@ -58,61 +60,51 @@ Item {
             verticalMagnification: 5
         }
 
-        DirectionalLight{ scope: mainScene; eulerRotation: camera.eulerRotation }
+        DirectionalLight{ eulerRotation: camera.eulerRotation }
 
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 0  }
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 90 }
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 180 }
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.x: 270  }
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.y: 90 }
-        DirectionalLight{ brightness: 0.01; scope: ex; eulerRotation.y: 270 }
-
-        Node {
-            id: mainScene
         
-            // Nodes (holds loaded models)
-            Controls3D.DynamicNode {
-                id: cad
-                color: cadControl.sliderColor
-            }
-            
-            Controls3D.DynamicNode {
-                id: scan
-                color: scanControl.sliderColor
-            }
+        // Nodes (holds loaded models)
+        Controls3D.DynamicNode {
+            id: cad
+            color: cadControl.sliderColor
+        }
+        
+        Controls3D.DynamicNode {
+            id: scan
+            color: scanControl.sliderColor
+        }
 
-            // Model for storing the calculated Depth Cloud
-            Model {
-                id: cloud
-                geometry: PointCloud {
-                    id: cloudClass
-                    onCloudCalculated: function(centroid) {
-                        status.running = false
-                        cloud.pivot = centroid
-                    }
-                } 
-                materials: [
-                    DefaultMaterial {
-                        lighting: DefaultMaterial.NoLighting
-                        vertexColorsEnabled: true
-                        // Point size controlled by slider
-                        pointSize: depthMenu.pointSize
-                    }
-                ]
-            }
+        // Model for storing the calculated Depth Cloud
+        Model {
+            id: cloud
+            geometry: PointCloud {
+                id: cloudClass
+                onCloudCalculated: function(centroid) {
+                    status.running = false
+                    cloud.pivot = centroid
+                }
+            } 
+            materials: [
+                DefaultMaterial {
+                    lighting: DefaultMaterial.NoLighting
+                    vertexColorsEnabled: true
+                    // Point size controlled by slider
+                    pointSize: depthMenu.pointSize
+                }
+            ]
+        }
+
+        // Extracted model results 
+        Model {
+            pivot: scan.pivot
+            geometry: Extracted { id: additive } 
+            materials: [DefaultMaterial { cullMode: Material.FrontFaceCulling; diffuseColor: "blue" }]
         }
 
         Model {
-            id: ex
             pivot: scan.pivot
-            geometry: Extracted { id: extracted } 
-            materials: [
-                DefaultMaterial {
-                    // cullMode: Material.NoCulling
-                    // lighting: PrincipledMaterial.NoLighting
-                    vertexColorsEnabled: true
-                }
-            ]
+            geometry: Extracted { id: subtractive } 
+            materials: [DefaultMaterial { diffuseColor: "red" }]
         }
 
         // Mouse controls for zooming/rotation
@@ -274,11 +266,5 @@ Item {
                     verticalCenter: mouseMenu.verticalCenter }
         target: scan
         scanFlag: true
-    }
-
-    Slider {
-        id: testSlider
-        from: 0
-        to: 1
     }
 }
