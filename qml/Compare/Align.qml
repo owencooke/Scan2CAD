@@ -23,6 +23,8 @@ Item {
         }
 
         function onExtracted(over, under) {
+            cad.visible = false
+            scan.visible = false
             additive.load_data(scan.source, under)
             subtractive.load_data(scan.source, over)
         }
