@@ -1,4 +1,4 @@
-# AM3D
+# Scan2CAD
 A Python/Qt desktop app for comparing 3D scans of AM parts to their nominal models. Also includes support for performing a remanufacturing feature extraction algorithm between a model and an aligned 3D scan. Used to generate and export the additive and subtractive features as .STL files, which can then be used in the path planning for remanufacturing processes.
 
 ## Source Literature
