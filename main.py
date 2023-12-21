@@ -13,12 +13,14 @@ from PySide6.QtCore import QObject, Signal, Slot, QThreadPool, QIntList
 # Comparison/extraction imports
 from src.extract_features import RepairExtractor
 from src.utils import Thread, np_to_qmatrix4x4, qmatrix4x4_to_np, trimesh_from_url
+from src.convolve_align import align
 
 # QML Custom Geometry imports
 # NOTE: not used directly here, but must be imported for use in QML files
 from src.qml_geometry.cloud import PointCloud
 from src.qml_geometry.mesh import Mesh
 from src.qml_geometry.extracted import Extracted
+
 
 
 ''' Class containing all of the Python backend functions for the GUI.
@@ -65,7 +67,15 @@ class Backend(QObject):
         thread = Thread(self.repair_mesh, cad_file, scan_file, cad_mat, scan_mat, samples, thresh)
         self.threadpool.start(thread)
 
+    @Slot(str)
+    def align_all(self, dir):
+        thread = Thread(self.align_img, dir)
+        self.threadpool.start(thread)
+
     # -----------------------------------------------------------------------#
+
+    def align_img(self, dir):
+        align(dir, "src/notched.npy")
 
     # Backend functions (for mesh comparison)
 

@@ -7,6 +7,7 @@ import "qml"
 import "qml/Viewer" as Viewer
 import "qml/Compare" as Compare
 import "qml/Controls" as Controls
+import "qml/ImageAlign" as Align
 
 ApplicationWindow {
     id: root
@@ -82,6 +83,7 @@ ApplicationWindow {
         HomePage {}
         Viewer.Model3D {}
         Compare.Align {}
+        Align.AlignControls {}
         Settings {}
     }
 
@@ -156,9 +158,10 @@ ApplicationWindow {
                 Controls.MenuButton { text: "Homepage"; pageIndex: 0; iconURL: icons.house}
                 Controls.MenuButton { text: "3D Viewer"; pageIndex: 1; iconURL: icons.cube }
                 Controls.MenuButton { text: "3D Comparison"; pageIndex: 2; iconURL: icons.cubes }
+                Controls.MenuButton { text: "Image Align"; pageIndex: 3; iconURL: icons.cubes }
                 // For demo-ing scrollable menu
                 Repeater {
-                    model: 15
+                    model: 14
                     Controls.MenuButton { text: "Coming Soon"; pageIndex: 0; iconURL: icons.diagram_project }
                 }
             }
